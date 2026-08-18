@@ -5,7 +5,7 @@ import { SacredHeritageExplorer } from '../components/home/SacredHeritageExplore
 import {
   BookOpen, Calendar, Heart,
   ArrowRight, ChevronRight,
-  Users, Clock, MapPin
+  Users, Clock, MapPin, ArrowUpRight
 } from 'lucide-react';
 
 export const HomePageView: React.FC = () => {
@@ -325,37 +325,77 @@ export const HomePageView: React.FC = () => {
           </div>
         </section>
 
-        {/* ─── 5. LATEST NEWS ─────────────────────────────────────────── */}
-        <section style={{ marginBottom: '20px', width: '100%', padding: '0 40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px', width: '100%', margin: '0 0 24px 0' }}>
-            <div>
-              <h2 style={{ fontSize: 'clamp(22px, 4vw, 26px)', fontWeight: 800, color: 'var(--text-dark)', marginBottom: '4px' }}>
-                {language === 'en' ? 'Latest News' : 'አዳዲስ ዜናዎች'}
-              </h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '13px', fontFamily: 'var(--font-body)' }}>Stay updated with EOTC news and announcements</p>
+        {/* ─── 5. LATEST NEWS (REFERENCE DESIGN MATCH) ────────────────── */}
+        <section className="w-full my-12 sm:my-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+            
+            {/* Left Column (Big Bold Title + Subtitle + Orange Gradient CTA Button) */}
+            <div className="lg:col-span-5 space-y-6">
+              <div>
+                <h2 className="text-4xl sm:text-6xl font-black text-[#111111] tracking-tight leading-[1.05] font-sans">
+                  {language === 'en' ? (
+                    <>
+                      Latest<br />News
+                    </>
+                  ) : (
+                    <>
+                      አዳዲስ<br />ዜናዎች
+                    </>
+                  )}
+                </h2>
+                <p className="text-sm sm:text-base text-stone-500 leading-relaxed font-sans mt-5 max-w-md">
+                  {language === 'en'
+                    ? 'Stay informed with official patriarchal decrees, feast day announcements, synodal communications, and spiritual teachings from the Holy Church.'
+                    : 'ከመንበረ ፓትርያርክ የተሰጡ መግለጫዎች፣ ቅዱስ ሲኖዶስ ውሳኔዎች፣ የበዓላት ጥሪዎችና መንፈሳዊ ትምህርቶችን ይከታተሉ።'}
+                </p>
+              </div>
+
+              {/* Glowing Circle CTA Button matching reference image */}
+              <div className="pt-2">
+                <button
+                  onClick={() => setActiveView('news')}
+                  className="inline-flex items-center gap-4 group cursor-pointer"
+                >
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#E28743] via-[#EE9B00] to-[#F4A261] shadow-lg shadow-[#E28743]/30 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-[#E28743]/50 shrink-0">
+                    <ArrowUpRight className="w-6 h-6 text-white transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </div>
+                  <span className="text-base font-extrabold text-[#111111] group-hover:text-[#E28743] transition-colors font-sans">
+                    {language === 'en' ? 'View All News' : 'ሁሉንም ዜናዎች ይመልከቱ'}
+                  </span>
+                </button>
+              </div>
             </div>
-            <button onClick={() => setActiveView('news')} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--off-white)', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 600, color: 'var(--text-dark)', cursor: 'pointer' }}>
-              View All <ArrowRight style={{ width: '14px', height: '14px' }} />
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px', width: '100%' }}>
-            {MOCK_ARTICLES.slice(0, 3).map(article => (
-              <div key={article.id} onClick={() => setActiveView('news')} style={{ background: 'var(--off-white)', border: '1px solid var(--border-light)', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 2px 8px rgba(44,29,7,0.06)' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 10px 28px rgba(44,29,7,0.12)'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 8px rgba(44,29,7,0.06)'; }}
-              >
-                <img src={article.image} alt={article.titleEnglish} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
-                <div style={{ padding: '16px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{article.category}</span>
-                  <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-dark)', margin: '6px 0 10px', lineHeight: 1.4, fontFamily: 'var(--font-body)' }}>
-                    {language === 'en' ? article.titleEnglish : article.titleAmharic}
-                  </h3>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'var(--gold)', fontWeight: 600, fontSize: '12px' }}>
-                    Read more <ChevronRight style={{ width: '12px', height: '12px' }} />
+
+            {/* Right Column (Vertical Stack of Light Rounded Cards) */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-5">
+              {MOCK_ARTICLES.slice(0, 3).map((article) => (
+                <div
+                  key={article.id}
+                  onClick={() => setActiveView('news')}
+                  className="group relative bg-[#F4F4F6] hover:bg-[#ECECEE] border border-black/[0.04] rounded-2xl sm:rounded-3xl p-6 sm:p-7 lg:p-8 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md flex items-start justify-between gap-4"
+                >
+                  <div className="space-y-2 flex-1 min-w-0">
+                    {/* Meta Category & Date */}
+                    <div className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
+                      <span className="text-[#E28743]">{article.category}</span>
+                      <span className="text-stone-300">•</span>
+                      <span className="text-stone-400 font-medium">{article.date}</span>
+                    </div>
+
+                    {/* Headline */}
+                    <h3 className="text-base sm:text-lg lg:text-xl font-extrabold text-[#111111] font-sans leading-snug tracking-tight group-hover:text-[#E28743] group-hover:underline underline-offset-4 decoration-2 transition-colors">
+                      {language === 'en' ? article.titleEnglish : article.titleAmharic}
+                    </h3>
+                  </div>
+
+                  {/* Top-Right Arrow Icon */}
+                  <div className="shrink-0 pt-0.5">
+                    <ArrowUpRight className="w-6 h-6 text-stone-400 group-hover:text-[#E28743] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
           </div>
         </section>
 
