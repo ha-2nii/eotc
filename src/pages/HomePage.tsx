@@ -326,79 +326,71 @@ export const HomePageView: React.FC = () => {
         </section>
 
         {/* ─── 5. LATEST NEWS ─────────────────────────────────────────── */}
-        <section style={{ width: '100%', padding: '0 40px', marginBottom: '64px' }}>
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center w-full">
-            
-            {/* Left Column: Title, Subtitle, and Glowing CTA */}
-            <div className="lg:col-span-5 space-y-6">
-              <div>
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.05] font-sans">
+        <section className="w-full my-12 px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
+            {/* Left Column (Heading + Subtitle + Glowing View All CTA) */}
+            <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
+              <div className="space-y-3">
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#1C1917] tracking-tight leading-[1.05] font-geez">
                   {language === 'en' ? (
                     <>
                       Latest <br />
-                      News
+                      <span className="text-black">News</span>
                     </>
                   ) : (
-                    <>
-                      አዳዲስ <br />
-                      ዜናዎች
-                    </>
+                    'አዳዲስ ዜናዎች'
                   )}
                 </h2>
-                <p className="text-stone-600 text-sm sm:text-base leading-relaxed font-sans mt-5 max-w-md">
+                <p className="text-sm sm:text-base text-stone-500 font-serif leading-relaxed max-w-sm pt-2">
                   {language === 'en'
-                    ? 'Stay updated with patriarchal decrees, synod announcements, feast celebrations, and global EOTC news.'
-                    : 'ከቤተ ክርስቲያን መንፈሳዊ መግለጫዎች፣ ከቅዱስ ሲኖዶስ ውሳኔዎችና አዳዲስ ዜናዎች ጋር ዘወትር ይገናኙ።'}
+                    ? 'Stay updated with official EOTC patriarchal decrees, synod announcements, and global Orthodox news.'
+                    : 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ይፋዊ መግለጫዎችና ዜናዎች ይከታተሉ።'}
                 </p>
               </div>
 
-              {/* Glowing Warm Gradient CTA Button */}
-              <div className="pt-2">
-                <button
-                  onClick={() => setActiveView('news')}
-                  className="group relative inline-flex items-center gap-3.5 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-400 hover:to-orange-300 text-neutral-950 font-extrabold text-sm px-8 py-4 rounded-full shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300 active:scale-95 cursor-pointer"
-                >
-                  <span className="w-7 h-7 rounded-full bg-neutral-950/15 flex items-center justify-center">
-                    <ArrowUpRight className="w-4 h-4 text-neutral-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  </span>
-                  <span>{language === 'en' ? 'View All News' : 'ሁሉንም ዜናዎች ይመልከቱ'}</span>
-                </button>
-              </div>
+              {/* View All News Button with Glowing Orange Gradient Icon */}
+              <button
+                onClick={() => setActiveView('news')}
+                className="group inline-flex items-center gap-4 pt-4 bg-transparent border-none cursor-pointer text-left"
+              >
+                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#EA580C] via-[#F97316] to-[#FDBA74] flex items-center justify-center text-white shadow-lg shadow-orange-500/25 group-hover:scale-110 transition-transform duration-300">
+                  <ArrowUpRight className="w-6 h-6" />
+                </div>
+                <span className="text-base sm:text-lg font-bold text-[#1C1917] group-hover:text-[#EA580C] transition-colors">
+                  {language === 'en' ? 'View All News' : 'ሁሉንም ዜናዎች ይመልከቱ'}
+                </span>
+              </button>
             </div>
 
-            {/* Right Column: Stacked Cards matching reference image */}
-            <div className="lg:col-span-7 space-y-4">
+            {/* Right Column (Vertical Stack of Light-Gray Cards with Top-Right Arrow) */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-5">
               {MOCK_ARTICLES.slice(0, 3).map((article) => (
                 <div
                   key={article.id}
                   onClick={() => setActiveView('news')}
-                  className="group relative bg-[#F4F3F0] hover:bg-[#EDEBE5] border border-stone-200/70 hover:border-amber-500/40 rounded-2xl p-6 sm:p-7 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md flex items-start justify-between gap-4"
+                  className="group bg-[#F5F4F0] hover:bg-[#EFECE6] p-6 sm:p-7 rounded-2xl sm:rounded-3xl border border-stone-200/80 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex items-start justify-between gap-4"
                 >
-                  {/* Left Text Content */}
-                  <div className="space-y-3 pr-2 flex-1">
-                    {/* Category • Date Meta Row */}
-                    <div className="flex items-center gap-2 text-xs uppercase font-extrabold tracking-wider">
-                      <span className="text-[#D97706]">{article.category}</span>
-                      <span className="text-stone-300">•</span>
-                      <span className="text-stone-400 font-semibold">{article.date}</span>
+                  <div className="space-y-2.5 flex-1 min-w-0">
+                    {/* Category & Date */}
+                    <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#EA580C]">
+                      <span>{article.category}</span>
+                      <span className="text-stone-400 font-bold">•</span>
+                      <span className="text-stone-400 font-medium tracking-normal">{article.date || 'AUGUST 2026'}</span>
                     </div>
 
-                    {/* Article Title */}
-                    <h3 className="text-base sm:text-lg font-bold text-neutral-900 group-hover:text-black leading-snug group-hover:underline underline-offset-4 decoration-2 decoration-[#D97706] font-geez">
+                    {/* Headline */}
+                    <h3 className="text-base sm:text-xl font-bold text-[#1C1917] font-geez leading-snug group-hover:underline group-hover:text-[#C2410C] transition-colors">
                       {language === 'en' ? article.titleEnglish : article.titleAmharic}
                     </h3>
                   </div>
 
-                  {/* Right Arrow Up-Right Icon */}
-                  <div className="pt-0.5 shrink-0">
-                    <div className="w-9 h-9 rounded-full bg-stone-200/60 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
-                      <ArrowUpRight className="w-5 h-5 text-stone-400 group-hover:text-[#D97706] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-                    </div>
+                  {/* Diagonal Arrow Icon */}
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-stone-200/70 group-hover:bg-[#EA580C]/15 flex items-center justify-center transition-all duration-300">
+                    <ArrowUpRight className="w-5 h-5 text-stone-500 group-hover:text-[#EA580C] transition-colors" />
                   </div>
                 </div>
               ))}
             </div>
-
           </div>
         </section>
 
