@@ -4,8 +4,8 @@ import { MOCK_ARTICLES } from '../data/mockNews';
 import { SacredHeritageExplorer } from '../components/home/SacredHeritageExplorer';
 import {
   BookOpen, Calendar, Heart,
-  ArrowRight, ChevronRight,
-  Users, Clock, MapPin, ArrowUpRight
+  ArrowRight, ChevronRight, ArrowUpRight,
+  Users, Clock, MapPin
 } from 'lucide-react';
 
 export const HomePageView: React.FC = () => {
@@ -325,72 +325,75 @@ export const HomePageView: React.FC = () => {
           </div>
         </section>
 
-        {/* ─── 5. LATEST NEWS (REFERENCE DESIGN MATCH) ────────────────── */}
-        <section className="w-full my-12 sm:my-20">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+        {/* ─── 5. LATEST NEWS ─────────────────────────────────────────── */}
+        <section style={{ width: '100%', padding: '0 40px', marginBottom: '64px' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center w-full">
             
-            {/* Left Column (Big Bold Title + Subtitle + Orange Gradient CTA Button) */}
+            {/* Left Column: Title, Subtitle, and Glowing CTA */}
             <div className="lg:col-span-5 space-y-6">
               <div>
-                <h2 className="text-4xl sm:text-6xl font-black text-[#111111] tracking-tight leading-[1.05] font-sans">
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-neutral-900 tracking-tight leading-[1.05] font-sans">
                   {language === 'en' ? (
                     <>
-                      Latest<br />News
+                      Latest <br />
+                      News
                     </>
                   ) : (
                     <>
-                      አዳዲስ<br />ዜናዎች
+                      አዳዲስ <br />
+                      ዜናዎች
                     </>
                   )}
                 </h2>
-                <p className="text-sm sm:text-base text-stone-500 leading-relaxed font-sans mt-5 max-w-md">
+                <p className="text-stone-600 text-sm sm:text-base leading-relaxed font-sans mt-5 max-w-md">
                   {language === 'en'
-                    ? 'Stay informed with official patriarchal decrees, feast day announcements, synodal communications, and spiritual teachings from the Holy Church.'
-                    : 'ከመንበረ ፓትርያርክ የተሰጡ መግለጫዎች፣ ቅዱስ ሲኖዶስ ውሳኔዎች፣ የበዓላት ጥሪዎችና መንፈሳዊ ትምህርቶችን ይከታተሉ።'}
+                    ? 'Stay updated with patriarchal decrees, synod announcements, feast celebrations, and global EOTC news.'
+                    : 'ከቤተ ክርስቲያን መንፈሳዊ መግለጫዎች፣ ከቅዱስ ሲኖዶስ ውሳኔዎችና አዳዲስ ዜናዎች ጋር ዘወትር ይገናኙ።'}
                 </p>
               </div>
 
-              {/* Glowing Circle CTA Button matching reference image */}
+              {/* Glowing Warm Gradient CTA Button */}
               <div className="pt-2">
                 <button
                   onClick={() => setActiveView('news')}
-                  className="inline-flex items-center gap-4 group cursor-pointer"
+                  className="group relative inline-flex items-center gap-3.5 bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500 hover:from-amber-400 hover:to-orange-300 text-neutral-950 font-extrabold text-sm px-8 py-4 rounded-full shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300 active:scale-95 cursor-pointer"
                 >
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-[#E28743] via-[#EE9B00] to-[#F4A261] shadow-lg shadow-[#E28743]/30 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl group-hover:shadow-[#E28743]/50 shrink-0">
-                    <ArrowUpRight className="w-6 h-6 text-white transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
-                  <span className="text-base font-extrabold text-[#111111] group-hover:text-[#E28743] transition-colors font-sans">
-                    {language === 'en' ? 'View All News' : 'ሁሉንም ዜናዎች ይመልከቱ'}
+                  <span className="w-7 h-7 rounded-full bg-neutral-950/15 flex items-center justify-center">
+                    <ArrowUpRight className="w-4 h-4 text-neutral-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </span>
+                  <span>{language === 'en' ? 'View All News' : 'ሁሉንም ዜናዎች ይመልከቱ'}</span>
                 </button>
               </div>
             </div>
 
-            {/* Right Column (Vertical Stack of Light Rounded Cards) */}
-            <div className="lg:col-span-7 space-y-4 sm:space-y-5">
+            {/* Right Column: Stacked Cards matching reference image */}
+            <div className="lg:col-span-7 space-y-4">
               {MOCK_ARTICLES.slice(0, 3).map((article) => (
                 <div
                   key={article.id}
                   onClick={() => setActiveView('news')}
-                  className="group relative bg-[#F4F4F6] hover:bg-[#ECECEE] border border-black/[0.04] rounded-2xl sm:rounded-3xl p-6 sm:p-7 lg:p-8 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md flex items-start justify-between gap-4"
+                  className="group relative bg-[#F4F3F0] hover:bg-[#EDEBE5] border border-stone-200/70 hover:border-amber-500/40 rounded-2xl p-6 sm:p-7 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md flex items-start justify-between gap-4"
                 >
-                  <div className="space-y-2 flex-1 min-w-0">
-                    {/* Meta Category & Date */}
-                    <div className="flex items-center gap-2 text-xs font-bold tracking-widest uppercase">
-                      <span className="text-[#E28743]">{article.category}</span>
+                  {/* Left Text Content */}
+                  <div className="space-y-3 pr-2 flex-1">
+                    {/* Category • Date Meta Row */}
+                    <div className="flex items-center gap-2 text-xs uppercase font-extrabold tracking-wider">
+                      <span className="text-[#D97706]">{article.category}</span>
                       <span className="text-stone-300">•</span>
-                      <span className="text-stone-400 font-medium">{article.date}</span>
+                      <span className="text-stone-400 font-semibold">{article.date}</span>
                     </div>
 
-                    {/* Headline */}
-                    <h3 className="text-base sm:text-lg lg:text-xl font-extrabold text-[#111111] font-sans leading-snug tracking-tight group-hover:text-[#E28743] group-hover:underline underline-offset-4 decoration-2 transition-colors">
+                    {/* Article Title */}
+                    <h3 className="text-base sm:text-lg font-bold text-neutral-900 group-hover:text-black leading-snug group-hover:underline underline-offset-4 decoration-2 decoration-[#D97706] font-geez">
                       {language === 'en' ? article.titleEnglish : article.titleAmharic}
                     </h3>
                   </div>
 
-                  {/* Top-Right Arrow Icon */}
-                  <div className="shrink-0 pt-0.5">
-                    <ArrowUpRight className="w-6 h-6 text-stone-400 group-hover:text-[#E28743] transition-all duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  {/* Right Arrow Up-Right Icon */}
+                  <div className="pt-0.5 shrink-0">
+                    <div className="w-9 h-9 rounded-full bg-stone-200/60 group-hover:bg-amber-500/20 flex items-center justify-center transition-colors">
+                      <ArrowUpRight className="w-5 h-5 text-stone-400 group-hover:text-[#D97706] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                    </div>
                   </div>
                 </div>
               ))}
