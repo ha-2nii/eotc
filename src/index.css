@@ -1,0 +1,365 @@
+/* ── Google Fonts ──────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Serif+Ethiopic:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── shadcn/ui CSS Variables (EOTC-themed) ─────────────── */
+@layer base {
+  :root {
+    /* Light surface — parchment off-white */
+    --background:        42 33% 97%;
+    --foreground:        30 60% 12%;
+
+    --card:              0 0% 100%;
+    --card-foreground:   30 60% 12%;
+
+    --popover:           0 0% 100%;
+    --popover-foreground: 30 60% 12%;
+
+    /* Primary = EOTC Gold */
+    --primary:           43 57% 55%;
+    --primary-foreground: 30 60% 8%;
+
+    /* Secondary = deep navy */
+    --secondary:         214 52% 13%;
+    --secondary-foreground: 43 57% 72%;
+
+    --muted:             42 20% 92%;
+    --muted-foreground:  30 15% 45%;
+
+    /* Accent = warm amber */
+    --accent:            43 100% 94%;
+    --accent-foreground: 30 60% 20%;
+
+    --destructive:       350 84% 35%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:            38 28% 84%;
+    --input:             38 28% 84%;
+    --ring:              43 57% 55%;
+
+    --radius:            0.625rem;
+  }
+
+  .dark {
+    /* Dark = EOTC deep navy */
+    --background:        214 60% 8%;
+    --foreground:        43 57% 82%;
+
+    --card:              214 55% 11%;
+    --card-foreground:   43 57% 82%;
+
+    --popover:           214 55% 11%;
+    --popover-foreground: 43 57% 82%;
+
+    --primary:           43 57% 55%;
+    --primary-foreground: 214 60% 8%;
+
+    --secondary:         214 45% 18%;
+    --secondary-foreground: 43 40% 75%;
+
+    --muted:             214 40% 16%;
+    --muted-foreground:  214 20% 55%;
+
+    --accent:            214 40% 20%;
+    --accent-foreground: 43 57% 75%;
+
+    --destructive:       350 70% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border:            214 30% 22%;
+    --input:             214 30% 22%;
+    --ring:              43 57% 55%;
+  }
+}
+
+
+
+
+/* ── Design Tokens ────────────────────────────────────── */
+:root {
+  /* Colours */
+  --gold:          #C8A84B;
+  --gold-bright:   #D4AF37;
+  --gold-deep:     #9E7F1E;
+  --gold-bg:       #FFF8E7;
+  --gold-light:    #FFF5DB;
+  --gold-hover:    #F5C744;
+
+  --navy:          #0D1F30;
+  --navy-mid:      #1A3A5C;
+  --navy-card:     #0E1B30;
+  --navy-surface:  #091528;
+
+  --crimson:       #800020;
+  --crimson-deep:  #4A000D;
+  --crimson-light: #A31236;
+
+  --white:         #FFFFFF;
+  --off-white:     #FAF8F3;
+  --parchment:     #F8F6F0;
+  --border-light:  #E6DFD1;
+  --text-dark:     #2C1D07;
+  --text-brown:    #3D2200;
+  --text-amber:    #855B09;
+  --text-muted:    #6B7280;
+
+  /* Fonts */
+  --font-sans:     'Inter', system-ui, sans-serif;
+  --font-geez:     'Noto Serif Ethiopic', 'Abyssinica SIL', serif;
+  --font-body:     'Lora', serif;
+}
+
+/* ── Reset ────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Base ─────────────────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--parchment);
+  color: var(--text-dark);
+  min-height: 100vh;
+  line-height: 1.65;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Scrollbar ────────────────────────────────────────── */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+
+/* ── Typography helpers ───────────────────────────────── */
+.font-geez { font-family: var(--font-geez); }
+
+/* ── Container ────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+}
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-hover) 0%, var(--gold) 100%);
+  color: var(--text-brown);
+  font-weight: 800;
+  font-family: var(--font-sans);
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--gold-bright);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  font-size: 0.875rem;
+  box-shadow: 0 3px 12px rgba(200,168,75,0.35);
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, #FFD700 0%, var(--gold-hover) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(200,168,75,0.45);
+}
+
+.btn-crimson {
+  background: linear-gradient(135deg, var(--crimson-light) 0%, var(--crimson) 100%);
+  color: #fff;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+.btn-crimson:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(128,0,32,0.45);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--gold);
+  border: 1.5px solid var(--gold);
+  padding: 0.65rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  font-family: var(--font-sans);
+}
+.btn-outline:hover {
+  background: rgba(200,168,75,0.12);
+  border-color: var(--gold-bright);
+  color: var(--gold-bright);
+}
+
+/* ── Badges ───────────────────────────────────────────── */
+.badge-gold {
+  background: rgba(200,168,75,0.15);
+  color: var(--gold-bright);
+  border: 1px solid rgba(200,168,75,0.5);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-sans);
+}
+.badge-crimson {
+  background: rgba(128,0,32,0.18);
+  color: #f9a8b8;
+  border: 1px solid rgba(163,18,54,0.5);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.badge-fast {
+  background: rgba(0,107,60,0.18);
+  color: #4ade80;
+  border: 1px solid rgba(0,107,60,0.4);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+}
+
+/* ── Cards ────────────────────────────────────────────── */
+/* Light card — used on white/parchment backgrounds */
+.card-light {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 1.25rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.card-light:hover {
+  border-color: var(--gold);
+  box-shadow: 0 6px 24px rgba(200,168,75,0.18);
+  transform: translateY(-2px);
+}
+
+/* Dark card — used inside hero / dark sections */
+.sacred-card {
+  background: var(--navy-card);
+  border: 1px solid rgba(200,168,75,0.35);
+  border-radius: 14px;
+  padding: 1.25rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+}
+.sacred-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), #FFD700, transparent);
+  opacity: 0.7;
+}
+.sacred-card:hover {
+  border-color: var(--gold);
+  box-shadow: 0 12px 36px rgba(200,168,75,0.2);
+  transform: translateY(-3px);
+}
+
+/* ── Grid helpers ─────────────────────────────────────── */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 1024px) { .grid-4 { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 640px)  { .grid-4 { grid-template-columns: 1fr; } }
+
+/* ── Animations ───────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.3s ease both; }
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-scaleUp { animation: scaleUp 0.25s ease both; }
+
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slideDown { animation: slideDown 0.35s ease both; }
+
+/* ── Section divider ──────────────────────────────────── */
+.gold-divider {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.5;
+}
+
+/* ── Leaflet map fix ──────────────────────────────────── */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+.leaflet-tile-pane img,
+.leaflet-tile {
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* ── Features grid — responsive ───────────────────────── */
+@media (max-width: 900px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 520px) {
+  .features-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

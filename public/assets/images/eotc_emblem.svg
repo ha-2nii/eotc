@@ -1,0 +1,201 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- Background transparent -->
+
+  <!-- ══ WREATH BASE ══════════════════════════════════════════════ -->
+  <!-- Left wreath branch -->
+  <g transform="translate(250,270)" opacity="1">
+    <!-- Left side wheat/olive stalks -->
+    <ellipse cx="-130" cy="-60" rx="18" ry="8" fill="#D4AF37" transform="rotate(-40 -130 -60)"/>
+    <ellipse cx="-148" cy="-35" rx="18" ry="8" fill="#D4AF37" transform="rotate(-50 -148 -35)"/>
+    <ellipse cx="-158" cy="-5" rx="18" ry="8" fill="#D4AF37" transform="rotate(-60 -158 -5)"/>
+    <ellipse cx="-160" cy="28" rx="18" ry="8" fill="#D4AF37" transform="rotate(-70 -160 28)"/>
+    <ellipse cx="-150" cy="58" rx="18" ry="8" fill="#D4AF37" transform="rotate(-80 -150 58)"/>
+    <ellipse cx="-130" cy="85" rx="18" ry="8" fill="#D4AF37" transform="rotate(100 -130 85)"/>
+    <!-- Left leaves -->
+    <ellipse cx="-115" cy="-80" rx="14" ry="7" fill="#2D8A2D" transform="rotate(-30 -115 -80)"/>
+    <ellipse cx="-145" cy="-20" rx="14" ry="7" fill="#2D8A2D" transform="rotate(-55 -145 -20)"/>
+    <ellipse cx="-148" cy="15" rx="14" ry="7" fill="#2D8A2D" transform="rotate(-65 -148 15)"/>
+    <ellipse cx="-138" cy="48" rx="14" ry="7" fill="#2D8A2D" transform="rotate(-80 -138 48)"/>
+    <!-- Right side wheat/olive stalks -->
+    <ellipse cx="130" cy="-60" rx="18" ry="8" fill="#D4AF37" transform="rotate(40 130 -60)"/>
+    <ellipse cx="148" cy="-35" rx="18" ry="8" fill="#D4AF37" transform="rotate(50 148 -35)"/>
+    <ellipse cx="158" cy="-5" rx="18" ry="8" fill="#D4AF37" transform="rotate(60 158 -5)"/>
+    <ellipse cx="160" cy="28" rx="18" ry="8" fill="#D4AF37" transform="rotate(70 160 28)"/>
+    <ellipse cx="150" cy="58" rx="18" ry="8" fill="#D4AF37" transform="rotate(80 150 58)"/>
+    <ellipse cx="130" cy="85" rx="18" ry="8" fill="#D4AF37" transform="rotate(-100 130 85)"/>
+    <!-- Right leaves -->
+    <ellipse cx="115" cy="-80" rx="14" ry="7" fill="#2D8A2D" transform="rotate(30 115 -80)"/>
+    <ellipse cx="145" cy="-20" rx="14" ry="7" fill="#2D8A2D" transform="rotate(55 145 -20)"/>
+    <ellipse cx="148" cy="15" rx="14" ry="7" fill="#2D8A2D" transform="rotate(65 148 15)"/>
+    <ellipse cx="138" cy="48" rx="14" ry="7" fill="#2D8A2D" transform="rotate(80 138 48)"/>
+    <!-- Left grape clusters -->
+    <circle cx="-165" cy="-80" r="8" fill="#1A0A4A"/>
+    <circle cx="-158" cy="-90" r="7" fill="#1A0A4A"/>
+    <circle cx="-172" cy="-70" r="7" fill="#1A0A4A"/>
+    <circle cx="-165" cy="-100" r="6" fill="#2A1060"/>
+    <circle cx="-172" cy="-92" r="6" fill="#2A1060"/>
+    <!-- Right grape clusters -->
+    <circle cx="165" cy="-80" r="8" fill="#1A0A4A"/>
+    <circle cx="158" cy="-90" r="7" fill="#1A0A4A"/>
+    <circle cx="172" cy="-70" r="7" fill="#1A0A4A"/>
+    <circle cx="165" cy="-100" r="6" fill="#2A1060"/>
+    <circle cx="172" cy="-92" r="6" fill="#2A1060"/>
+    <!-- Lower left grape cluster -->
+    <circle cx="-120" cy="95" r="8" fill="#1A0A4A"/>
+    <circle cx="-128" cy="86" r="7" fill="#1A0A4A"/>
+    <circle cx="-112" cy="86" r="7" fill="#1A0A4A"/>
+    <circle cx="-120" cy="77" r="6" fill="#2A1060"/>
+    <!-- Lower right grape cluster -->
+    <circle cx="120" cy="95" r="8" fill="#1A0A4A"/>
+    <circle cx="128" cy="86" r="7" fill="#1A0A4A"/>
+    <circle cx="112" cy="86" r="7" fill="#1A0A4A"/>
+    <circle cx="120" cy="77" r="6" fill="#2A1060"/>
+  </g>
+
+  <!-- ══ WREATH STEMS (curved paths) ══════════════════════════ -->
+  <path d="M250 460 Q120 480 80 380 Q40 270 100 170 Q150 80 200 60" 
+        fill="none" stroke="#8B6914" stroke-width="6"/>
+  <path d="M250 460 Q380 480 420 380 Q460 270 400 170 Q350 80 300 60"
+        fill="none" stroke="#8B6914" stroke-width="6"/>
+
+  <!-- ══ RIBBON AT BOTTOM ══════════════════════════════════════ -->
+  <path d="M190 455 Q220 445 250 460 Q280 445 310 455 L310 470 Q280 480 250 475 Q220 480 190 470 Z"
+        fill="#B8860B"/>
+  <path d="M200 470 Q225 480 250 475 Q275 480 300 470 L295 458 Q270 465 250 460 Q230 465 205 458 Z"
+        fill="#8B6014"/>
+  <!-- Ribbon tails -->
+  <path d="M190 460 L160 480 L170 495 L210 472 Z" fill="#CC7700"/>
+  <path d="M310 460 L340 480 L330 495 L290 472 Z" fill="#CC7700"/>
+
+  <!-- ══ BLACK SHIELD / BODY ════════════════════════════════════ -->
+  <path d="M165 180 Q155 200 155 250 Q155 350 250 420 Q345 350 345 250 Q345 200 335 180 Z"
+        fill="#0A0A0A"/>
+  <!-- Shield border gold -->
+  <path d="M165 180 Q155 200 155 250 Q155 350 250 420 Q345 350 345 250 Q345 200 335 180 Z"
+        fill="none" stroke="#D4AF37" stroke-width="2.5"/>
+
+  <!-- ══ OPEN BIBLE ════════════════════════════════════════════ -->
+  <!-- Bible stand/base -->
+  <ellipse cx="250" cy="385" rx="45" ry="12" fill="#8B2500"/>
+  <path d="M220 380 Q250 390 280 380 L285 370 Q250 382 215 370 Z" fill="#B03000"/>
+  <!-- Bible book body -->
+  <path d="M190 330 Q210 320 250 322 Q290 320 310 330 L310 368 Q290 362 250 364 Q210 362 190 368 Z"
+        fill="#F5E030"/>
+  <!-- Bible spine -->
+  <line x1="250" y1="321" x2="250" y2="365" stroke="#8B6914" stroke-width="3"/>
+  <!-- Bible left page lines (Ge'ez text simulation) -->
+  <text x="210" y="340" font-size="11" font-family="serif" fill="#1A0A00" font-weight="bold">ቅዱስ ንፁዕ፡</text>
+  <text x="208" y="355" font-size="11" font-family="serif" fill="#1A0A00" font-weight="bold">ወንጌል ሞት፡፡</text>
+  <!-- Bible border -->
+  <path d="M190 330 Q210 320 250 322 Q290 320 310 330 L310 368 Q290 362 250 364 Q210 362 190 368 Z"
+        fill="none" stroke="#8B6914" stroke-width="2"/>
+
+  <!-- ══ LEFT ANGEL ════════════════════════════════════════════ -->
+  <!-- Left angel body/robe -->
+  <path d="M175 200 Q170 240 168 310 Q175 340 195 360 Q210 320 205 280 Q200 240 195 200 Z"
+        fill="#FFFFFF"/>
+  <!-- Left angel blue sash -->
+  <path d="M178 220 Q182 260 180 300 Q185 295 190 300 Q188 260 192 220 Z"
+        fill="#1A5FA0"/>
+  <!-- Left angel head -->
+  <circle cx="185" cy="188" r="22" fill="#F5D5A0"/>
+  <!-- Left angel halo -->
+  <circle cx="185" cy="188" r="28" fill="none" stroke="#D4AF37" stroke-width="3"/>
+  <!-- Left angel hair -->
+  <path d="M165 185 Q175 165 195 165 Q205 165 200 175 Q190 170 180 175 Q170 180 168 190 Z"
+        fill="#8B5E1E"/>
+  <!-- Left angel wing -->
+  <path d="M160 210 Q130 180 120 160 Q140 170 155 190 Q145 165 148 145 Q165 165 160 190 Q155 170 162 155 Q172 175 165 205 Z"
+        fill="#D4AF37"/>
+  <path d="M158 210 Q128 182 118 162" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <path d="M155 190 Q125 175 115 158" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <!-- Left angel arm holding staff -->
+  <path d="M195 215 Q220 235 240 255" fill="none" stroke="#F5D5A0" stroke-width="9" stroke-linecap="round"/>
+  <!-- Left angel palm branch -->
+  <path d="M170 240 Q155 220 148 200 Q160 215 165 230 Q155 212 162 195" 
+        fill="none" stroke="#2D8A2D" stroke-width="4"/>
+  <ellipse cx="155" cy="215" rx="8" ry="4" fill="#3DAD3D" transform="rotate(-30 155 215)"/>
+  <ellipse cx="162" cy="205" rx="8" ry="4" fill="#3DAD3D" transform="rotate(-20 162 205)"/>
+  <ellipse cx="150" cy="225" rx="8" ry="4" fill="#3DAD3D" transform="rotate(-40 150 225)"/>
+
+  <!-- ══ RIGHT ANGEL ════════════════════════════════════════════ -->
+  <!-- Right angel body/robe -->
+  <path d="M325 200 Q330 240 332 310 Q325 340 305 360 Q290 320 295 280 Q300 240 305 200 Z"
+        fill="#FFFFFF"/>
+  <!-- Right angel blue sash -->
+  <path d="M322 220 Q318 260 320 300 Q315 295 310 300 Q312 260 308 220 Z"
+        fill="#1A5FA0"/>
+  <!-- Right angel head -->
+  <circle cx="315" cy="188" r="22" fill="#F5D5A0"/>
+  <!-- Right angel halo -->
+  <circle cx="315" cy="188" r="28" fill="none" stroke="#D4AF37" stroke-width="3"/>
+  <!-- Right angel hair -->
+  <path d="M335 185 Q325 165 305 165 Q295 165 300 175 Q310 170 320 175 Q330 180 332 190 Z"
+        fill="#8B5E1E"/>
+  <!-- Right angel wing -->
+  <path d="M340 210 Q370 180 380 160 Q360 170 345 190 Q355 165 352 145 Q335 165 340 190 Q345 170 338 155 Q328 175 335 205 Z"
+        fill="#D4AF37"/>
+  <path d="M342 210 Q372 182 382 162" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <path d="M345 190 Q375 175 385 158" fill="none" stroke="#B8860B" stroke-width="1.5"/>
+  <!-- Right angel arm holding staff -->
+  <path d="M305 215 Q280 235 260 255" fill="none" stroke="#F5D5A0" stroke-width="9" stroke-linecap="round"/>
+  <!-- Right angel palm branch -->
+  <path d="M330 240 Q345 220 352 200 Q340 215 335 230 Q345 212 338 195" 
+        fill="none" stroke="#2D8A2D" stroke-width="4"/>
+  <ellipse cx="345" cy="215" rx="8" ry="4" fill="#3DAD3D" transform="rotate(30 345 215)"/>
+  <ellipse cx="338" cy="205" rx="8" ry="4" fill="#3DAD3D" transform="rotate(20 338 205)"/>
+  <ellipse cx="350" cy="225" rx="8" ry="4" fill="#3DAD3D" transform="rotate(40 350 225)"/>
+
+  <!-- ══ PATRIARCHAL STAFF ════════════════════════════════════ -->
+  <!-- Staff pole -->
+  <rect x="246" y="150" width="8" height="200" rx="4" fill="#D4AF37"/>
+  <!-- Cross at top of staff -->
+  <rect x="238" y="140" width="24" height="6" rx="3" fill="#D4AF37"/>
+  <rect x="244" y="128" width="12" height="20" rx="2" fill="#D4AF37"/>
+  <!-- Staff serpent decoration -->
+  <path d="M242 210 Q235 220 242 230 Q249 240 242 250 Q235 260 242 270"
+        fill="none" stroke="#B8860B" stroke-width="4"/>
+  <path d="M258 210 Q265 220 258 230 Q251 240 258 250 Q265 260 258 270"
+        fill="none" stroke="#B8860B" stroke-width="4"/>
+
+  <!-- ══ PATRIARCHAL CROWN (Aklil) ══════════════════════════ -->
+  <!-- Crown base band -->
+  <path d="M210 140 Q250 120 290 140 L292 168 Q250 155 208 168 Z" fill="#D4AF37"/>
+  <!-- Crown red decorative band -->
+  <path d="M212 150 Q250 133 288 150 L288 160 Q250 145 212 160 Z" fill="#CC0000"/>
+  <!-- Crown points/spikes -->
+  <path d="M220 140 L215 110 L230 135 Z" fill="#D4AF37"/>
+  <path d="M240 132 L238 100 L252 100 L250 132 Z" fill="#D4AF37"/>
+  <path d="M265 135 L270 108 L280 140 Z" fill="#D4AF37"/>
+  <!-- Crown decorative gems -->
+  <circle cx="250" cy="125" r="8" fill="#006600"/>
+  <circle cx="232" cy="130" r="5" fill="#CC0000"/>
+  <circle cx="268" cy="130" r="5" fill="#0000AA"/>
+  <!-- Crown cross on top -->
+  <rect x="247" y="87" width="6" height="18" rx="2" fill="#D4AF37"/>
+  <rect x="241" y="92" width="18" height="5" rx="2" fill="#D4AF37"/>
+  <!-- Crown bottom decorations -->
+  <path d="M210 165 Q250 155 290 165" fill="none" stroke="#8B6914" stroke-width="2"/>
+  <!-- Crown pearls/jewels at base -->
+  <circle cx="225" cy="163" r="4" fill="#F5F0E0"/>
+  <circle cx="238" cy="160" r="4" fill="#F5F0E0"/>
+  <circle cx="250" cy="158" r="4" fill="#F5F0E0"/>
+  <circle cx="262" cy="160" r="4" fill="#F5F0E0"/>
+  <circle cx="275" cy="163" r="4" fill="#F5F0E0"/>
+
+  <!-- ══ MORE WREATH DETAIL LEAVES ═══════════════════════════ -->
+  <!-- Additional upper wheat ears -->
+  <ellipse cx="175" cy="115" rx="16" ry="7" fill="#D4AF37" transform="rotate(-60 175 115)"/>
+  <ellipse cx="162" cy="130" rx="16" ry="7" fill="#D4AF37" transform="rotate(-70 162 130)"/>
+  <ellipse cx="325" cy="115" rx="16" ry="7" fill="#D4AF37" transform="rotate(60 325 115)"/>
+  <ellipse cx="338" cy="130" rx="16" ry="7" fill="#D4AF37" transform="rotate(70 338 130)"/>
+
+  <!-- Top grape clusters (small) -->
+  <circle cx="175" cy="100" r="7" fill="#1A0A4A"/>
+  <circle cx="167" cy="110" r="6" fill="#1A0A4A"/>
+  <circle cx="183" cy="108" r="6" fill="#2A1060"/>
+  <circle cx="325" cy="100" r="7" fill="#1A0A4A"/>
+  <circle cx="333" cy="110" r="6" fill="#1A0A4A"/>
+  <circle cx="317" cy="108" r="6" fill="#2A1060"/>
+
+</svg>
