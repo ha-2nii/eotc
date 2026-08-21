@@ -1,21 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../layout/LanguageContext';
 import {
-  Church,
-  Search,
   Heart,
-  Bookmark,
   ChevronRight,
+  ChevronLeft,
   MapPin,
-  Send,
-  Camera,
-  Sun,
-  Sparkles,
-  ArrowRight,
+  Church,
+  Calendar,
+  Mountain,
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 export interface SanctuaryHeritage {
   id: string;
@@ -24,19 +17,30 @@ export interface SanctuaryHeritage {
   regionEn: string;
   regionAm: string;
   country: string;
-  flag: string;
   categoryEn: string;
   categoryAm: string;
   descriptionEn: string;
   descriptionAm: string;
-  weatherOrAltitudeEn: string;
-  weatherOrAltitudeAm: string;
+  altitudeEn: string;
+  altitudeAm: string;
+  altitudeSubEn: string;
+  altitudeSubAm: string;
   image: string;
   specificSiteEn: string;
   specificSiteAm: string;
   addressEn: string;
   addressAm: string;
-  rightActionType: 'bookmark' | 'camera' | 'heritage' | 'parish';
+  foundedEn: string;
+  foundedAm: string;
+  foundedSubEn: string;
+  foundedSubAm: string;
+  featureEn: string;
+  featureAm: string;
+  featureSubEn: string;
+  featureSubAm: string;
+  rating: number;
+  subtitleEn: string;
+  subtitleAm: string;
 }
 
 const SANCTUARIES: SanctuaryHeritage[] = [
@@ -44,137 +48,191 @@ const SANCTUARIES: SanctuaryHeritage[] = [
     id: 'lalibela',
     nameEn: 'Lalibela',
     nameAm: 'ላሊበላ',
-    regionEn: 'Lasta, Wollo',
-    regionAm: 'ላስታ፣ ወሎ',
+    regionEn: 'Lasta, Wollo, Ethiopia',
+    regionAm: 'ላስታ፣ ወሎ፣ ኢትዮጵያ',
     country: 'Ethiopia',
-    flag: '🇪🇹',
     categoryEn: 'UNESCO World Heritage',
-    categoryAm: 'የዓለም ቅርስ ገዳም',
-    descriptionEn:
-      'Home to the iconic 12th-century monolithic rock-hewn cross churches carved from solid volcanic rock, an ancient holy wonder of living Christian devotion and architectural marvel.',
-    descriptionAm:
-      'በ12ኛው መቶ ክፍለ ዘመን በቅዱስ ላሊበላ ከአንድ ወጥ አለት የተቀረጹ አስደናቂ ፲፩ አብያተ ክርስቲያናት የሚገኙበት ቅዱስ ስፍራ።',
-    weatherOrAltitudeEn: '2,630m Alt • High Plateau',
-    weatherOrAltitudeAm: '፪ሺ፮፻፴ ሜትር ከፍታ • ጸሐያማ',
-    image: '/assets/images/lalibela_monastery.png',
+    categoryAm: 'የዓለም ቅርስ',
+    descriptionEn: 'Home to the iconic 12th-century rock-hewn churches carved from solid volcanic rock, an ancient wonder of faith and devotion.',
+    descriptionAm: 'በ12ኛው መቶ ክፍለ ዘመን ከአንድ ወጥ አለት የተቀረጹ ፲፩ አብያተ ክርስቲያናት ያሉበት ቅዱስ ስፍራ።',
+    altitudeEn: '2,630m Altitude',
+    altitudeAm: '፪ሺ፮፻፴ ሜትር ከፍታ',
+    altitudeSubEn: 'Highland plateau',
+    altitudeSubAm: 'ከፍተኛ ቦታ',
+    image: '/assets/images/lalibela_sunset.jpg',
     specificSiteEn: 'Bete Giyorgis (St. George)',
     specificSiteAm: 'ቤተ ጊዮርጊስ (ቅዱስ ጊዮርጊስ)',
-    addressEn: 'Rohas Sacred Monolithic Complex, Lalibela',
-    addressAm: 'ሮሃ ቅዱስ የአለት ሕንፃዎች ውስብስብ፣ ላሊበላ',
-    rightActionType: 'bookmark',
+    addressEn: 'Lasta, Wollo',
+    addressAm: 'ላስታ፣ ወሎ',
+    foundedEn: '12th Century',
+    foundedAm: '12ኛ ክፍለ ዘመን',
+    foundedSubEn: 'Ancient heritage site',
+    foundedSubAm: 'ጥንታዊ ቅርስ',
+    featureEn: '11 Monolithic Churches',
+    featureAm: '፲፩ አብያተ ክርስቲያናት',
+    featureSubEn: 'Carved from solid rock',
+    featureSubAm: 'ከአለት የተቀረጹ',
+    rating: 4.9,
+    subtitleEn: 'From Wollo, Ethiopia',
+    subtitleAm: 'ላስታ፣ ወሎ',
   },
   {
     id: 'trinity',
-    nameEn: 'Addis Ababa',
-    nameAm: 'አዲስ አበባ',
-    regionEn: 'Arat Kilo, Shewa',
-    regionAm: 'አራት ኪሎ፣ ሸዋ',
+    nameEn: 'Holy Trinity',
+    nameAm: 'ቅድስት ሥላሴ',
+    regionEn: 'Arat Kilo, Addis Ababa',
+    regionAm: 'አራት ኪሎ፣ አዲስ አበባ',
     country: 'Ethiopia',
-    flag: '🇪🇹',
     categoryEn: 'Patriarchal Cathedral',
     categoryAm: 'መንበረ ፓትርያርክ ካቴድራል',
-    descriptionEn:
-      'The sacred supreme seat of the Ethiopian Orthodox Tewahedo Church Patriarchate, celebrated for its imperial architecture, majestic stained glass, and historic spiritual legacy.',
-    descriptionAm:
-      'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ መንበረ ፓትርያርክ ማዕከል፣ በታላቅ ታሪካዊና መንፈሳዊ ቅርሱ እንዲሁም ልዩ የሕንፃ ጥበቡ የሚታወቀው ታላቁ ካቴድራል',
-    weatherOrAltitudeEn: '2,355m Alt • Holy See',
-    weatherOrAltitudeAm: '፪ሺ፫፻፶፭ ሜትር ከፍታ • መንበረ ጸባዖት',
+    descriptionEn: 'The sacred seat of the EOTC Patriarchate, revered for its majestic imperial architecture, historic stained glass artistry, and rich spiritual heritage as the heart of Orthodox worship.',
+    descriptionAm: 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን መንበረ ፓትርያርክ ካቴድራል፤ በንጉሠ ነገሥት ዘመን የተገነባ፣ በታላላቅ ባለቀለም መስታወቶች የተዋበና ታሪካዊ ቅርሶችን የያዘ ቅዱስ ስፍራ ነው።',
+    altitudeEn: '2,355m Altitude',
+    altitudeAm: '፪ሺ፫፻፶፭ ሜትር ከፍታ',
+    altitudeSubEn: 'Central Highlands',
+    altitudeSubAm: 'መካከለኛ ከፍታ',
     image: '/assets/images/hero_church.jpg',
     specificSiteEn: 'Holy Trinity Cathedral',
-    specificSiteAm: 'መንበረ ፓትርያርክ ቅድስት ሥላሴ ካቴድራል',
-    addressEn: 'Arat Kilo, Addis Ababa Diocese',
-    addressAm: 'አራት ኪሎ፣ አዲስ አበባ ሀገረ ስብከት',
-    rightActionType: 'heritage',
+    specificSiteAm: 'ቅድስት ሥላሴ ካቴድራል',
+    addressEn: 'Arat Kilo, Shewa',
+    addressAm: 'አራት ኪሎ፣ ሸዋ',
+    foundedEn: '1941 A.D.',
+    foundedAm: '1933 ዓ.ም.',
+    foundedSubEn: 'Imperial Cathedral',
+    foundedSubAm: 'የንጉሠ ነገሥት ካቴድራል',
+    featureEn: 'Patriarchal Seat',
+    featureAm: 'መንበረ ፓትርያርክ',
+    featureSubEn: 'Imperial Mausoleum',
+    featureSubAm: 'የታሪክ ማረፊያ',
+    rating: 4.8,
+    subtitleEn: 'Addis Ababa, Ethiopia',
+    subtitleAm: 'አዲስ አበባ፣ ኢትዮጵያ',
   },
   {
     id: 'axum',
     nameEn: 'Axum Tsion',
     nameAm: 'አክሱም ጽዮን',
-    regionEn: 'Axum, Tigray',
-    regionAm: 'አክሱም፣ ትግራይ',
+    regionEn: 'Axum, Tigray, Ethiopia',
+    regionAm: 'አክሱም፣ ትግራይ፣ ኢትዮጵያ',
     country: 'Ethiopia',
-    flag: '🇪🇹',
     categoryEn: 'Ark of the Covenant Seat',
     categoryAm: 'የታቦተ ጽዮን ማደሪያ',
-    descriptionEn:
-      'The holiest mother sanctuary of Ethiopian Christianity founded in the 4th century by King Ezana, permanent sanctuary of the sacred Tabote Tsion (Ark of the Covenant).',
-    descriptionAm:
-      'በ4ኛው መቶ ክፍለ ዘመን የተመሠረተችው የኢትዮጵያ አብያተ ክርስቲያናት እናትና የታቦተ ጽዮን ዘላለማዊ ማደሪያ ቅድስት ሥፍራ።',
-    weatherOrAltitudeEn: '2,131m Alt • Ancient Holy City',
-    weatherOrAltitudeAm: '፪ሺ፩፻፴፩ ሜትር • ጥንታዊቷ ቅድስት ከተማ',
-    image: 'https://images.unsplash.com/photo-1548625361-1858548972b2?auto=format&fit=crop&q=80&w=1200',
+    descriptionEn: 'The holiest sanctuary of Ethiopian Christianity, globally celebrated as the sacred home of the Ark of the Covenant and the ancient cradle of the nation’s apostolic faith and liturgical traditions.',
+    descriptionAm: 'የኢትዮጵያ ክርስትና ዋነኛና ቅዱስ ማዕከል፤ ታቦተ ጽዮን በክብር የምታድርበት፣ የቀደምት ነገሥታት ታሪክና የጥንታዊ ሥልጣኔ ቅርስ የተጠበቀበት የሐዋርያዊ እምነት ምንጭ።',
+    altitudeEn: '2,131m Altitude',
+    altitudeAm: '፪ሺ፩፻፴፩ ሜትር ከፍታ',
+    altitudeSubEn: 'Historic Kingdom',
+    altitudeSubAm: 'ጥንታዊ መንግሥት',
+    image: '/assets/images/axum_tsion.jpg',
     specificSiteEn: 'St. Mary of Tsion Cathedral',
     specificSiteAm: 'ርእሰ አድባራት ቅድስት ማርያም ጽዮን',
-    addressEn: 'Axum Sacred Precincts, Tigray',
-    addressAm: 'አክሱም ቅዱስ ቅጥር ግቢ፣ ትግራይ',
-    rightActionType: 'camera',
+    addressEn: 'Axum, Tigray',
+    addressAm: 'አክሱም፣ ትግራይ',
+    foundedEn: '4th Century',
+    foundedAm: '4ኛ ክፍለ ዘመን',
+    foundedSubEn: 'Ezana Dynasty',
+    foundedSubAm: 'የኢዛና ዘመን',
+    featureEn: 'Ark of Covenant',
+    featureAm: 'ጽላተ ኪዳን ማደሪያ',
+    featureSubEn: 'Oldest Sanctuary',
+    featureSubAm: 'ቀዳሚ መቅደስ',
+    rating: 4.9,
+    subtitleEn: 'Axum, Tigray',
+    subtitleAm: 'አክሱም፣ ትግራይ',
   },
   {
     id: 'debre-damo',
     nameEn: 'Debre Damo',
     nameAm: 'ደብረ ዳሞ',
-    regionEn: 'Adigrat, Tigray',
-    regionAm: 'ዓዲግራት፣ ትግራይ',
+    regionEn: 'Adigrat, Tigray, Ethiopia',
+    regionAm: 'ዓዲግራት፣ ትግራይ፣ ኢትዮጵያ',
     country: 'Ethiopia',
-    flag: '🇪🇹',
-    categoryEn: '6th-Century Clifftop Monastery',
+    categoryEn: '6th-Century Clifftop Sanctuary',
     categoryAm: 'የ፮ኛው መቶ ክፍለ ዘመን ገዳም',
-    descriptionEn:
-      'Founded in the 6th century by Abuna Aregawi of the Nine Saints atop a sheer perpendicular mesa cliff, accessible exclusively via a 15-meter climbing leather rope.',
-    descriptionAm:
-      'በ6ኛው መቶ ክፍለ ዘመን በተሰዓቱ ቅዱሳን አንዱ በሆኑት በአቡነ አረጋዊ የተመሠረተና በ15 ሜትር የቆዳ ገመድ ብቻ የሚወጣበት ታላቅ ገዳም።',
-    weatherOrAltitudeEn: '2,211m Alt • Cliff Sanctuary',
-    weatherOrAltitudeAm: '፪ሺ፪፻፲፩ ሜትር • የአምባ ገዳም',
-    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=1200',
-    specificSiteEn: 'Abuna Aregawi Sanctuary',
+    descriptionEn: 'Founded by Abuna Aregawi atop an imposing mountain mesa in the 6th century, famous for its ancient stone monastery accessible only by climbing a 15-meter traditional leather rope.',
+    descriptionAm: 'በ፮ኛው መቶ ክፍለ ዘመን በአቡነ አረጋዊ የተመሠረተ ጥንታዊ የአምባ ላይ ገዳም፤ በ15 ሜትር ባህላዊ የማዕበል ገመድ ብቻ ወደ ላይ የሚወጣበት ድንቅ ታሪካዊና መንፈሳዊ ማረፊያ።',
+    altitudeEn: '2,211m Altitude',
+    altitudeAm: '፪ሺ፪፻፲፩ ሜትር ከፍታ',
+    altitudeSubEn: 'Sheer Mountain Mesa',
+    altitudeSubAm: 'የአምባ ከፍታ',
+    image: '/assets/images/debre_damo.jpg',
+    specificSiteEn: 'Abuna Aregawi Monastery',
     specificSiteAm: 'ገዳመ አቡነ አረጋዊ',
-    addressEn: 'Debre Damo Mountain Peak, Tigray',
-    addressAm: 'ደብረ ዳሞ አምባ፣ ትግራይ',
-    rightActionType: 'parish',
+    addressEn: 'Adigrat, Tigray',
+    addressAm: 'ዓዲግራት፣ ትግራይ',
+    foundedEn: '6th Century',
+    foundedAm: '6ኛ ክፍለ ዘመን',
+    foundedSubEn: 'Nine Saints Era',
+    foundedSubAm: 'የተሰዓቱ ቅዱሳን ዘመን',
+    featureEn: 'Clifftop Monastery',
+    featureAm: 'የአምባ ገዳም',
+    featureSubEn: 'Accessible by rope',
+    featureSubAm: 'በማዕበል ገመድ',
+    rating: 4.8,
+    subtitleEn: 'Adigrat, Tigray',
+    subtitleAm: 'ዓዲግራት፣ ትግራይ',
   },
   {
     id: 'lake-tana',
-    nameEn: 'Lake Tana Isles',
-    nameAm: 'ጣና ደሴታት',
-    regionEn: 'Bahir Dar, Gojjam',
-    regionAm: 'ባሕር ዳር፣ ጎጃም',
+    nameEn: 'Lake Tana Monasteries',
+    nameAm: 'የጣና ሐይቅ ገዳማት',
+    regionEn: 'Bahir Dar, Gojjam, Ethiopia',
+    regionAm: 'ባሕር ዳር፣ ጎጃም፣ ኢትዮጵያ',
     country: 'Ethiopia',
-    flag: '🇪🇹',
-    categoryEn: '14th-Century Island Monastery',
+    categoryEn: '14th-Century Island Sanctuary',
     categoryAm: 'የደሴት ገዳማት ማዕከል',
-    descriptionEn:
-      'Famous for ancient island monasteries nestled in tranquil tropical waters, preserving sacred royal crowns, ancient illustrated Ge’ez manuscripts, and vibrant murals.',
-    descriptionAm:
-      'በጣና ሐይቅ ደሴቶች ላይ የሚገኙ ጥንታውያን ገዳማት፣ የነገሥታት አክሊላትና ያሸበረቁ ጥንታዊ የግዕዝ ብራናዎችን ያቀፉ ቅዱሳት ስፍራዎች።',
-    weatherOrAltitudeEn: '1,788m Alt • Sacred Lake Haven',
-    weatherOrAltitudeAm: '፩ሺ፯፻፹፰ ሜትር • የሐይቅ ገዳማት',
-    image: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=80&w=1200',
-    specificSiteEn: 'Ura Kidane Mehret Monastery',
-    specificSiteAm: 'ኡራ ኪዳነ ምሕረት ገዳም',
-    addressEn: 'Zege Peninsula, Lake Tana, Bahir Dar',
-    addressAm: 'ዝጌ ባሕረ ገብ፣ ጣና ሐይቅ፣ ባሕር ዳር',
-    rightActionType: 'camera',
+    descriptionEn: 'Ancient circular island monasteries nested on the peaceful waters of Lake Tana, preserving priceless imperial crowns, holy Ge\'ez manuscripts, and vibrant centuries-old religious frescoes.',
+    descriptionAm: 'በጣና ሐይቅ ደሴቶች ላይ የተመሠረቱ ጥንታዊ ክብ ቅርጽ አብያተ ክርስቲያናት፤ የነገሥታት አክሊላትን፣ ጥንታዊ የብራና መጻሕፍትንና የቅዱሳን ሥዕላትን በክብር የያዙ ገዳማት።',
+    altitudeEn: '1,788m Altitude',
+    altitudeAm: '፩ሺ፯፻፹፰ ሜትር ከፍታ',
+    altitudeSubEn: 'Island Peninsula',
+    altitudeSubAm: 'የደሴት ከፍታ',
+    image: '/assets/images/lake_tana.jpg',
+    specificSiteEn: 'Ura Kidane Mehret',
+    specificSiteAm: 'ኡራ ኪዳነ ምሕረት',
+    addressEn: 'Bahir Dar, Gojjam',
+    addressAm: 'ባሕር ዳር፣ ጎጃም',
+    foundedEn: '14th Century',
+    foundedAm: '14ኛ ክፍለ ዘመን',
+    foundedSubEn: 'Solomonic Era',
+    foundedSubAm: 'የሰሎሞናዊ ዘመን',
+    featureEn: 'Island Monasteries',
+    featureAm: 'የደሴት ገዳማት',
+    featureSubEn: 'Historic Manuscripts',
+    featureSubAm: 'ጥንታዊ ብራናዎች',
+    rating: 4.9,
+    subtitleEn: 'Bahir Dar, Gojjam',
+    subtitleAm: 'ባሕር ዳር፣ ጎጃም',
   },
 ];
 
 export const SacredHeritageExplorer: React.FC = () => {
   const { language, setActiveView } = useLanguage();
-  const [selectedId, setSelectedId] = useState<string>(SANCTUARIES[0].id);
-  const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>(['lalibela', 'axum']);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
 
-  const currentSanctuary = SANCTUARIES.find((s) => s.id === selectedId) || SANCTUARIES[0];
+  // Auto-rotate the huge sanctuary showcase card every 3 seconds
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % SANCTUARIES.length);
+    }, 3000);
 
-  const filteredSanctuaries = SANCTUARIES.filter((s) => {
-    const q = searchQuery.toLowerCase();
-    return (
-      s.nameEn.toLowerCase().includes(q) ||
-      s.nameAm.includes(q) ||
-      s.regionEn.toLowerCase().includes(q) ||
-      s.specificSiteEn.toLowerCase().includes(q) ||
-      s.categoryEn.toLowerCase().includes(q)
-    );
-  });
+    return () => clearInterval(timer);
+  }, [isPaused]);
+
+  const currentHero = SANCTUARIES[activeIndex];
+
+  const handlePrev = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveIndex((prev) => (prev > 0 ? prev - 1 : SANCTUARIES.length - 1));
+  };
+
+  const handleNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setActiveIndex((prev) => (prev + 1) % SANCTUARIES.length);
+  };
 
   const toggleFavorite = (id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -182,258 +240,363 @@ export const SacredHeritageExplorer: React.FC = () => {
   };
 
   return (
-    <section className="w-full bg-gradient-to-b from-[#0c0d12] via-[#14151a] to-[#0c0d12] text-white py-14 sm:py-20 px-4 sm:px-8 lg:px-12 xl:px-16 relative overflow-hidden border-y border-white/10 shadow-2xl">
-      {/* Subtle Ambient Gold / Amber Glow Effects */}
-      <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[#C8A84B]/12 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-10 w-[550px] h-[550px] bg-[#c27852]/12 rounded-full blur-[140px] pointer-events-none" />
+    <section style={{
+      width: '100%',
+      background: 'var(--parchment, #FDFBF7)',
+      padding: '40px 0 64px',
+      fontFamily: 'var(--font-sans)',
+      overflowX: 'hidden',
+    }}>
+      <div className="container" style={{
+        maxWidth: '1480px',
+        margin: '0 auto',
+        paddingLeft: 'clamp(20px, 4vw, 64px)',
+        paddingRight: 'clamp(20px, 4vw, 64px)',
+      }}>
 
-      <div className="w-full max-w-[1700px] mx-auto space-y-8 lg:space-y-10 relative z-10">
-        {/* ── Section Header Row ───────────────────────────────── */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
-          {/* Title & Eyebrow */}
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 text-[#C8A84B] font-extrabold text-xs uppercase tracking-widest bg-[#C8A84B]/10 px-3.5 py-1.5 rounded-full border border-[#C8A84B]/30">
-              <Church className="w-4 h-4 text-[#C8A84B]" />
-              <span>{language === 'en' ? 'Sacred Heritage Explorer' : 'የኢትዮጵያ ቅዱሳት መካናት ጉብኝት'}</span>
-            </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white font-geez tracking-tight">
-              {language === 'en' ? 'Featured Historical Churches' : 'ታዋቂና ታሪካዊ አብያተ ክርስቲያናት'}
-            </h2>
-            <p className="text-sm sm:text-base text-stone-300 font-serif max-w-3xl">
-              {language === 'en'
-                ? 'Explore the holy seats and monolithic sanctuaries of the ancient Orthodox tradition'
-                : 'የጥንታዊቷን ኦርቶዶክሳዊት ቤተ ክርስቲያን ታሪካዊ መንበሮችና ቅዱሳት መካናትን ይጎብኙ'}
-            </p>
-          </div>
-
-          {/* Search Bar & Browse All Parishes CTA */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
-            <div className="relative min-w-[280px] sm:min-w-[360px]">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-              <Input
-                type="text"
-                placeholder={
-                  language === 'en'
-                    ? 'Search sanctuaries, rock churches...'
-                    : 'አብያተ ክርስቲያናት፣ ገዳማትን ይፈልጉ...'
-                }
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-white/[0.08] hover:bg-white/[0.12] focus:bg-white/[0.15] border-white/15 focus-visible:border-[#C8A84B] rounded-full text-xs sm:text-sm text-white placeholder:text-stone-400 transition-colors shadow-inner"
-              />
-            </div>
-
-            <Button
-              onClick={() => setActiveView('find-a-church')}
-              className="bg-gradient-to-r from-[#C8A84B] to-[#9E7F1E] hover:from-[#FFD700] hover:to-[#C8A84B] text-[#070F1E] font-bold text-xs sm:text-sm rounded-full px-6 py-2.5 shadow-lg transition-all"
-            >
-              <span>{language === 'en' ? 'Browse All Parishes' : 'ሁሉንም አብያተ ክርስቲያናት ይመልከቱ'}</span>
-              <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* ── Main Section Grid Layout (Hero 7 Cols, List 5 Cols) ──── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-stretch">
-          
-          {/* ── Left Big Featured Hero Card (7 Cols) ───────────── */}
-          <div className="lg:col-span-7 relative flex flex-col justify-between rounded-[28px] sm:rounded-[36px] overflow-hidden min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] xl:min-h-[680px] shadow-2xl border border-white/15 group">
-            
-            {/* Background High-Res Image with Smooth Zoom */}
+        {/* ─── TOP HERO DESTINATION (ENLARGED FULL ROTATING SHOWCASE) ─── */}
+        <div
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          style={{
+            position: 'relative',
+            minHeight: 'clamp(560px, 65vh, 720px)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            transition: 'all 0.5s ease',
+          }}
+        >
+          {/* Background Image on Right with Smooth Fade into Left */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            zIndex: 0,
+            pointerEvents: 'none',
+            borderRadius: '28px',
+            overflow: 'hidden',
+          }}>
             <img
-              src={currentSanctuary.image}
-              alt={currentSanctuary.nameEn}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+              key={currentHero.id}
+              src={currentHero.image}
+              alt={currentHero.nameEn}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'right center',
+                transition: 'opacity 0.7s ease, transform 0.9s ease',
+              }}
             />
+            {/* Smooth gradient overlay from left (parchment) to right (revealing picture) */}
+            <div style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'linear-gradient(to right, #FDFBF7 0%, #FDFBF7 35%, rgba(253,251,247,0.92) 48%, rgba(253,251,247,0.40) 65%, rgba(253,251,247,0.02) 82%, rgba(253,251,247,0) 100%)',
+            }} />
+          </div>
 
-            {/* Dark Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/30 pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-transparent to-transparent pointer-events-none" />
-
-            {/* Top Details Over Image */}
-            <div className="relative z-10 p-5 sm:p-7 space-y-3">
-              {/* Category Badge */}
-              <Badge className="bg-black/55 backdrop-blur-md border border-white/20 text-[#f4e07b] text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3.5 py-1 rounded-full">
-                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-[#C8A84B]" />
-                {language === 'en' ? currentSanctuary.categoryEn : currentSanctuary.categoryAm}
-              </Badge>
-
-              {/* Title & Region */}
-              <div>
-                <h1 className="text-3xl sm:text-5xl font-black font-geez tracking-tight text-white drop-shadow-lg leading-none">
-                  {language === 'en' ? currentSanctuary.nameEn : currentSanctuary.nameAm}
-                </h1>
-                <div className="flex items-center gap-2 text-stone-200 text-sm sm:text-base font-semibold mt-2 drop-shadow">
-                  <span>
-                    {language === 'en' ? currentSanctuary.regionEn : currentSanctuary.regionAm}, {currentSanctuary.country}
-                  </span>
-                  <span>{currentSanctuary.flag}</span>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-xs sm:text-sm text-stone-200/90 leading-relaxed font-serif max-w-lg drop-shadow line-clamp-3 sm:line-clamp-4">
-                {language === 'en' ? currentSanctuary.descriptionEn : currentSanctuary.descriptionAm}
-              </p>
-
-              {/* Altitude / Weather Badge */}
-              <div className="inline-flex items-center gap-2 bg-black/50 backdrop-blur-md border border-white/15 px-3 py-1 rounded-xl text-stone-200 text-xs font-medium">
-                <Sun className="w-3.5 h-3.5 text-amber-400" />
-                <span>
-                  {language === 'en' ? currentSanctuary.weatherOrAltitudeEn : currentSanctuary.weatherOrAltitudeAm}
-                </span>
-              </div>
+          {/* Top/Left Content Area with Fade Animation */}
+          <div
+            key={`content-${currentHero.id}`}
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              padding: '24px 0 16px',
+              maxWidth: '680px',
+            }}
+          >
+            {/* Category Text (Clean typography with Gold Cross/Church icon) */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontSize: '13px',
+              fontWeight: 800,
+              color: '#B8860B',
+              textTransform: 'uppercase',
+              letterSpacing: '0.14em',
+              marginBottom: '16px',
+            }}>
+              <Church style={{ width: '16px', height: '16px', color: '#B8860B' }} />
+              <span>{language === 'en' ? currentHero.categoryEn : currentHero.categoryAm}</span>
             </div>
 
-            {/* Bottom Floating Frosted Glass Action Card Overlay */}
-            <div className="relative z-10 p-3 sm:p-5 m-3 sm:m-4 bg-[#14151a]/85 backdrop-blur-xl border border-white/15 rounded-2xl sm:rounded-3xl flex items-center justify-between gap-3 shadow-2xl">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#c27852]/20 border border-[#c27852]/40 flex items-center justify-center text-[#f4e07b] shrink-0">
-                  <MapPin className="w-5 h-5 text-[#C8A84B]" />
-                </div>
-                <div className="min-w-0 space-y-0.5">
-                  <h4 className="text-xs sm:text-sm font-bold text-white font-geez truncate">
-                    {language === 'en' ? currentSanctuary.specificSiteEn : currentSanctuary.specificSiteAm}
-                  </h4>
-                  <p className="text-[11px] text-stone-400 truncate">
-                    {language === 'en' ? currentSanctuary.addressEn : currentSanctuary.addressAm}
-                  </p>
-                </div>
-              </div>
+            {/* Title (Enlarged and bold) */}
+            <h2 style={{
+              fontSize: 'clamp(44px, 5.5vw, 76px)',
+              fontWeight: 800,
+              color: '#1a1208',
+              lineHeight: 1.04,
+              marginBottom: '12px',
+              fontFamily: "Georgia, 'Times New Roman', serif",
+              letterSpacing: '-0.02em',
+            }}>
+              {language === 'en' ? currentHero.nameEn : currentHero.nameAm}
+            </h2>
 
-              {/* Action Buttons in Overlay */}
-              <div className="flex items-center gap-2 shrink-0">
+            {/* Region / Subtitle in warm gold */}
+            <div style={{
+              fontSize: 'clamp(16px, 1.8vw, 20px)',
+              fontWeight: 700,
+              color: '#B8860B',
+              marginBottom: '20px',
+              letterSpacing: '0.01em',
+            }}>
+              {language === 'en' ? currentHero.regionEn : currentHero.regionAm}
+            </div>
+
+            {/* Description (Spacious and readable) */}
+            <p style={{
+              fontSize: '16px',
+              color: '#554e42',
+              lineHeight: 1.7,
+              maxWidth: '520px',
+              marginBottom: '32px',
+              fontFamily: 'var(--font-body)',
+            }}>
+              {language === 'en' ? currentHero.descriptionEn : currentHero.descriptionAm}
+            </p>
+
+            {/* Action Buttons (Enlarged) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setActiveView('find-a-church')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  background: '#19241b',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '50px',
+                  padding: '16px 32px',
+                  fontSize: '15px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-sans)',
+                  boxShadow: '0 8px 22px rgba(25, 36, 27, 0.28)',
+                  transition: 'all 0.25s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#253828';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 12px 28px rgba(25, 36, 27, 0.35)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#19241b';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 8px 22px rgba(25, 36, 27, 0.28)';
+                }}
+              >
+                <MapPin style={{ width: '17px', height: '17px', color: '#D4AF37' }} />
+                <span>
+                  {language === 'en' ? `Explore ${currentHero.nameEn}` : `${currentHero.nameAm} ጎብኝ`}
+                </span>
+                <ChevronRight style={{ width: '16px', height: '16px' }} />
+              </button>
+
+              <button
+                onClick={(e) => toggleFavorite(currentHero.id, e)}
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '50%',
+                  background: '#FFFFFF',
+                  border: '1.5px solid rgba(44, 29, 7, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(0, 0, 0, 0.06)',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.08)')}
+                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                title="Save Sanctuary"
+              >
+                <Heart
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    color: favorites.includes(currentHero.id) ? '#e11d48' : '#6b6550',
+                    fill: favorites.includes(currentHero.id) ? '#e11d48' : 'none',
+                    transition: 'fill 0.2s, color 0.2s',
+                  }}
+                />
+              </button>
+
+              {/* Slide Navigation Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginLeft: '12px' }}>
                 <button
-                  onClick={(e) => toggleFavorite(currentSanctuary.id, e)}
-                  className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white/[0.08] hover:bg-white/[0.18] border border-white/10 flex items-center justify-center text-stone-300 hover:text-white transition-all active:scale-95"
-                  title="Favorite"
+                  onClick={handlePrev}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    border: '1.5px solid rgba(44, 29, 7, 0.14)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 3px 10px rgba(0,0,0,0.08)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                  aria-label="Previous destination"
                 >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      favorites.includes(currentSanctuary.id) ? 'fill-red-500 text-red-500' : ''
-                    }`}
-                  />
+                  <ChevronLeft style={{ width: '18px', height: '18px', color: '#1a1208' }} />
                 </button>
-
-                <Button
-                  onClick={() => setActiveView('find-a-church')}
-                  className="bg-gradient-to-r from-[#c27852] to-[#995532] hover:from-[#d1845c] hover:to-[#aa603b] text-white font-bold text-xs h-9 sm:h-10 px-4 sm:px-5 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-1.5"
+                <button
+                  onClick={handleNext}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    background: '#FFFFFF',
+                    border: '1.5px solid rgba(44, 29, 7, 0.14)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    boxShadow: '0 3px 10px rgba(0,0,0,0.08)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                  aria-label="Next destination"
                 >
-                  <span>{language === 'en' ? 'Explore' : 'ጎብኝ'}</span>
-                  <Send className="w-3.5 h-3.5" />
-                </Button>
+                  <ChevronRight style={{ width: '18px', height: '18px', color: '#1a1208' }} />
+                </button>
               </div>
             </div>
           </div>
 
-          {/* ── Right Side Sanctuary List (5 Cols) ─────────────── */}
-          <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
-            
-            {/* List Header */}
-            <div className="flex items-center justify-between pb-1 px-1">
-              <h3 className="text-sm sm:text-base font-bold font-serif text-white tracking-wide flex items-center gap-2">
-                <span>{language === 'en' ? 'Must-Visit Sanctuaries' : 'ተመራጭ ቅዱሳት መካናት'}</span>
-                <span className="text-xs text-stone-400 font-mono">({filteredSanctuaries.length})</span>
-              </h3>
-
-              <button
-                onClick={() => setActiveView('find-a-church')}
-                className="flex items-center gap-1 bg-white/[0.08] hover:bg-white/[0.14] border border-white/10 px-3 py-1 rounded-full text-xs font-semibold text-stone-200 hover:text-white transition-all"
-              >
-                <span>{language === 'en' ? 'View all' : 'ሁሉንም'}</span>
-                <ChevronRight className="w-3.5 h-3.5 text-[#C8A84B]" />
-              </button>
-            </div>
-
-            {/* Scrollable list of compact cards */}
-            <div className="space-y-2.5 max-h-[480px] overflow-y-auto custom-scrollbar pr-1">
-              {filteredSanctuaries.map((sanctuary) => {
-                const isSelected = sanctuary.id === currentSanctuary.id;
-                const isSaved = favorites.includes(sanctuary.id);
-
-                return (
-                  <div
-                    key={sanctuary.id}
-                    onClick={() => setSelectedId(sanctuary.id)}
-                    className={`group/item flex items-center justify-between p-2.5 sm:p-3 rounded-2xl transition-all duration-300 cursor-pointer border ${
-                      isSelected
-                        ? 'bg-white/[0.12] border-[#C8A84B]/60 shadow-lg scale-[1.01]'
-                        : 'bg-white/[0.04] hover:bg-white/[0.08] border-white/5 hover:border-white/15'
-                    }`}
-                  >
-                    {/* Thumbnail + Title + Location */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border border-white/15 shadow-md">
-                        <img
-                          src={sanctuary.image}
-                          alt={sanctuary.nameEn}
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover/item:scale-110"
-                        />
-                        {isSelected && (
-                          <div className="absolute inset-0 bg-[#C8A84B]/20 border-2 border-[#C8A84B] rounded-xl pointer-events-none" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0 space-y-0.5">
-                        <h4
-                          className={`text-xs sm:text-sm font-bold font-geez truncate transition-colors ${
-                            isSelected ? 'text-[#f4e07b]' : 'text-white group-hover/item:text-[#f4e07b]'
-                          }`}
-                        >
-                          {language === 'en' ? sanctuary.specificSiteEn : sanctuary.specificSiteAm}
-                        </h4>
-                        <p className="text-[11px] text-stone-400 truncate">
-                          {language === 'en' ? sanctuary.categoryEn : sanctuary.categoryAm}
-                        </p>
-                        <div className="flex items-center gap-1 text-[10px] text-stone-400">
-                          <MapPin className="w-3 h-3 text-[#C8A84B]" />
-                          <span className="truncate">
-                            {language === 'en' ? sanctuary.regionEn : sanctuary.regionAm}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Badge */}
-                    <div className="pl-2 shrink-0">
-                      <button
-                        onClick={(e) => toggleFavorite(sanctuary.id, e)}
-                        className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all ${
-                          isSaved
-                            ? 'bg-[#c27852]/25 border-[#c27852]/60 text-[#f4e07b]'
-                            : 'bg-white/[0.05] hover:bg-white/[0.12] border-white/10 text-stone-400 hover:text-white'
-                        }`}
-                        title="Save Sanctuary"
-                      >
-                        {sanctuary.rightActionType === 'camera' ? (
-                          <Camera className="w-4 h-4" />
-                        ) : sanctuary.rightActionType === 'heritage' ? (
-                          <Church className="w-4 h-4" />
-                        ) : (
-                          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
-                        )}
-                      </button>
-                    </div>
+          {/* Bottom Stats Row & Slide Indicator Dots */}
+          <div style={{
+            position: 'relative',
+            zIndex: 2,
+            margin: '40px 0 12px',
+            maxWidth: '960px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+          }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+              gap: '28px',
+              alignItems: 'center',
+            }}>
+              {/* Stat 1 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  background: 'rgba(212, 163, 56, 0.14)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Church style={{ width: '22px', height: '22px', color: '#B8860B' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#1a1208', lineHeight: 1.25 }}>
+                    {language === 'en' ? currentHero.featureEn : currentHero.featureAm}
                   </div>
-                );
-              })}
+                  <div style={{ fontSize: '12.5px', color: '#7a7263', marginTop: '3px' }}>
+                    {language === 'en' ? currentHero.featureSubEn : currentHero.featureSubAm}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 2 */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+              }}>
+                <div style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  background: 'rgba(212, 163, 56, 0.14)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Mountain style={{ width: '22px', height: '22px', color: '#B8860B' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#1a1208', lineHeight: 1.25 }}>
+                    {language === 'en' ? currentHero.altitudeEn : currentHero.altitudeAm}
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#7a7263', marginTop: '3px' }}>
+                    {language === 'en' ? currentHero.altitudeSubEn : currentHero.altitudeSubAm}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stat 3 */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '16px',
+              }}>
+                <div style={{
+                  width: '52px',
+                  height: '52px',
+                  borderRadius: '50%',
+                  background: 'rgba(212, 163, 56, 0.14)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <Calendar style={{ width: '22px', height: '22px', color: '#B8860B' }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '14.5px', fontWeight: 800, color: '#1a1208', lineHeight: 1.25 }}>
+                    {language === 'en' ? currentHero.foundedEn : currentHero.foundedAm}
+                  </div>
+                  <div style={{ fontSize: '12.5px', color: '#7a7263', marginTop: '3px' }}>
+                    {language === 'en' ? currentHero.foundedSubEn : currentHero.foundedSubAm}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Bottom quick discovery hint */}
-            <div className="pt-2 flex items-center justify-between text-[11px] text-stone-400 px-1 border-t border-white/10">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                {language === 'en' ? 'Interactive Parish Guide' : 'ቀጥታ የቅዱሳት መካናት መሪ'}
-              </span>
-              <button
-                onClick={() => setActiveView('find-a-church')}
-                className="text-[#C8A84B] hover:underline font-semibold"
-              >
-                {language === 'en' ? 'Open Full Map 🗺️' : 'ካርታውን ይመልከቱ 🗺️'}
-              </button>
+            {/* Carousel Dots Indicator */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '6px' }}>
+              {SANCTUARIES.map((s, idx) => (
+                <button
+                  key={s.id}
+                  onClick={() => setActiveIndex(idx)}
+                  style={{
+                    width: idx === activeIndex ? '32px' : '9px',
+                    height: '9px',
+                    borderRadius: '5px',
+                    background: idx === activeIndex ? '#B8860B' : 'rgba(44, 29, 7, 0.18)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    padding: 0,
+                  }}
+                  aria-label={`Go to sanctuary ${s.nameEn}`}
+                />
+              ))}
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );

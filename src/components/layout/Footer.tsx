@@ -6,8 +6,8 @@ export const Footer: React.FC = () => {
   const { language, setActiveView } = useLanguage();
 
   return (
-    <footer className="bg-[#050b16] text-[#9ba6b8] border-t border-[#d4af37]/30 pt-8 pb-8 relative">
-      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-6">
+    <footer className="bg-[#050b16] text-[#9ba6b8] pt-16 pb-14 relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-8">
         {/* Brand Column */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center gap-3">
@@ -29,9 +29,9 @@ export const Footer: React.FC = () => {
               ? 'Founded in the 1st century by Saint Philip the Apostle and King Ezana in the 4th century. Preserving the 81-book Biblical Canon, Saint Yared’s sacred Zema, and Oriental Orthodox apostolic tradition.'
               : 'ከ፩ኛው ክፍለ ዘመን በሐዋርያው ቅዱስ ፊሊጶስና በ፬ኛው ክፍለ ዘመን በአብርሃ ወአፅብሐ የተቀደሰች፣ የ፹፩ መጻሕፍት ቅዱሳት ባለቤት፣ የቅዱስ ያሬድ ማኅሌትና ሃይማኖተ አበው መጠበቂያ።'}
           </p>
-          <div className="p-3 bg-[#0e1b30] border border-[#d4af37]/20 rounded-lg text-xs italic text-[#f4e07b]">
+          <p className="text-xs italic text-[#f4e07b] leading-relaxed pt-2 mb-6">
             “እግዚአብሔር በጽዮን ይነግሣል፤ ለዓለምም ሁሉ ሰላምን ይሰጣል።” — መዝሙረ ዳዊት
-          </div>
+          </p>
         </div>
 
         {/* Pillar Navigation Columns */}
@@ -82,7 +82,11 @@ export const Footer: React.FC = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 pt-6 border-t border-[#d4af37]/20 flex flex-col md:flex-row items-center justify-between text-xs text-[#9ba6b8]/70 gap-4">
+      {/* Bottom Copyright Strip with Clean Spacing & Divider */}
+      <div
+        className="container mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#d4af37]/20 flex flex-col md:flex-row items-center justify-between text-xs text-[#9ba6b8]/75 gap-4"
+        style={{ marginTop: '48px', paddingTop: '28px' }}
+      >
         <p>© 2026 Ethiopian Orthodox Tewahedo Church Patriarchate. All rights reserved.</p>
         <div className="flex items-center gap-4">
           <span className="text-[#d4af37]">Amharic & Ge’ez Unicode Powered</span>

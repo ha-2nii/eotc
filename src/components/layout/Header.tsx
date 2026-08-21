@@ -164,7 +164,7 @@ export const Header: React.FC = () => {
           ? 'linear-gradient(to bottom, rgba(13,26,15,0.7) 0%, transparent 100%)'
           : '#FFFFFF',
         backdropFilter: isTransparent ? 'none' : 'blur(12px)',
-        borderBottom: isTransparent ? '1px solid rgba(255,255,255,0.1)' : '1px solid #E8E0D0',
+        borderBottom: isTransparent ? 'none' : '1px solid #E8E0D0',
         boxShadow: isTransparent ? 'none' : '0 4px 20px rgba(0,0,0,0.08)',
         transition: 'background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
       }}>
