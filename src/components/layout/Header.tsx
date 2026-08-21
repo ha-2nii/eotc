@@ -66,6 +66,7 @@ export const Header: React.FC = () => {
       labelEn: 'Scripture',      
       labelAm: 'መጽሐፍ ቅዱስ',
       dropdown: [
+        { id: 'scripture', labelEn: 'Scripture Hub', labelAm: 'ቅዱሳት መጻሕፍት ማዕከል' },
         { id: 'scripture/bible', labelEn: 'Holy Bible', labelAm: 'መጽሐፍ ቅዱስ' },
         { id: 'scripture/prayer', labelEn: 'Prayer Books', labelAm: 'የጸሎት መጻሕፍት' },
         { id: 'scripture/liturgy', labelEn: 'Liturgical Texts', labelAm: 'የቅዳሴ መጻሕፍት' },
@@ -77,6 +78,7 @@ export const Header: React.FC = () => {
       labelEn: 'Worship',
       labelAm: 'አምልኮ',
       dropdown: [
+        { id: 'worship', labelEn: 'Worship Hub', labelAm: 'የአምልኮ ማዕከል' },
         { id: 'worship/zema', labelEn: 'Zema & Chant', labelAm: 'ዜማ እና ዝማሬ' },
         { id: 'worship/stand', labelEn: 'Digital Chant Stand', labelAm: 'የዜማ መቆሚያ' },
         { id: 'worship/calendar', labelEn: 'Liturgical Calendar', labelAm: 'የአብነት የቀን መቁጠሪያ' },
@@ -89,6 +91,7 @@ export const Header: React.FC = () => {
       labelEn: 'Our Church',
       labelAm: 'ቤተ ክርስቲያን',
       dropdown: [
+        { id: 'our-church', labelEn: 'Our Church Hub', labelAm: 'የቤተ ክርስቲያን ማዕከል' },
         { id: 'our-church/patriarch', labelEn: 'Patriarch', labelAm: 'ፓትርያርክ' },
         { id: 'our-church/synod', labelEn: 'Holy Synod', labelAm: 'ቅዱስ ሲኖዶስ' },
         { id: 'our-church/history', labelEn: 'Church History', labelAm: 'የቤተ ክርስቲያን ታሪክ' },
@@ -101,6 +104,7 @@ export const Header: React.FC = () => {
       labelEn: 'Find a Church', 
       labelAm: 'ቤተክርስቲያን ፈልግ',
       dropdown: [
+        { id: 'find-a-church', labelEn: 'Church Hub', labelAm: 'የአብያተ ክርስቲያናት ማዕከል' },
         { id: 'find-a-church/map', labelEn: 'Church Map', labelAm: 'የቤተክርስቲያን ካርታ' },
         { id: 'find-a-church/services', labelEn: 'Upcoming Services', labelAm: 'መጪ አገልግሎቶች' },
         { id: 'find-a-church/events', labelEn: 'Events Near You', labelAm: 'በአቅራቢያ ያሉ ክስተቶች' }

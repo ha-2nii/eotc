@@ -107,6 +107,7 @@ export const OurChurchView: React.FC = () => {
       setSubSection('dioceses');
     } else if (activeView === 'our-church') {
       setSubSection('overview');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [activeView]);
 

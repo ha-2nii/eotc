@@ -153,7 +153,10 @@ export const WorshipView: React.FC = () => {
     else if (activeView === 'worship/calendar') setSubTab('calendar');
     else if (activeView === 'worship/fasting') setSubTab('fasting');
     else if (activeView === 'worship/sermons') setSubTab('sermons');
-    else if (activeView === 'worship') setSubTab('hub');
+    else if (activeView === 'worship') {
+      setSubTab('hub');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }, [activeView]);
 
   const exportICSCalendar = () => {

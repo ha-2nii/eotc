@@ -25,7 +25,6 @@ import {
   ChevronRight,
   ChevronDown,
   Bookmark,
-  Share2,
   Search,
   ArrowRight,
   BookMarked,
@@ -51,7 +50,6 @@ import {
   Settings,
   Plus,
   X,
-  Type,
 } from 'lucide-react';
 
 // Sacred Manuscripts for the 2-second Auto-Flipping Book animation
@@ -266,7 +264,7 @@ export const ScriptureView: React.FC = () => {
   const [readingTheme, setReadingTheme] = useState<'light' | 'sepia' | 'dark'>('light');
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [isFormatMenuOpen, setIsFormatMenuOpen] = useState(false);
-  const [expandedSidebarBook, setExpandedSidebarBook] = useState<string>('genesis');
+  const [expandedTestament, setExpandedTestament] = useState<'OT' | 'NT' | 'ETHIOPIC' | null>('OT');
   const [bibleLanguageMode, setBibleLanguageMode] = useState<'current' | 'en' | 'am' | 'ge'>('current');
 
   // Reader States
@@ -285,9 +283,10 @@ export const ScriptureView: React.FC = () => {
   const [prayerViewMode, setPrayerViewMode] = useState<'grid' | 'reader'>('grid');
   const [selectedPrayerBookId, setSelectedPrayerBookId] = useState<string>('wudase-mariam');
   const [selectedSectionIdx, setSelectedSectionIdx] = useState<number>(0);
-  const [elderlyMode, setElderlyMode] = useState<boolean>(false);
   const [prayerTheme, setPrayerTheme] = useState<'parchment' | 'dark' | 'clean'>('parchment');
   const [prayerFontSize, setPrayerFontSize] = useState<'normal' | 'large' | 'elderly'>('normal');
+  const [prayerCategoryTab, setPrayerCategoryTab] = useState<string>('all');
+  const [isPrayerAccordionOpen, setIsPrayerAccordionOpen] = useState<boolean>(true);
 
   // Liturgy States
   const [liturgyViewMode, setLiturgyViewMode] = useState<'categories' | 'reader'>('categories');
@@ -330,6 +329,7 @@ export const ScriptureView: React.FC = () => {
       setActiveSection('geez');
     } else if (activeView === 'scripture') {
       setActiveSection('hub');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [activeView]);
 
@@ -340,6 +340,12 @@ export const ScriptureView: React.FC = () => {
 
   // Jump to specific book & chapter in Bible Reader
   const openBookInReader = (bookId: string, chapter: number = 1) => {
+    const targetBook = EOTC_81_BOOKS.find((b) => b.id === bookId);
+    if (targetBook) {
+      if (targetBook.testament === 'OT') setExpandedTestament('OT');
+      else if (targetBook.testament === 'NT') setExpandedTestament('NT');
+      else setExpandedTestament('ETHIOPIC');
+    }
     setSelectedBookId(bookId);
     setSelectedChapter(chapter);
     setActiveVerseNum(1);
@@ -424,7 +430,17 @@ export const ScriptureView: React.FC = () => {
 
 
   return (
-    <div className="w-full px-4 py-8 space-y-8 animate-fadeIn">
+    <div
+      className={`w-full mx-auto animate-fadeIn ${
+        activeSection === 'bible' ? 'max-w-[1560px] space-y-4' : 'max-w-[1480px] space-y-8'
+      }`}
+      style={{
+        paddingLeft: activeSection === 'bible' ? 'clamp(8px, 1.2vw, 20px)' : 'clamp(24px, 5vw, 72px)',
+        paddingRight: activeSection === 'bible' ? 'clamp(8px, 1.2vw, 20px)' : 'clamp(24px, 5vw, 72px)',
+        paddingTop: activeSection === 'bible' ? '12px' : '24px',
+        paddingBottom: activeSection === 'bible' ? '24px' : '64px',
+      }}
+    >
       {/* Toast Notification */}
       {copiedToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#1A2C1C] text-[#C8A84B] border border-[#C8A84B] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-xs font-bold animate-bounce">
@@ -477,9 +493,24 @@ export const ScriptureView: React.FC = () => {
           SECTION 1: MAIN SCRIPTURE HUB (Default Landing Page)
       ═══════════════════════════════════════════════════════════════ */}
       {activeSection === 'hub' && (
-        <div className="space-y-12 animate-fadeIn">
+        <div className="relative space-y-12 animate-fadeIn overflow-hidden">
+          {/* Sacred Ethiopian Cross Watermark Background (Parchment manuscript effect on Left for Section 1) */}
+          <div
+            className="absolute -top-6 left-0 lg:-left-10 pointer-events-none select-none z-0 flex items-center justify-center opacity-[0.08] transition-opacity"
+            style={{
+              width: 'min(90vw, 680px)',
+              height: '880px',
+            }}
+          >
+            <img
+              src="/assets/images/eotc_cross_watermark_transparent.png"
+              alt="EOTC Sacred Cross Watermark"
+              className="w-full h-full object-contain"
+            />
+          </div>
+
           {/* ── 1. HERO SECTION (CARDLESS SEAMLESS DESIGN MATCHING REFERENCE) ─── */}
-          <div className="relative pt-2 pb-6">
+          <div className="relative pt-2 pb-6 z-10">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
               
               {/* Left Column: Cross Ornament + Title + Description + Explore CTA + Options Tabs */}
@@ -488,10 +519,11 @@ export const ScriptureView: React.FC = () => {
                 {/* Golden Cross Ornament with Horizontal Accent Lines */}
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-[1.5px] bg-[#D4AF37]" />
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#C8A84B]">
-                    <path d="M12 2V22M2 12H22" stroke="#C8A84B" strokeWidth="2.2" strokeLinecap="round"/>
-                    <circle cx="12" cy="12" r="2.5" fill="#C8A84B" />
-                  </svg>
+                  <img
+                    src="/assets/images/eotc_cross_watermark_transparent.png"
+                    alt="EOTC Cross"
+                    className="w-6 h-6 object-contain"
+                  />
                   <div className="w-10 h-[1.5px] bg-[#D4AF37]" />
                 </div>
 
@@ -582,9 +614,23 @@ export const ScriptureView: React.FC = () => {
           </div>
 
           {/* ── 2. FOUR PILLARS OF SACRED SCRIPTURE (SPLIT LAYOUT WITH LARGER FLIPPING BOOK ON LEFT) ─── */}
-          <div className="space-y-10 pt-4 pb-2">
+          <div className="relative space-y-10 pt-4 pb-2">
+            {/* Section 2 Sacred Ethiopian Cross Watermark on the Right Side */}
+            <div
+              className="absolute -top-12 -right-4 lg:-right-10 pointer-events-none select-none z-0 flex items-center justify-center opacity-[0.08] transition-opacity"
+              style={{
+                width: 'min(90vw, 660px)',
+                height: '860px',
+              }}
+            >
+              <img
+                src="/assets/images/eotc_cross_watermark_transparent.png"
+                alt="EOTC Sacred Cross Watermark"
+                className="w-full h-full object-contain"
+              />
+            </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
               
               {/* ── LEFT COLUMN: Museum-Quality 3D Animated Manuscript with Motion Page Flip ── */}
               <div
@@ -1093,666 +1139,478 @@ export const ScriptureView: React.FC = () => {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-          SECTION 2: FULL HOLY BIBLE APP WORKSPACE (MATCHING REFERENCE IMAGE)
-      ═══════════════════════════════════════════════════════════════ */}
-      {activeSection === 'bible' && (
-        <div className="w-full bg-[#FAF8F5] rounded-3xl border border-[#E8DFC8] shadow-sm overflow-hidden animate-fadeIn">
-          
-          {/* Main 3-Column Bible App Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] xl:grid-cols-[270px_1fr_320px] min-h-[860px]">
-            
-            {/* ═══════════════════════════════════════════════════════════════
-                1. LEFT SIDEBAR: BIBLE NAVIGATION & 81 BOOKS INDEX
-            ═══════════════════════════════════════════════════════════════ */}
-            <aside className="bg-[#FAF7F2] border-r border-[#E6DFD1] flex flex-col justify-between h-full overflow-hidden">
-              
-              {/* Header Branding & Search */}
-              <div className="p-4 border-b border-[#E6DFD1]/80 space-y-3.5 shrink-0 bg-[#FAF7F2]">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-[#FAF3DE] border border-[#E0D0A8] flex items-center justify-center text-[#855B09] font-black text-sm shadow-2xs">
-                    ✝
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-black text-[#2C1D07] font-serif leading-tight">
-                      EOTC Bible
-                    </h3>
-                    <p className="text-[10.5px] text-[#855B09] font-medium font-serif">
-                      Holy Scripture (፹፩ መጻሕፍት)
-                    </p>
-                  </div>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-[#9CA3AF] absolute left-3 top-2.5" />
-                  <input
-                    type="text"
-                    placeholder="Search books, chapters..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-[#E6DFD1] rounded-lg pl-8 pr-3 py-1.5 text-xs text-[#2C1D07] placeholder-[#9CA3AF] focus:outline-none focus:border-[#C8A84B] shadow-2xs font-body"
-                  />
-                </div>
-              </div>
-
-              {/* Scrollable Books Accordion */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4">
-                
-                {/* ── OLD TESTAMENT ── */}
-                <div className="space-y-1">
-                  <div className="px-2 py-1 text-[10px] font-extrabold text-[#9CA3AF] uppercase tracking-wider">
-                    Old Testament
-                  </div>
-                  
-                  {EOTC_81_BOOKS.filter((b) => b.testament === 'OT' && (searchTerm === '' || b.nameEnglish.toLowerCase().includes(searchTerm.toLowerCase()) || b.nameAmharic.includes(searchTerm))).map((book) => {
-                    const isCurrent = currentBook.id === book.id;
-                    const isExpanded = expandedSidebarBook === book.id;
-
-                    return (
-                      <div key={book.id} className="space-y-0.5">
-                        <button
-                          onClick={() => {
-                            if (isCurrent) {
-                              setExpandedSidebarBook(isExpanded ? '' : book.id);
-                            } else {
-                              openBookInReader(book.id, 1);
-                              setExpandedSidebarBook(book.id);
-                            }
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                            isCurrent
-                              ? 'bg-[#FAF0D9] text-[#2C1D07] font-bold'
-                              : 'text-[#4A3B22] hover:bg-[#F3ECE0]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <BookOpen className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-[#855B09]' : 'text-[#A8987E]'}`} />
-                            <span className="truncate">{book.nameEnglish}</span>
-                          </div>
-                          {isExpanded ? (
-                            <ChevronDown className="w-3 h-3 text-[#855B09] shrink-0" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3 text-[#A8987E] shrink-0 opacity-60" />
-                          )}
-                        </button>
-
-                        {/* Chapter Quick Selector Grid when Expanded */}
-                        {isExpanded && (
-                          <div className="pl-6 pr-2 py-1.5 grid grid-cols-5 gap-1 bg-[#F5EFE4]/60 rounded-md my-1">
-                            {Array.from({ length: Math.min(book.chaptersCount, 25) }, (_, i) => i + 1).map((ch) => (
-                              <button
-                                key={ch}
-                                onClick={() => {
-                                  setSelectedBookId(book.id);
-                                  setSelectedChapter(ch);
-                                  setActiveVerseNum(1);
-                                }}
-                                className={`h-6 text-[11px] font-mono rounded flex items-center justify-center transition-all cursor-pointer ${
-                                  isCurrent && selectedChapter === ch
-                                    ? 'bg-[#C8A84B] text-[#1A2C1C] font-black shadow-2xs'
-                                    : 'hover:bg-white text-[#4A3B22]'
-                                }`}
-                              >
-                                {ch}
-                              </button>
-                            ))}
-                            {book.chaptersCount > 25 && (
-                              <span className="h-6 text-[10px] text-[#855B09] font-mono flex items-center justify-center col-span-5 font-bold">
-                                + {book.chaptersCount - 25} more chapters
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* ── NEW TESTAMENT ── */}
-                <div className="space-y-1 pt-2 border-t border-[#E6DFD1]/60">
-                  <div className="px-2 py-1 text-[10px] font-extrabold text-[#9CA3AF] uppercase tracking-wider">
-                    New Testament
-                  </div>
-                  
-                  {EOTC_81_BOOKS.filter((b) => b.testament === 'NT' && (searchTerm === '' || b.nameEnglish.toLowerCase().includes(searchTerm.toLowerCase()) || b.nameAmharic.includes(searchTerm))).map((book) => {
-                    const isCurrent = currentBook.id === book.id;
-                    const isExpanded = expandedSidebarBook === book.id;
-
-                    return (
-                      <div key={book.id} className="space-y-0.5">
-                        <button
-                          onClick={() => {
-                            if (isCurrent) {
-                              setExpandedSidebarBook(isExpanded ? '' : book.id);
-                            } else {
-                              openBookInReader(book.id, 1);
-                              setExpandedSidebarBook(book.id);
-                            }
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                            isCurrent
-                              ? 'bg-[#FAF0D9] text-[#2C1D07] font-bold'
-                              : 'text-[#4A3B22] hover:bg-[#F3ECE0]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <BookOpen className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-[#855B09]' : 'text-[#A8987E]'}`} />
-                            <span className="truncate">{book.nameEnglish}</span>
-                          </div>
-                          {isExpanded ? (
-                            <ChevronDown className="w-3 h-3 text-[#855B09] shrink-0" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3 text-[#A8987E] shrink-0 opacity-60" />
-                          )}
-                        </button>
-
-                        {isExpanded && (
-                          <div className="pl-6 pr-2 py-1.5 grid grid-cols-5 gap-1 bg-[#F5EFE4]/60 rounded-md my-1">
-                            {Array.from({ length: Math.min(book.chaptersCount, 25) }, (_, i) => i + 1).map((ch) => (
-                              <button
-                                key={ch}
-                                onClick={() => {
-                                  setSelectedBookId(book.id);
-                                  setSelectedChapter(ch);
-                                  setActiveVerseNum(1);
-                                }}
-                                className={`h-6 text-[11px] font-mono rounded flex items-center justify-center transition-all cursor-pointer ${
-                                  isCurrent && selectedChapter === ch
-                                    ? 'bg-[#C8A84B] text-[#1A2C1C] font-black shadow-2xs'
-                                    : 'hover:bg-white text-[#4A3B22]'
-                                }`}
-                              >
-                                {ch}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* ── ETHIOPIC CANON & DEUTEROCANON ── */}
-                <div className="space-y-1 pt-2 border-t border-[#E6DFD1]/60">
-                  <div className="px-2 py-1 text-[10px] font-extrabold text-[#855B09] uppercase tracking-wider flex items-center gap-1">
-                    <span>Ethiopic Canon (ልዩ ቀኖና)</span>
-                  </div>
-                  
-                  {EOTC_81_BOOKS.filter((b) => (b.testament === 'EOTC_UNIQUE' || b.testament === 'DEUT') && (searchTerm === '' || b.nameEnglish.toLowerCase().includes(searchTerm.toLowerCase()) || b.nameAmharic.includes(searchTerm))).map((book) => {
-                    const isCurrent = currentBook.id === book.id;
-                    const isExpanded = expandedSidebarBook === book.id;
-
-                    return (
-                      <div key={book.id} className="space-y-0.5">
-                        <button
-                          onClick={() => {
-                            if (isCurrent) {
-                              setExpandedSidebarBook(isExpanded ? '' : book.id);
-                            } else {
-                              openBookInReader(book.id, 1);
-                              setExpandedSidebarBook(book.id);
-                            }
-                          }}
-                          className={`w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between text-xs transition-colors cursor-pointer ${
-                            isCurrent
-                              ? 'bg-[#FAF0D9] text-[#2C1D07] font-bold'
-                              : 'text-[#4A3B22] hover:bg-[#F3ECE0]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 truncate">
-                            <BookOpen className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-[#855B09]' : 'text-[#A8987E]'}`} />
-                            <span className="truncate">{book.nameEnglish}</span>
-                          </div>
-                          {isExpanded ? (
-                            <ChevronDown className="w-3 h-3 text-[#855B09] shrink-0" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3 text-[#A8987E] shrink-0 opacity-60" />
-                          )}
-                        </button>
-
-                        {isExpanded && (
-                          <div className="pl-6 pr-2 py-1.5 grid grid-cols-5 gap-1 bg-[#F5EFE4]/60 rounded-md my-1">
-                            {Array.from({ length: Math.min(book.chaptersCount, 25) }, (_, i) => i + 1).map((ch) => (
-                              <button
-                                key={ch}
-                                onClick={() => {
-                                  setSelectedBookId(book.id);
-                                  setSelectedChapter(ch);
-                                  setActiveVerseNum(1);
-                                }}
-                                className={`h-6 text-[11px] font-mono rounded flex items-center justify-center transition-all cursor-pointer ${
-                                  isCurrent && selectedChapter === ch
-                                    ? 'bg-[#C8A84B] text-[#1A2C1C] font-black shadow-2xs'
-                                    : 'hover:bg-white text-[#4A3B22]'
-                                }`}
-                              >
-                                {ch}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-
-              </div>
-
-              {/* Bottom Settings Link */}
-              <div className="p-3 border-t border-[#E6DFD1] bg-[#FAF7F2] shrink-0">
-                <button
-                  onClick={() => setIsFormatMenuOpen(!isFormatMenuOpen)}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold text-[#6B7280] hover:text-[#2C1D07] hover:bg-[#F3ECE0] rounded-lg transition-colors cursor-pointer"
-                >
-                  <Settings className="w-4 h-4" />
-                  <span>Settings & Display</span>
-                </button>
-              </div>
-            </aside>
-
-            {/* ═══════════════════════════════════════════════════════════════
-                2. CENTER COLUMN: MAIN BIBLE READING PROSE WORKSPACE
-            ═══════════════════════════════════════════════════════════════ */}
-            <main
-              className={`flex-1 flex flex-col justify-between overflow-y-auto custom-scrollbar transition-colors ${
-                readingTheme === 'sepia'
-                  ? 'bg-[#FAF4E6]'
-                  : readingTheme === 'dark'
-                  ? 'bg-[#1C1917] text-[#EDE8DE]'
-                  : 'bg-white'
-              }`}
-            >
-              
-              {/* Top Navigation & Tool Controls */}
-              <div className="px-8 py-5 border-b border-[#E6DFD1]/60 flex items-center justify-between flex-wrap gap-4 shrink-0">
-                
-                {/* Breadcrumbs */}
-                <div className="flex items-center gap-1.5 text-xs text-[#855B09] font-medium">
-                  <span className="font-serif font-bold text-[#4A3B22]">{currentBook.nameEnglish}</span>
-                  <span className="text-[#B8A383]">›</span>
-                  <span className="text-[#855B09] font-semibold">Chapter {selectedChapter}</span>
-                </div>
-
-                {/* Top Action Bar (Audio, Typography Aa, Reading Theme) */}
-                <div className="flex items-center gap-2">
-                  {/* Audio Reader Toggle */}
-                  <button
-                    onClick={() => setIsPlayingAudio(!isPlayingAudio)}
-                    title={isPlayingAudio ? 'Pause Audio' : 'Listen to Chapter'}
-                    className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 transition-all cursor-pointer ${
-                      isPlayingAudio
-                        ? 'bg-[#800020] text-white border-[#800020] shadow-2xs'
-                        : 'bg-[#FAF7F2] text-[#4A3B22] hover:bg-[#F0E8D8] border-[#E6DFD1]'
-                    }`}
-                  >
-                    {isPlayingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                    <span className="text-[11px] font-bold hidden sm:inline">
-                      {isPlayingAudio ? 'Playing' : 'Audio'}
-                    </span>
-                  </button>
-
-                  {/* Typography & Script Selector Menu */}
-                  <div className="relative">
-                    <button
-                      onClick={() => setIsFormatMenuOpen(!isFormatMenuOpen)}
-                      className="p-2 rounded-lg bg-[#FAF7F2] hover:bg-[#F0E8D8] border border-[#E6DFD1] text-[#4A3B22] text-xs font-bold flex items-center gap-1 shadow-2xs cursor-pointer"
-                      title="Adjust Font Size & Language"
-                    >
-                      <Type className="w-4 h-4" />
-                      <span className="text-[11px]">Aa</span>
-                    </button>
-
-                    {isFormatMenuOpen && (
-                      <div className="absolute right-0 top-10 w-64 bg-white p-4 rounded-2xl border border-[#E6DFD1] shadow-xl z-50 space-y-3.5">
-                        <div className="flex items-center justify-between text-xs font-bold text-[#855B09] border-b border-[#E6DFD1] pb-2">
-                          <span>Reading Preferences</span>
-                          <button onClick={() => setIsFormatMenuOpen(false)}>
-                            <X className="w-3.5 h-3.5 text-[#9CA3AF]" />
-                          </button>
-                        </div>
-
-                        {/* Font Size */}
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold text-[#6B7280]">Font Size</span>
-                          <div className="grid grid-cols-3 gap-1 bg-[#FAF8F3] p-1 rounded-xl border border-[#E6DFD1]">
-                            {(['normal', 'large', 'xlarge'] as const).map((sz) => (
-                              <button
-                                key={sz}
-                                onClick={() => setFontSize(sz)}
-                                className={`py-1 text-xs font-bold rounded-lg capitalize transition-all ${
-                                  fontSize === sz
-                                    ? 'bg-white text-[#855B09] shadow-2xs font-black'
-                                    : 'text-[#9CA3AF]'
-                                }`}
-                              >
-                                {sz === 'normal' ? 'Small' : sz === 'large' ? 'Medium' : 'Large'}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Translation Script */}
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] font-bold text-[#6B7280]">Script / Translation</span>
-                          <div className="grid grid-cols-3 gap-1 bg-[#FAF8F3] p-1 rounded-xl border border-[#E6DFD1]">
-                            {[
-                              { id: 'en' as const, label: 'English' },
-                              { id: 'am' as const, label: 'አማርኛ' },
-                              { id: 'ge' as const, label: 'ግዕዝ' },
-                            ].map((langOpt) => (
-                              <button
-                                key={langOpt.id}
-                                onClick={() => setBibleLanguageMode(langOpt.id)}
-                                className={`py-1 text-xs font-bold rounded-lg transition-all ${
-                                  bibleLanguageMode === langOpt.id
-                                    ? 'bg-[#C8A84B] text-[#1A2C1C] font-black shadow-2xs'
-                                    : 'text-[#4A3B22] hover:text-[#1A2C1C]'
-                                }`}
-                              >
-                                {langOpt.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Reading Light / Theme Mode */}
-                  <button
-                    onClick={() => {
-                      if (readingTheme === 'light') setReadingTheme('sepia');
-                      else if (readingTheme === 'sepia') setReadingTheme('dark');
-                      else setReadingTheme('light');
-                    }}
-                    title="Toggle Warm Light / Sepia / Dark Theme"
-                    className="p-2 rounded-lg bg-[#FAF7F2] hover:bg-[#F0E8D8] border border-[#E6DFD1] text-[#4A3B22] text-xs shadow-2xs cursor-pointer"
-                  >
-                    {readingTheme === 'dark' ? (
-                      <Moon className="w-4 h-4 text-amber-300" />
-                    ) : (
-                      <Sun className="w-4 h-4 text-[#C8A84B]" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* ── BIBLE SCRIPTURE BODY (FLOWING CONTINUOUS PROSE) ── */}
-              <div className="px-8 sm:px-14 md:px-20 py-8 max-w-4xl mx-auto w-full space-y-6">
-                
-                {/* Chapter Title & Sub-Heading */}
-                <div className="space-y-1.5 pb-2">
-                  <h1 className="text-3xl sm:text-4xl font-serif font-black text-[#2C1D07] tracking-tight">
-                    {currentBook.nameEnglish} {selectedChapter}
-                  </h1>
-                  <p className="text-sm font-serif text-[#786D5C] italic">
-                    {selectedChapter === 1 && currentBook.id === 'genesis' ? 'The Beginning' : `${currentBook.nameAmharic} — ምዕራፍ ${selectedChapter}`}
-                  </p>
-                </div>
-
-                {/* Flowing Prose Paragraphs with Superscript Verse Numbers */}
-                <div
-                  className={`space-y-4 font-serif leading-[1.85] select-text transition-all ${
-                    fontSize === 'xlarge'
-                      ? 'text-[19px]'
-                      : fontSize === 'large'
-                      ? 'text-[17px]'
-                      : 'text-[15.5px]'
-                  } ${readingTheme === 'dark' ? 'text-[#E5E0D5]' : 'text-[#2D2418]'}`}
-                >
-                  {verses.map((v) => {
-                    const highlight = bibleHighlights.find(
-                      (h) => h.bookId === currentBook.id && h.chapter === selectedChapter && h.verseNum === v.number
-                    );
-                    const isSelected = activeVerseNum === v.number || selectedVerseForMenu === v.number;
-                    const hasNote = bibleNotes.some(
-                      (n) => n.bookId === currentBook.id && n.chapter === selectedChapter && n.verseRef.includes(`${selectedChapter}:${v.number}`)
-                    );
-                    const isBookmarked = bibleBookmarks.some(
-                      (bm) => bm.bookId === currentBook.id && bm.chapter === selectedChapter && bm.verseRef.includes(`${selectedChapter}:${v.number}`)
-                    );
-
-                    let highlightStyle = '';
-                    if (highlight) {
-                      if (highlight.color === 'yellow') highlightStyle = 'bg-[#FEF3C7] text-[#78350F] rounded-xs px-1 py-0.5';
-                      if (highlight.color === 'green') highlightStyle = 'bg-[#DCFCE7] text-[#14532D] rounded-xs px-1.5 py-1 border-l-4 border-emerald-500 block shadow-2xs my-2';
-                      if (highlight.color === 'blue') highlightStyle = 'bg-[#DBEAFE] text-[#1E3A8A] rounded-xs px-1 py-0.5';
-                      if (highlight.color === 'purple') highlightStyle = 'bg-[#F3E8FF] text-[#581C87] rounded-xs px-1 py-0.5';
-                    }
-
-                    const verseContent =
-                      bibleLanguageMode === 'en'
-                        ? v.english
-                        : bibleLanguageMode === 'ge'
-                        ? v.geez
-                        : bibleLanguageMode === 'am'
-                        ? v.amharic
-                        : getActiveVerseText(v);
-
-                    return (
-                      <div key={v.number} className="relative group/verse my-2.5 inline">
-                        <span
-                          onClick={() => {
-                            setActiveVerseNum(v.number);
-                            setSelectedVerseForMenu(selectedVerseForMenu === v.number ? null : v.number);
-                          }}
-                          className={`cursor-pointer transition-all duration-150 inline ${highlightStyle} ${
-                            isSelected && !highlight
-                              ? 'bg-[#FFF3D6] ring-1 ring-[#C8A84B] rounded-xs px-0.5'
-                              : 'hover:bg-[#FAF3E0]/70 rounded-xs'
-                          }`}
-                        >
-                          <sup className="font-sans font-bold text-[11px] text-[#855B09] mr-1.5 select-none opacity-85">
-                            {v.number}
-                          </sup>
-                          <span>{verseContent}</span>
+                    {/* ═══════════════════════════════════════════════════════════════
+                        SECTION 2: FULL HOLY BIBLE APP WORKSPACE (MATCHING EXACT REFERENCE DESIGN)
+                    ═══════════════════════════════════════════════════════════════ */}
+                    {activeSection === 'bible' && (
+                      <div className="w-full bg-[#FAF8F5] rounded-3xl border border-[#ECE5D8] overflow-hidden animate-fadeIn">
+                        
+                        {/* Main 3-Column Bible App Layout — fixed height so each column scrolls independently */}
+                        <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] xl:grid-cols-[250px_1fr_310px]" style={{ height: '860px', overflow: 'hidden' }}>
                           
-                          {/* Note / Bookmark indicator icon */}
-                          {hasNote && (
-                            <span className="inline-block ml-1 text-[#855B09] text-[10px] font-mono">📝</span>
-                          )}
-                          {isBookmarked && (
-                            <span className="inline-block ml-1 text-[#800020] text-[10px] font-mono">🔖</span>
-                          )}
-                        </span>
-                        {' '}
-
-                        {/* Interactive Floating Verse Action Popover when Clicked */}
-                        {selectedVerseForMenu === v.number && (
-                          <div className="absolute left-0 -top-12 z-40 bg-[#2C1D07] text-white px-3 py-1.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-sans animate-fadeIn">
-                            <span className="text-[10px] text-[#C8A84B] font-bold font-mono pr-1 border-r border-white/20">
-                              v.{v.number}
-                            </span>
+                          {/* ═══════════════════════════════════════════════════════════════
+                              1. LEFT SIDEBAR: CLEAN STREAMLINED 81-BOOK CANON INDEX
+                          ═══════════════════════════════════════════════════════════════ */}
+                          <aside className="bg-[#FAF8F5] border-r border-[#EFEBE4] flex flex-col h-full overflow-hidden">
                             
-                            {/* Color Swatches */}
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                onClick={() => {
-                                  setBibleHighlights((prev) => [
-                                    ...prev.filter((h) => !(h.bookId === currentBook.id && h.chapter === selectedChapter && h.verseNum === v.number)),
-                                    {
-                                      id: `hl-${Date.now()}`,
-                                      bookId: currentBook.id,
-                                      bookName: currentBook.nameEnglish,
-                                      chapter: selectedChapter,
-                                      verseNum: v.number,
-                                      color: 'yellow',
-                                      textSnippet: verseContent,
-                                    },
-                                  ]);
-                                  setSelectedVerseForMenu(null);
-                                }}
-                                title="Yellow Highlight"
-                                className="w-4 h-4 rounded-full bg-[#FDE047] border border-white/40 hover:scale-125 transition-transform"
-                              />
-                              <button
-                                onClick={() => {
-                                  setBibleHighlights((prev) => [
-                                    ...prev.filter((h) => !(h.bookId === currentBook.id && h.chapter === selectedChapter && h.verseNum === v.number)),
-                                    {
-                                      id: `hl-${Date.now()}`,
-                                      bookId: currentBook.id,
-                                      bookName: currentBook.nameEnglish,
-                                      chapter: selectedChapter,
-                                      verseNum: v.number,
-                                      color: 'green',
-                                      textSnippet: verseContent,
-                                    },
-                                  ]);
-                                  setSelectedVerseForMenu(null);
-                                }}
-                                title="Green Highlight"
-                                className="w-4 h-4 rounded-full bg-[#86EFAC] border border-white/40 hover:scale-125 transition-transform"
-                              />
-                              <button
-                                onClick={() => {
-                                  setBibleHighlights((prev) => [
-                                    ...prev.filter((h) => !(h.bookId === currentBook.id && h.chapter === selectedChapter && h.verseNum === v.number)),
-                                    {
-                                      id: `hl-${Date.now()}`,
-                                      bookId: currentBook.id,
-                                      bookName: currentBook.nameEnglish,
-                                      chapter: selectedChapter,
-                                      verseNum: v.number,
-                                      color: 'purple',
-                                      textSnippet: verseContent,
-                                    },
-                                  ]);
-                                  setSelectedVerseForMenu(null);
-                                }}
-                                title="Purple Highlight"
-                                className="w-4 h-4 rounded-full bg-[#D8B4FE] border border-white/40 hover:scale-125 transition-transform"
-                              />
-                              {highlight && (
-                                <button
-                                  onClick={() => {
-                                    setBibleHighlights((prev) =>
-                                      prev.filter((h) => !(h.bookId === currentBook.id && h.chapter === selectedChapter && h.verseNum === v.number))
-                                    );
-                                    setSelectedVerseForMenu(null);
-                                  }}
-                                  title="Clear Highlight"
-                                  className="text-[10px] text-red-300 hover:text-red-100 pl-1"
-                                >
-                                  ✕
-                                </button>
-                              )}
+                            {/* Header Branding & Search Bar matching Reference */}
+                            <div className="p-4 pb-3 space-y-3 shrink-0">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0">
+                                  <img
+                                    src="/assets/images/eotc_cross_watermark_transparent.png"
+                                    alt="EOTC"
+                                    className="w-6 h-6 object-contain"
+                                  />
+                                </div>
+                                <div>
+                                  <h3 className="text-sm font-serif font-black text-[#1A1208] leading-tight">
+                                    EOTC Bible
+                                  </h3>
+                                  <p className="text-[10px] text-[#8C8275] font-serif">
+                                    Holy Scripture
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Clean Search Bar */}
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  placeholder="Search books or chapters..."
+                                  value={searchTerm}
+                                  onChange={(e) => setSearchTerm(e.target.value)}
+                                  className="w-full bg-[#F5F1E9] border border-[#E8E1D5] rounded-xl pl-3 pr-8 py-1.5 text-xs text-[#2C1D07] placeholder-[#A0988A] focus:outline-none focus:border-[#C8A84B] font-body transition-colors"
+                                />
+                                <Search className="w-3.5 h-3.5 text-[#A0988A] absolute right-3 top-2.5 pointer-events-none" />
+                              </div>
                             </div>
 
-                            <span className="w-[1px] h-3 bg-white/20" />
+                            {/* Categorized Clean Book List (No bulky cards) */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar overscroll-contain px-3 py-1 space-y-4">
+                              
+                              {/* ── OLD TESTAMENT ── */}
+                              <div className="space-y-1">
+                                <button
+                                  onClick={() => setExpandedTestament(expandedTestament === 'OT' ? null : 'OT')}
+                                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-serif font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                                    expandedTestament === 'OT' ? 'bg-[#FAF0D9]/70 text-[#855B09]' : 'text-[#8C8275] hover:text-[#1A1208] hover:bg-[#F2ECE0]/50'
+                                  }`}
+                                >
+                                  <span>{language === 'en' ? 'Old Testament (46)' : 'ብሉይ ኪዳን (፵፮)'}</span>
+                                  <ChevronDown
+                                    className={`w-3.5 h-3.5 transition-transform ${
+                                      expandedTestament === 'OT' || searchTerm !== '' ? 'rotate-180 text-[#855B09]' : 'text-[#A0988A]'
+                                    }`}
+                                  />
+                                </button>
 
-                            {/* Add Note Button */}
-                            <button
-                              onClick={() => {
-                                setNoteFormTitle(`${currentBook.nameEnglish} ${selectedChapter}:${v.number}`);
-                                setNoteFormVerse(v.number);
-                                setNoteFormContent('');
-                                setIsNoteEditorOpen(true);
-                                setSelectedVerseForMenu(null);
-                              }}
-                              className="text-[11px] font-bold text-[#E5D2A6] hover:text-white flex items-center gap-1"
-                            >
-                              <Edit3 className="w-3 h-3" />
-                              <span>Note</span>
-                            </button>
+                                {(expandedTestament === 'OT' || searchTerm !== '') && (
+                                  <div className="space-y-0.5 animate-fadeIn pl-1">
+                                    {EOTC_81_BOOKS.filter(
+                                      (b) =>
+                                        b.testament === 'OT' &&
+                                        (searchTerm === '' ||
+                                          b.nameEnglish.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                          b.nameAmharic.includes(searchTerm) ||
+                                          b.nameGeez.includes(searchTerm))
+                                    ).map((book) => {
+                                      const isCurrent = currentBook.id === book.id;
+                                      return (
+                                        <button
+                                          key={book.id}
+                                          onClick={() => openBookInReader(book.id, 1)}
+                                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                                            isCurrent
+                                              ? 'border-l-2 border-[#B8860B] text-[#B8860B] font-bold bg-[#FAF0D9]/60 pl-2 font-serif'
+                                              : 'text-[#4A4033] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60 font-serif'
+                                          }`}
+                                        >
+                                          <span className="truncate">{book.nameEnglish}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
 
-                            {/* Bookmark Button */}
-                            <button
-                              onClick={() => {
-                                const exists = bibleBookmarks.some(
-                                  (bm) => bm.bookId === currentBook.id && bm.chapter === selectedChapter && bm.verseRef === `${currentBook.nameEnglish} ${selectedChapter}:${v.number}`
-                                );
-                                if (exists) {
-                                  setBibleBookmarks((prev) =>
-                                    prev.filter(
-                                      (bm) => !(bm.bookId === currentBook.id && bm.chapter === selectedChapter && bm.verseRef === `${currentBook.nameEnglish} ${selectedChapter}:${v.number}`)
-                                    )
-                                  );
-                                } else {
-                                  setBibleBookmarks((prev) => [
-                                    ...prev,
-                                    {
-                                      id: `bm-${Date.now()}`,
-                                      bookId: currentBook.id,
-                                      bookName: currentBook.nameEnglish,
-                                      chapter: selectedChapter,
-                                      verseRef: `${currentBook.nameEnglish} ${selectedChapter}:${v.number}`,
-                                      textSnippet: verseContent,
-                                    },
-                                  ]);
-                                }
-                                setSelectedVerseForMenu(null);
-                              }}
-                              className="text-[11px] font-bold text-[#E5D2A6] hover:text-white flex items-center gap-1"
-                            >
-                              <Bookmark className="w-3 h-3" />
-                            </button>
+                              {/* ── NEW TESTAMENT ── */}
+                              <div className="space-y-1">
+                                <button
+                                  onClick={() => setExpandedTestament(expandedTestament === 'NT' ? null : 'NT')}
+                                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-serif font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                                    expandedTestament === 'NT' ? 'bg-[#FAF0D9]/70 text-[#855B09]' : 'text-[#8C8275] hover:text-[#1A1208] hover:bg-[#F2ECE0]/50'
+                                  }`}
+                                >
+                                  <span>{language === 'en' ? 'New Testament (27)' : 'ሐዲስ ኪዳን (፳፯)'}</span>
+                                  <ChevronDown
+                                    className={`w-3.5 h-3.5 transition-transform ${
+                                      expandedTestament === 'NT' || searchTerm !== '' ? 'rotate-180 text-[#855B09]' : 'text-[#A0988A]'
+                                    }`}
+                                  />
+                                </button>
 
-                            {/* Share / Copy */}
-                            <button
-                              onClick={() => {
-                                handleShareVerse(v.number);
-                                setSelectedVerseForMenu(null);
-                              }}
-                              className="text-[11px] font-bold text-[#E5D2A6] hover:text-white"
-                            >
-                              <Share2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                                {(expandedTestament === 'NT' || searchTerm !== '') && (
+                                  <div className="space-y-0.5 animate-fadeIn pl-1">
+                                    {EOTC_81_BOOKS.filter(
+                                      (b) =>
+                                        b.testament === 'NT' &&
+                                        (searchTerm === '' ||
+                                          b.nameEnglish.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                          b.nameAmharic.includes(searchTerm) ||
+                                          b.nameGeez.includes(searchTerm))
+                                    ).map((book) => {
+                                      const isCurrent = currentBook.id === book.id;
+                                      return (
+                                        <button
+                                          key={book.id}
+                                          onClick={() => openBookInReader(book.id, 1)}
+                                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                                            isCurrent
+                                              ? 'border-l-2 border-[#B8860B] text-[#B8860B] font-bold bg-[#FAF0D9]/60 pl-2 font-serif'
+                                              : 'text-[#4A4033] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60 font-serif'
+                                          }`}
+                                        >
+                                          <span className="truncate">{book.nameEnglish}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
 
-              </div>
+                              {/* ── ETHIOPIC CANON ── */}
+                              <div className="space-y-1">
+                                <button
+                                  onClick={() => setExpandedTestament(expandedTestament === 'ETHIOPIC' ? null : 'ETHIOPIC')}
+                                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-[10.5px] font-serif font-black uppercase tracking-wider transition-colors cursor-pointer ${
+                                    expandedTestament === 'ETHIOPIC' ? 'bg-[#FAF0D9]/70 text-[#855B09]' : 'text-[#8C8275] hover:text-[#1A1208] hover:bg-[#F2ECE0]/50'
+                                  }`}
+                                >
+                                  <span>{language === 'en' ? 'Ethiopic Canon (16)' : 'ልዩ ቀኖና ወአዋልድ (፲፮)'}</span>
+                                  <ChevronDown
+                                    className={`w-3.5 h-3.5 transition-transform ${
+                                      expandedTestament === 'ETHIOPIC' || searchTerm !== '' ? 'rotate-180 text-[#855B09]' : 'text-[#A0988A]'
+                                    }`}
+                                  />
+                                </button>
 
-              {/* ── BOTTOM CHAPTER NAVIGATION BAR ── */}
-              <div className="px-8 py-5 border-t border-[#E6DFD1]/60 flex items-center justify-center gap-8 shrink-0 bg-[#FAF8F5]/80">
-                <button
-                  onClick={() => {
-                    setSelectedChapter(Math.max(1, selectedChapter - 1));
-                    setActiveVerseNum(1);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  disabled={selectedChapter === 1}
-                  className="w-9 h-9 rounded-full bg-white border border-[#E6DFD1] hover:bg-[#FAF3DE] text-[#855B09] flex items-center justify-center shadow-2xs disabled:opacity-30 transition-all cursor-pointer"
-                  title="Previous Chapter"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
+                                {(expandedTestament === 'ETHIOPIC' || searchTerm !== '') && (
+                                  <div className="space-y-0.5 animate-fadeIn pl-1">
+                                    {EOTC_81_BOOKS.filter(
+                                      (b) =>
+                                        (b.testament === 'EOTC_UNIQUE' || b.testament === 'DEUT') &&
+                                        (searchTerm === '' ||
+                                          b.nameEnglish.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                          b.nameAmharic.includes(searchTerm) ||
+                                          b.nameGeez.includes(searchTerm))
+                                    ).map((book) => {
+                                      const isCurrent = currentBook.id === book.id;
+                                      return (
+                                        <button
+                                          key={book.id}
+                                          onClick={() => openBookInReader(book.id, 1)}
+                                          className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                                            isCurrent
+                                              ? 'border-l-2 border-[#B8860B] text-[#B8860B] font-bold bg-[#FAF0D9]/60 pl-2 font-serif'
+                                              : 'text-[#4A4033] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60 font-serif'
+                                          }`}
+                                        >
+                                          <span className="truncate">{book.nameEnglish}</span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-serif font-bold text-[#4A3B22] bg-white border border-[#E6DFD1] px-4 py-1.5 rounded-full shadow-2xs">
-                  <span>{currentBook.nameEnglish} {selectedChapter}</span>
-                  <ChevronDown className="w-3 h-3 text-[#855B09]" />
-                </div>
+                            </div>
 
-                <button
-                  onClick={() => {
-                    setSelectedChapter(Math.min(currentBook.chaptersCount, selectedChapter + 1));
-                    setActiveVerseNum(1);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  disabled={selectedChapter === currentBook.chaptersCount}
-                  className="w-9 h-9 rounded-full bg-white border border-[#E6DFD1] hover:bg-[#FAF3DE] text-[#855B09] flex items-center justify-center shadow-2xs disabled:opacity-30 transition-all cursor-pointer"
-                  title="Next Chapter"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </main>
+                            {/* Bottom Settings Link */}
+                            <div className="p-3.5 border-t border-[#EFEBE4] bg-[#FAF8F5] shrink-0">
+                              <button
+                                onClick={() => setIsFormatMenuOpen(!isFormatMenuOpen)}
+                                className="flex items-center gap-2 text-xs font-serif text-[#6B6152] hover:text-[#1A1208] transition-colors cursor-pointer"
+                              >
+                                <Settings className="w-3.5 h-3.5 text-[#8C8275]" />
+                                <span>Settings</span>
+                              </button>
+                            </div>
+                          </aside>
 
-            {/* ═══════════════════════════════════════════════════════════════
-                3. RIGHT SIDEBAR: TOOLS, NOTES, HIGHLIGHTS & STUDY CENTER
-            ═══════════════════════════════════════════════════════════════ */}
-            <aside className="hidden xl:flex flex-col bg-[#FAF7F2] border-l border-[#E6DFD1] p-4.5 space-y-4 overflow-y-auto custom-scrollbar">
-              
-              {/* ── TOOLS HEADER BAR ── */}
-              <div className="bg-white rounded-2xl border border-[#E6DFD1] p-3 shadow-2xs">
-                <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-wider block mb-2 px-1">
-                  Tools
-                </span>
+                          {/* ═══════════════════════════════════════════════════════════════
+                              2. CENTER COLUMN: CLEAN MINIMALIST BIBLE READING WORKSPACE
+                          ═══════════════════════════════════════════════════════════════ */}
+                          <main
+                            className={`flex-1 flex flex-col overflow-y-auto custom-scrollbar overscroll-contain transition-colors h-full ${
+                              readingTheme === 'sepia'
+                                ? 'bg-[#FAF4E6]'
+                                : readingTheme === 'dark'
+                                ? 'bg-[#1C1917] text-[#EDE8DE]'
+                                : 'bg-[#FAF8F5]'
+                            }`}
+                          >
+                            
+                            {/* Top Navigation & Minimalist Action Buttons */}
+                            <div className="px-8 sm:px-12 py-5 flex items-center justify-between flex-wrap gap-4 shrink-0">
+                              
+                              {/* Clean Breadcrumbs */}
+                              <div className="flex items-center gap-1.5 text-xs text-[#8C8275] font-serif">
+                                <span className="font-semibold text-[#4A4033]">{currentBook.nameEnglish}</span>
+                                <span className="text-[#B8A383]">›</span>
+                                <span className="text-[#8C8275]">Chapter {selectedChapter}</span>
+                              </div>
+
+                              {/* Minimalist Action Buttons matching Reference Image */}
+                              <div className="flex items-center gap-2">
+                                {/* Audio Speaker Button */}
+                                <button
+                                  onClick={() => setIsPlayingAudio(!isPlayingAudio)}
+                                  title={isPlayingAudio ? 'Pause Audio' : 'Listen to Chapter'}
+                                  className={`w-9 h-9 rounded-xl border text-xs flex items-center justify-center transition-all cursor-pointer ${
+                                    isPlayingAudio
+                                      ? 'bg-[#800020] text-white border-[#800020] shadow-2xs'
+                                      : 'bg-white text-[#4A4033] hover:bg-[#F5EFE4] border-[#E8E1D5]'
+                                  }`}
+                                >
+                                  {isPlayingAudio ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-[#4A4033]" />}
+                                </button>
+
+                                {/* Typography Aa Button */}
+                                <div className="relative">
+                                  <button
+                                    onClick={() => setIsFormatMenuOpen(!isFormatMenuOpen)}
+                                    className="w-9 h-9 rounded-xl bg-white hover:bg-[#F5EFE4] border border-[#E8E1D5] text-[#4A4033] text-xs font-serif font-bold flex items-center justify-center shadow-2xs cursor-pointer"
+                                    title="Typography & Reading Preferences"
+                                  >
+                                    <span>AA</span>
+                                  </button>
+
+                                  {isFormatMenuOpen && (
+                                    <div className="absolute right-0 top-11 w-64 bg-white p-4 rounded-2xl border border-[#E8E1D5] shadow-xl z-50 space-y-3.5 animate-fadeIn">
+                                      <div className="flex items-center justify-between text-xs font-bold text-[#855B09] border-b border-[#E8E1D5] pb-2">
+                                        <span>Reading Preferences</span>
+                                        <button onClick={() => setIsFormatMenuOpen(false)}>
+                                          <X className="w-3.5 h-3.5 text-[#9CA3AF]" />
+                                        </button>
+                                      </div>
+
+                                      {/* Font Size */}
+                                      <div className="space-y-1.5">
+                                        <span className="text-[11px] font-bold text-[#6B7280]">Font Size</span>
+                                        <div className="grid grid-cols-3 gap-1 bg-[#FAF8F3] p-1 rounded-xl border border-[#E8E1D5]">
+                                          {(['normal', 'large', 'xlarge'] as const).map((sz) => (
+                                            <button
+                                              key={sz}
+                                              onClick={() => setFontSize(sz)}
+                                              className={`py-1 text-xs font-bold rounded-lg capitalize transition-all ${
+                                                fontSize === sz
+                                                  ? 'bg-white text-[#855B09] shadow-2xs font-black'
+                                                  : 'text-[#9CA3AF]'
+                                              }`}
+                                            >
+                                              {sz === 'normal' ? 'Small' : sz === 'large' ? 'Medium' : 'Large'}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Translation Script */}
+                                      <div className="space-y-1.5">
+                                        <span className="text-[11px] font-bold text-[#6B7280]">Translation</span>
+                                        <div className="grid grid-cols-3 gap-1 bg-[#FAF8F3] p-1 rounded-xl border border-[#E8E1D5]">
+                                          {[
+                                            { id: 'en' as const, label: 'English' },
+                                            { id: 'am' as const, label: 'አማርኛ' },
+                                            { id: 'ge' as const, label: 'ግዕዝ' },
+                                          ].map((langOpt) => (
+                                            <button
+                                              key={langOpt.id}
+                                              onClick={() => setBibleLanguageMode(langOpt.id)}
+                                              className={`py-1 text-xs font-bold rounded-lg transition-all ${
+                                                bibleLanguageMode === langOpt.id
+                                                  ? 'bg-[#C8A84B] text-[#1A2C1C] font-black shadow-2xs'
+                                                  : 'text-[#4A3B22] hover:text-[#1A1208]'
+                                              }`}
+                                            >
+                                              {langOpt.label}
+                                            </button>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Sun / Theme Button */}
+                                <button
+                                  onClick={() => {
+                                    if (readingTheme === 'light') setReadingTheme('sepia');
+                                    else if (readingTheme === 'sepia') setReadingTheme('dark');
+                                    else setReadingTheme('light');
+                                  }}
+                                  title="Toggle Theme"
+                                  className="w-9 h-9 rounded-xl bg-white hover:bg-[#F5EFE4] border border-[#E8E1D5] text-[#4A4033] flex items-center justify-center shadow-2xs cursor-pointer"
+                                >
+                                  {readingTheme === 'dark' ? (
+                                    <Moon className="w-4 h-4 text-amber-300" />
+                                  ) : (
+                                    <Sun className="w-4 h-4 text-[#8C8275]" />
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* ── BIBLE SCRIPTURE BODY (MATCHING EXACT REFERENCE TYPOGRAPHY) ── */}
+                            <div className="flex-1 px-8 sm:px-14 md:px-20 pt-2 pb-8 max-w-3xl mx-auto w-full space-y-6 flex flex-col justify-between">
+                              
+                              <div className="space-y-6">
+                                {/* Chapter Heading & Italic Subtitle */}
+                                <div className="space-y-1 pb-1">
+                                  <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#1A1208] tracking-tight">
+                                    {currentBook.nameEnglish} {selectedChapter}
+                                  </h1>
+                                  <p className="text-sm font-serif text-[#8C8275] italic">
+                                    {selectedChapter === 1 && currentBook.id === 'genesis'
+                                      ? 'The Beginning'
+                                      : `${currentBook.nameAmharic} — ምዕራፍ ${selectedChapter}`}
+                                  </p>
+                                </div>
+
+                                {/* Clean List of Verses */}
+                                <div
+                                  className={`space-y-3 font-serif leading-[1.85] select-text transition-all ${
+                                    fontSize === 'xlarge'
+                                      ? 'text-[18px]'
+                                      : fontSize === 'large'
+                                      ? 'text-[16.5px]'
+                                      : 'text-[15.5px]'
+                                  } ${readingTheme === 'dark' ? 'text-[#E5E0D5]' : 'text-[#2C241B]'}`}
+                                >
+                                  {verses.map((v) => {
+                                    const isSelected = activeVerseNum === v.number;
+                                    const verseContent =
+                                      bibleLanguageMode === 'en'
+                                        ? v.english
+                                        : bibleLanguageMode === 'ge'
+                                        ? v.geez
+                                        : bibleLanguageMode === 'am'
+                                        ? v.amharic
+                                        : getActiveVerseText(v);
+
+                                    return (
+                                      <div
+                                        key={v.number}
+                                        onClick={() => {
+                                          setActiveVerseNum(v.number);
+                                          setSelectedVerseForMenu(selectedVerseForMenu === v.number ? null : v.number);
+                                        }}
+                                        className={`flex items-start gap-4 p-2 rounded-xl transition-all cursor-pointer ${
+                                          isSelected
+                                            ? 'bg-[#FDF3DE] border border-[#F3E5C8]'
+                                            : 'hover:bg-[#F5EFE4]/60'
+                                        }`}
+                                      >
+                                        {/* Verse Number Column */}
+                                        <span className="text-xs font-serif font-bold text-[#8C8275] pt-0.5 w-5 shrink-0 text-right select-none opacity-80">
+                                          {v.number}
+                                        </span>
+
+                                        {/* Verse Text + Bookmark Icon when Selected */}
+                                        <div className="flex-1 flex items-start justify-between gap-3">
+                                          <p className="text-[15px] sm:text-[15.5px] font-serif leading-[1.8] text-[#2C241B]">
+                                            {verseContent}
+                                          </p>
+
+                                          {/* Golden Bookmark Ribbon Icon on Active Verse */}
+                                          {isSelected && (
+                                            <button
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setBibleBookmarks((prev) => {
+                                                  const exists = prev.some(
+                                                    (bm) => bm.bookId === currentBook.id && bm.chapter === selectedChapter && bm.verseRef.includes(`${selectedChapter}:${v.number}`)
+                                                  );
+                                                  if (exists) {
+                                                    return prev.filter(
+                                                      (bm) => !(bm.bookId === currentBook.id && bm.chapter === selectedChapter && bm.verseRef.includes(`${selectedChapter}:${v.number}`))
+                                                    );
+                                                  } else {
+                                                    return [
+                                                      ...prev,
+                                                      {
+                                                        id: `bm-${Date.now()}`,
+                                                        bookId: currentBook.id,
+                                                        bookName: currentBook.nameEnglish,
+                                                        chapter: selectedChapter,
+                                                        verseRef: `${currentBook.nameEnglish} ${selectedChapter}:${v.number}`,
+                                                        textSnippet: verseContent.substring(0, 65) + '...',
+                                                      },
+                                                    ];
+                                                  }
+                                                });
+                                                handleShareVerse(v.number);
+                                              }}
+                                              className="text-[#B8860B] hover:scale-110 transition-transform shrink-0 pt-1 cursor-pointer"
+                                              title="Bookmark Verse"
+                                            >
+                                              <Bookmark className="w-4 h-4 fill-current" />
+                                            </button>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              {/* Floating Chapter Navigation Pill matching Reference */}
+                              <div className="pt-6 pb-2 flex items-center justify-center">
+                                <div className="inline-flex items-center gap-3 bg-white border border-[#E8E1D5] px-4 py-1.5 rounded-full text-xs font-bold text-[#4A4033] shadow-2xs">
+                                  <button
+                                    onClick={() => {
+                                      if (selectedChapter > 1) {
+                                        openBookInReader(currentBook.id, selectedChapter - 1);
+                                      }
+                                    }}
+                                    disabled={selectedChapter === 1}
+                                    className="hover:text-[#B8860B] disabled:opacity-30 cursor-pointer"
+                                  >
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                  </button>
+                                  
+                                  <span className="font-serif font-bold flex items-center gap-1 cursor-pointer">
+                                    <span>{currentBook.nameEnglish} {selectedChapter}</span>
+                                    <ChevronDown className="w-3 h-3 text-[#8C8275]" />
+                                  </span>
+
+                                  <button
+                                    onClick={() => {
+                                      if (selectedChapter < currentBook.chaptersCount) {
+                                        openBookInReader(currentBook.id, selectedChapter + 1);
+                                      }
+                                    }}
+                                    disabled={selectedChapter === currentBook.chaptersCount}
+                                    className="hover:text-[#B8860B] disabled:opacity-30 cursor-pointer"
+                                  >
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+
+                            </div>
+                          </main>
+
+                          {/* ═══════════════════════════════════════════════════════════════
+                              3. RIGHT SIDEBAR: CLEAN TOOLS & NOTES PANEL MATCHING REFERENCE
+                          ═══════════════════════════════════════════════════════════════ */}
+                          <aside className="hidden xl:flex flex-col bg-[#FAF8F5] border-l border-[#EFEBE4] p-4.5 space-y-4 overflow-y-auto custom-scrollbar overscroll-contain h-full">
+                            
+                            {/* ── TOOLS HEADER BAR ── */}
+                            <div className="space-y-2">
+                              <span className="text-[10px] font-black text-[#9C9488] uppercase tracking-wider block px-1">
+                                TOOLS
+                              </span>
 
                 <div className="grid grid-cols-4 gap-1 text-center">
                   {[
@@ -1767,10 +1625,10 @@ export const ScriptureView: React.FC = () => {
                       <button
                         key={tool.id}
                         onClick={() => setActiveStudyTool(tool.id)}
-                        className={`flex flex-col items-center justify-center p-2 rounded-xl text-[10.5px] font-bold transition-all cursor-pointer ${
+                        className={`flex flex-col items-center justify-center p-2 rounded-xl text-[10.5px] font-serif transition-all cursor-pointer ${
                           isActive
-                            ? 'bg-[#FAF0D9] text-[#855B09] shadow-2xs font-extrabold'
-                            : 'text-[#6B7280] hover:text-[#2C1D07] hover:bg-[#FAF8F5]'
+                            ? 'bg-[#FAF0D9] text-[#855B09] font-bold shadow-2xs'
+                            : 'text-[#8C8275] hover:text-[#2C1D07] hover:bg-[#F2ECE0]/60'
                         }`}
                       >
                         <ToolIcon className="w-3.5 h-3.5 mb-1" />
@@ -1781,192 +1639,262 @@ export const ScriptureView: React.FC = () => {
                 </div>
               </div>
 
-              {/* ── MY NOTES CARD ── */}
-              <div className="bg-white rounded-2xl border border-[#E6DFD1] p-4 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-wider">
-                    My Notes
-                  </span>
-                  <button
-                    onClick={() => {
-                      setNoteFormTitle(`${currentBook.nameEnglish} ${selectedChapter}:${activeVerseNum || 1}`);
-                      setNoteFormVerse(activeVerseNum || 1);
-                      setNoteFormContent('');
-                      setIsNoteEditorOpen(true);
-                    }}
-                    className="text-[11px] font-bold text-[#855B09] hover:text-[#523703] flex items-center gap-1 cursor-pointer"
-                  >
-                    <Plus className="w-3 h-3" />
-                    <span>New Note</span>
-                  </button>
-                </div>
+              {/* ── NOTES PANEL (MATCHING EXACT REFERENCE IMAGE) ── */}
+              {activeStudyTool === 'notes' && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-black text-[#9C9488] uppercase tracking-wider">
+                      NOTES
+                    </span>
+                    <button
+                      onClick={() => {
+                        setNoteFormTitle(`${currentBook.nameEnglish} ${selectedChapter}:${activeVerseNum || 1}`);
+                        setNoteFormVerse(activeVerseNum || 1);
+                        setNoteFormContent('');
+                        setIsNoteEditorOpen(true);
+                      }}
+                      className="text-[11px] font-serif font-bold text-[#855B09] hover:text-[#523703] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Plus className="w-3 h-3" />
+                      <span>New Note</span>
+                    </button>
+                  </div>
 
-                {/* Inline Note Creation Form */}
-                {isNoteEditorOpen && (
-                  <div className="bg-[#FAF8F3] p-3 rounded-xl border border-[#E6DFD1] space-y-2.5 animate-fadeIn">
-                    <div className="flex items-center justify-between">
+                  {/* Inline Note Creation Form */}
+                  {isNoteEditorOpen && (
+                    <div className="bg-white p-3 rounded-2xl border border-[#E8E1D5] space-y-2.5 animate-fadeIn shadow-2xs">
                       <input
                         type="text"
                         placeholder="Note Title"
                         value={noteFormTitle}
                         onChange={(e) => setNoteFormTitle(e.target.value)}
-                        className="w-full bg-white border border-[#E6DFD1] rounded-lg px-2.5 py-1 text-xs font-bold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
+                        className="w-full bg-[#FAF8F5] border border-[#E8E1D5] rounded-lg px-2.5 py-1 text-xs font-bold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
                       />
+                      <textarea
+                        placeholder="Write your study notes here..."
+                        rows={3}
+                        value={noteFormContent}
+                        onChange={(e) => setNoteFormContent(e.target.value)}
+                        className="w-full bg-[#FAF8F5] border border-[#E8E1D5] rounded-lg p-2 text-xs text-[#2C1D07] focus:outline-none focus:border-[#C8A84B] font-serif"
+                      />
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          onClick={() => setIsNoteEditorOpen(false)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-serif font-bold text-[#6B7280] hover:bg-stone-200"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (noteFormTitle.trim() || noteFormContent.trim()) {
+                              setBibleNotes((prev) => [
+                                {
+                                  id: `note-${Date.now()}`,
+                                  title: noteFormTitle || 'Study Note',
+                                  bookId: currentBook.id,
+                                  bookName: currentBook.nameEnglish,
+                                  chapter: selectedChapter,
+                                  verseRef: `${currentBook.nameEnglish} ${selectedChapter}:${noteFormVerse}`,
+                                  content: noteFormContent,
+                                  date: 'Today',
+                                },
+                                ...prev,
+                              ]);
+                              setIsNoteEditorOpen(false);
+                            }
+                          }}
+                          className="px-3 py-1 bg-[#1A2C1C] text-[#C8A84B] rounded-lg text-xs font-bold shadow-2xs cursor-pointer"
+                        >
+                          Save Note
+                        </button>
+                      </div>
                     </div>
-                    <textarea
-                      placeholder="Write your study notes, reflections, or cross-references here..."
-                      rows={3}
-                      value={noteFormContent}
-                      onChange={(e) => setNoteFormContent(e.target.value)}
-                      className="w-full bg-white border border-[#E6DFD1] rounded-lg p-2 text-xs text-[#2C1D07] focus:outline-none focus:border-[#C8A84B] font-body"
-                    />
-                    <div className="flex items-center justify-end gap-2 pt-1">
-                      <button
-                        onClick={() => setIsNoteEditorOpen(false)}
-                        className="px-2.5 py-1 rounded-lg text-xs font-bold text-[#6B7280] hover:bg-stone-200"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (noteFormTitle.trim() || noteFormContent.trim()) {
-                            setBibleNotes((prev) => [
-                              {
-                                id: `note-${Date.now()}`,
-                                title: noteFormTitle || 'Study Note',
-                                bookId: currentBook.id,
-                                bookName: currentBook.nameEnglish,
-                                chapter: selectedChapter,
-                                verseRef: `${currentBook.nameEnglish} ${selectedChapter}:${noteFormVerse}`,
-                                content: noteFormContent,
-                                date: 'Today',
-                              },
-                              ...prev,
-                            ]);
-                            setIsNoteEditorOpen(false);
-                          }
-                        }}
-                        className="px-3 py-1 bg-[#1A2C1C] text-[#C8A84B] rounded-lg text-xs font-bold shadow-2xs"
-                      >
-                        Save Note
-                      </button>
+                  )}
+
+                  {/* Empty State Card matching Reference Image */}
+                  {bibleNotes.length === 0 && !isNoteEditorOpen ? (
+                    <div className="bg-[#FAF8F5] border border-[#ECE5D8] rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 min-h-[360px]">
+                      <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-[#C5B396]">
+                        <svg
+                          width="44"
+                          height="44"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#C5B396"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                          <polyline points="14 2 14 8 20 8" />
+                          <line x1="16" y1="13" x2="8" y2="13" />
+                          <line x1="16" y1="17" x2="8" y2="17" />
+                          <polyline points="10 9 9 9 8 9" />
+                        </svg>
+                      </div>
+                      <h4 className="text-sm font-serif font-bold text-[#3D3328]">
+                        No notes yet
+                      </h4>
+                      <p className="text-xs text-[#8C8275] max-w-[180px] leading-relaxed font-serif">
+                        Take a note on your favorite verses.
+                      </p>
                     </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {bibleNotes.map((note) => (
+                        <div
+                          key={note.id}
+                          className="p-3 bg-white rounded-xl border border-[#E8E1D5] hover:border-[#C8A84B] transition-colors space-y-1 shadow-2xs"
+                        >
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold text-[#2C1D07] font-serif truncate">
+                              {note.title}
+                            </h4>
+                            <span className="text-[10px] text-[#9CA3AF] font-mono">
+                              {note.date}
+                            </span>
+                          </div>
+                          <div className="text-[10.5px] font-bold text-[#855B09] font-serif">
+                            {note.verseRef}
+                          </div>
+                          <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed font-serif">
+                            {note.content}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── HIGHLIGHTS PANEL ── */}
+              {activeStudyTool === 'highlights' && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-black text-[#9C9488] uppercase tracking-wider">
+                      HIGHLIGHTS
+                    </span>
                   </div>
-                )}
 
-                {/* List of Saved Notes */}
-                <div className="space-y-2.5">
-                  {bibleNotes.map((note) => (
-                    <div
-                      key={note.id}
-                      className="p-3 bg-[#FAF8F5] rounded-xl border border-[#E6DFD1]/80 hover:border-[#C8A84B] transition-colors space-y-1 group relative"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-black text-[#2C1D07] font-serif truncate">
-                          {note.title}
-                        </h4>
-                        <span className="text-[10px] text-[#9CA3AF] font-mono">
-                          {note.date}
-                        </span>
-                      </div>
-                      
-                      <div className="text-[10.5px] font-bold text-[#855B09] font-serif">
-                        {note.verseRef}
-                      </div>
-
-                      <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed font-body">
-                        {note.content}
+                  {bibleHighlights.length === 0 ? (
+                    <div className="bg-[#FAF8F5] border border-[#ECE5D8] rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 min-h-[360px]">
+                      <Highlighter className="w-10 h-10 text-[#C5B396]" />
+                      <h4 className="text-sm font-serif font-bold text-[#3D3328]">
+                        No highlights yet
+                      </h4>
+                      <p className="text-xs text-[#8C8275] max-w-[180px] leading-relaxed font-serif">
+                        Click on verses to highlight them.
                       </p>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="space-y-2">
+                      {bibleHighlights.map((hl) => (
+                        <div
+                          key={hl.id}
+                          onClick={() => {
+                            setSelectedBookId(hl.bookId);
+                            setSelectedChapter(hl.chapter);
+                            setActiveVerseNum(hl.verseNum);
+                          }}
+                          className="p-2.5 bg-white rounded-xl border border-[#E8E1D5] hover:border-[#C8A84B] transition-colors cursor-pointer space-y-1 shadow-2xs group relative"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2 h-2 rounded-full bg-amber-400" />
+                              <span className="text-xs font-bold text-[#2C1D07] font-serif">
+                                {hl.bookName} {hl.chapter}:{hl.verseNum}
+                              </span>
+                            </div>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setBibleHighlights((prev) => prev.filter((item) => item.id !== hl.id));
+                              }}
+                              className="text-[#9CA3AF] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Remove highlight"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-[#6B7280] line-clamp-2 italic font-serif">
+                            "{hl.textSnippet}"
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
+              )}
 
-                <button className="w-full text-center text-[11px] font-bold text-[#855B09] hover:underline pt-1 flex items-center justify-center gap-1">
-                  <span>View all notes</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
+              {/* ── BOOKMARKS PANEL ── */}
+              {activeStudyTool === 'bookmarks' && (
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[10px] font-black text-[#9C9488] uppercase tracking-wider">
+                      BOOKMARKS
+                    </span>
+                  </div>
 
-              {/* ── MY HIGHLIGHTS CARD ── */}
-              <div className="bg-white rounded-2xl border border-[#E6DFD1] p-4 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-wider">
-                    My Highlights
-                  </span>
-                  <span className="text-[11px] font-bold text-[#855B09] cursor-pointer hover:underline">
-                    View all
-                  </span>
-                </div>
-
-                <div className="space-y-2.5">
-                  {bibleHighlights.map((hl) => (
-                    <div
-                      key={hl.id}
-                      onClick={() => {
-                        setSelectedBookId(hl.bookId);
-                        setSelectedChapter(hl.chapter);
-                        setActiveVerseNum(hl.verseNum);
-                      }}
-                      className="p-2.5 bg-[#FAF8F5] rounded-xl border border-[#E6DFD1]/70 hover:border-[#C8A84B] transition-colors cursor-pointer space-y-1"
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`w-2 h-2 rounded-full ${
-                            hl.color === 'yellow'
-                              ? 'bg-amber-400'
-                              : hl.color === 'green'
-                              ? 'bg-emerald-500'
-                              : hl.color === 'purple'
-                              ? 'bg-purple-500'
-                              : 'bg-blue-500'
-                          }`}
-                        />
-                        <span className="text-xs font-bold text-[#2C1D07] font-serif">
-                          {hl.bookName} {hl.chapter}:{hl.verseNum}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#6B7280] line-clamp-2 italic font-serif">
-                        "{hl.textSnippet}"
+                  {bibleBookmarks.length === 0 ? (
+                    <div className="bg-[#FAF8F5] border border-[#ECE5D8] rounded-2xl p-8 flex flex-col items-center justify-center text-center space-y-3 min-h-[360px]">
+                      <Bookmark className="w-10 h-10 text-[#C5B396]" />
+                      <h4 className="text-sm font-serif font-bold text-[#3D3328]">
+                        No bookmarks yet
+                      </h4>
+                      <p className="text-xs text-[#8C8275] max-w-[180px] leading-relaxed font-serif">
+                        Bookmark your favorite chapters and verses.
                       </p>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── BOOKMARKS CARD ── */}
-              <div className="bg-white rounded-2xl border border-[#E6DFD1] p-4 shadow-2xs space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-[#9CA3AF] uppercase tracking-wider">
-                    Bookmarks
-                  </span>
-                  <span className="text-[11px] font-bold text-[#855B09] cursor-pointer hover:underline">
-                    View all
-                  </span>
-                </div>
-
-                <div className="space-y-2.5">
-                  {bibleBookmarks.map((bm) => (
-                    <div
-                      key={bm.id}
-                      onClick={() => {
-                        setSelectedBookId(bm.bookId);
-                        setSelectedChapter(bm.chapter);
-                      }}
-                      className="p-2.5 bg-[#FAF8F5] rounded-xl border border-[#E6DFD1]/70 hover:border-[#C8A84B] transition-colors cursor-pointer space-y-1"
-                    >
-                      <div className="flex items-center gap-1.5 text-[#800020]">
-                        <Bookmark className="w-3.5 h-3.5 fill-current" />
-                        <span className="text-xs font-bold text-[#2C1D07] font-serif">
-                          {bm.verseRef}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-[#6B7280] line-clamp-2 font-serif italic">
-                        "{bm.textSnippet}"
-                      </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {bibleBookmarks.map((bm) => (
+                        <div
+                          key={bm.id}
+                          onClick={() => {
+                            setSelectedBookId(bm.bookId);
+                            setSelectedChapter(bm.chapter);
+                          }}
+                          className="p-2.5 bg-white rounded-xl border border-[#E8E1D5] hover:border-[#C8A84B] transition-colors cursor-pointer space-y-1 shadow-2xs"
+                        >
+                          <div className="flex items-center gap-1.5 text-[#800020]">
+                            <Bookmark className="w-3.5 h-3.5 fill-current" />
+                            <span className="text-xs font-bold text-[#2C1D07] font-serif">
+                              {bm.verseRef}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#6B7280] line-clamp-2 font-serif italic">
+                            "{bm.textSnippet}"
+                          </p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
+              )}
+
+              {/* ── HISTORY PANEL ── */}
+              {activeStudyTool === 'history' && (
+                <div className="space-y-3 pt-2">
+                  <span className="text-[10px] font-black text-[#9C9488] uppercase tracking-wider block px-1">
+                    READING HISTORY
+                  </span>
+                  <div className="space-y-2">
+                    {[
+                      { ref: `${currentBook.nameEnglish} ${selectedChapter}`, time: 'Just now' },
+                      { ref: 'Genesis 1', time: 'Yesterday' },
+                      { ref: 'Psalm 23', time: '2 days ago' },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-[#E8E1D5] shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-3.5 h-3.5 text-[#855B09]" />
+                          <span className="text-xs font-bold text-[#2C1D07] font-serif">{item.ref}</span>
+                        </div>
+                        <span className="text-[10px] text-[#9CA3AF] font-mono">{item.time}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
             </aside>
 
@@ -1975,352 +1903,541 @@ export const ScriptureView: React.FC = () => {
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          SECTION 3: PRAYER BOOKS (መጻሕፍተ ጸሎት)
+          SECTION 3: PRAYER BOOKS (መጻሕፍተ ጸሎት) — CLEAN CARDLESS LIST DESIGN
       ═══════════════════════════════════════════════════════════════ */}
       {activeSection === 'prayers' && (
         <div className="space-y-8 animate-fadeIn">
           {/* ─────────────────────────────────────────────────────────────
-              VIEW A: PRAYER BOOKS DIRECTORY GRID
+              VIEW A: PRAYER BOOKS DIRECTORY LIST (MATCHING REFERENCE DESIGN)
           ───────────────────────────────────────────────────────────── */}
           {prayerViewMode === 'grid' && (
-            <div className="space-y-8 animate-fadeIn">
-              {/* Header Banner */}
-              <div className="bg-white p-8 md:p-10 rounded-3xl border border-[#E6DFD1] shadow-sm relative overflow-hidden space-y-4">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#FFF5DB] to-transparent rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/3"></div>
-
-                <div className="relative z-10 space-y-3 max-w-3xl">
-                  <div className="inline-flex items-center gap-2 bg-[#FFF5DB] border border-[#800020]/40 px-3.5 py-1 rounded-full text-xs text-[#800020] font-bold uppercase tracking-wider">
-                    <Heart className="w-3.5 h-3.5 text-[#800020]" />
-                    <span>መጻሕፍተ ጸሎት ወውዳሴ • Sacred Prayer Books</span>
-                  </div>
-
-                  <h2 className="text-3xl md:text-5xl font-black text-[#2C1D07] font-geez leading-tight">
-                    {language === 'en' ? 'Prayer Books & Canonical Vigils' : 'መጻሕፍተ ጸሎት፥ ሰዓታት ወአርጋኖን'}
-                  </h2>
-
-                  <p className="text-sm md:text-base text-[#4A3B22] leading-relaxed">
-                    {language === 'en'
-                      ? 'The spiritual treasury of the Ethiopian Orthodox Tewahedo Church: daily Marian praises (Wudase Mariam), the Harp of Praise (Arganon), hourly vigils (Seytat), and traditional Horologion prayers.'
-                      : 'በየዕለቱ የሚጸለዩ የውዳሴ ማርያም፣ የአርጋኖን፣ የመጽሐፈ ሰዓታትና የዘወትር የጸሎት መጻሕፍት ስብስብ።'}
-                  </p>
-                </div>
+            <div className="space-y-6 animate-fadeIn max-w-5xl">
+              
+              {/* Header Title & Subtitle */}
+              <div className="space-y-3 pb-2">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A2C1C] font-serif tracking-tight">
+                  {language === 'en' ? 'Books of Prayer & Horologion' : 'መጻሕፍት ጸሎት ሰዓታት መጽሐፍት'}
+                </h1>
+                <div className="w-16 h-1 bg-[#855B09] rounded-full"></div>
+                <p className="text-sm sm:text-[15px] text-[#4A4033] font-serif leading-relaxed max-w-3xl">
+                  {language === 'en'
+                    ? 'Daily praises of St. Mary, canonical hours of the saints, and sacred liturgical prayer collections of the Ethiopian Orthodox Church.'
+                    : 'በየቀኑ የማርያም መዝሙሮች፣ የቅዱሳን ሰዓታት እና ሌሎች መንፈሳዊ መጻሕፍትን በቤተክርስቲያን ስብስብ።'}
+                </p>
               </div>
 
-              {/* Grid of the 6 Prayer Books */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {PRAYER_BOOKS.map((pBook) => (
-                  <div
-                    key={pBook.id}
-                    onClick={() => openPrayerBook(pBook.id, 0)}
-                    className="bg-white p-6 rounded-3xl border border-[#E6DFD1] hover:border-[#800020] hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between group"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FFF5DB] text-[#855B09] border border-[#C8A84B]/40">
-                          {pBook.category}
+              {/* Clean Underline Category Tabs Filter */}
+              <div className="flex items-center gap-6 sm:gap-8 border-b border-[#E6DFD1] overflow-x-auto custom-scrollbar pt-2 text-sm font-serif">
+                {[
+                  { id: 'all', labelAm: 'ሁሉም', labelEn: 'All' },
+                  { id: 'wudase', labelAm: 'ውዳሴ ማርያም', labelEn: 'Wudase Maryam' },
+                  { id: 'daily', labelAm: 'የዕለት ጸሎታት', labelEn: 'Daily Horologion' },
+                  { id: 'festal', labelAm: 'የበዓላት ጸሎታት', labelEn: 'Festal Salutations' },
+                  { id: 'other', labelAm: 'ሌሎች መጻሕፍተ ጸሎት', labelEn: 'Other Sacred Books' },
+                ].map((tab) => {
+                  const isActive = prayerCategoryTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setPrayerCategoryTab(tab.id)}
+                      className={`pb-3 text-sm font-bold whitespace-nowrap transition-all cursor-pointer relative ${
+                        isActive
+                          ? 'text-[#1A2C1C]'
+                          : 'text-[#8C8275] hover:text-[#1A1208]'
+                      }`}
+                    >
+                      <span>{language === 'en' ? tab.labelEn : tab.labelAm}</span>
+                      {isActive && (
+                        <motion.div
+                          layoutId="activePrayerUnderline"
+                          className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#1A2C1C] rounded-full"
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Clean Flat List Rows (No Cards) */}
+              <div className="divide-y divide-[#EFEAE1]">
+                {PRAYER_BOOKS.filter((pb) => {
+                  if (prayerCategoryTab === 'all') return true;
+                  if (prayerCategoryTab === 'wudase') return pb.id === 'wudase-mariam';
+                  if (prayerCategoryTab === 'daily') return pb.id === 'seytat' || pb.id === 'ye-selot-metsihaf';
+                  if (prayerCategoryTab === 'festal') return pb.id === 'selam';
+                  if (prayerCategoryTab === 'other') return pb.id === 'arganona-wudase' || pb.id === 'metshaf-tselot' || pb.id === 'tsome-deggwa';
+                  return true;
+                }).map((pBook) => {
+                  // Select icon
+                  let BookIcon = Heart;
+                  if (pBook.id === 'seytat' || pBook.id === 'ye-selot-metsihaf') BookIcon = Shield;
+                  else if (pBook.id === 'arganona-wudase' || pBook.id === 'tsome-deggwa') BookIcon = Layers;
+                  else if (pBook.id === 'metshaf-tselot') BookIcon = BookOpen;
+                  else if (pBook.id === 'selam') BookIcon = Sun;
+
+                  return (
+                    <div
+                      key={pBook.id}
+                      onClick={() => openPrayerBook(pBook.id, 0)}
+                      className="py-4 sm:py-5 px-2 hover:bg-[#FAF8F3]/80 transition-colors cursor-pointer flex items-center justify-between gap-4 group"
+                    >
+                      {/* Left: Round icon + Title + Subtitle */}
+                      <div className="flex items-center gap-3.5 sm:gap-4 min-w-0">
+                        <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#FAF4E6] border border-[#E8DFC8] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform text-[#855B09]">
+                          <BookIcon className="w-5 h-5" />
+                        </div>
+
+                        <div className="space-y-0.5 min-w-0">
+                          <h3 className="text-sm sm:text-base font-bold text-[#1A1208] font-serif group-hover:text-[#855B09] transition-colors truncate">
+                            {language === 'en' ? pBook.titleEnglish : pBook.titleAmharic}
+                          </h3>
+                          <p className="text-xs sm:text-[13px] text-[#786D5C] font-serif truncate max-w-xl">
+                            {language === 'en' ? pBook.descriptionEn : pBook.descriptionAm}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right: Reading time + Arrow */}
+                      <div className="flex items-center gap-5 sm:gap-8 shrink-0">
+                        <span className="text-xs sm:text-[13px] text-[#8C8275] font-serif whitespace-nowrap hidden sm:inline">
+                          {language === 'en'
+                            ? `Reading Time: ${pBook.audioDuration || '15:00'}`
+                            : `የማንበብ ጊዜ: ${pBook.audioDuration || '15:00'}`}
                         </span>
-                        {pBook.audioDuration && (
-                          <span className="text-[11px] font-mono text-[#800020] bg-rose-50 px-2.5 py-0.5 rounded-full flex items-center gap-1 font-semibold">
-                            <Volume2 className="w-3 h-3" />
-                            {pBook.audioDuration}
-                          </span>
-                        )}
+                        <div className="text-[#1A2C1C] group-hover:text-[#855B09] group-hover:translate-x-1.5 transition-all">
+                          <ArrowRight className="w-4 h-4" />
+                        </div>
                       </div>
-
-                      <div>
-                        <h3 className="text-xl font-bold text-[#2C1D07] font-geez group-hover:text-[#800020] transition-colors">
-                          {pBook.titleAmharic}
-                        </h3>
-                        <p className="text-xs text-[#855B09] font-medium">
-                          {pBook.titleEnglish} • {pBook.author}
-                        </p>
-                      </div>
-
-                      <p className="text-xs text-[#6B7280] line-clamp-3 leading-relaxed">
-                        {language === 'en' ? pBook.descriptionEn : pBook.descriptionAm}
-                      </p>
                     </div>
-
-                    <div className="pt-4 border-t border-[#E6DFD1]/60 flex items-center justify-between mt-4">
-                      <span className="text-xs text-[#6B7280]">
-                        {pBook.sections.length} {language === 'en' ? 'Sections' : 'ክፍሎች'}
-                      </span>
-                      <span className="text-xs font-bold text-[#800020] group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                        {language === 'en' ? 'Open Book' : 'ጸሎት ጀምር'} &rarr;
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
+
             </div>
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW B: PRAYER BOOK READER VIEW
-              (Ge'ez / Amharic / English, Large-Text Elderly Mode & Audio)
+              VIEW B: PRAYER BOOK READER WORKSPACE (4-LEVEL HIERARCHY TREE)
           ───────────────────────────────────────────────────────────── */}
           {prayerViewMode === 'reader' && (
-            <div className="space-y-6 animate-fadeIn">
-              {/* Sticky Controls Header */}
-              <div className="bg-white p-6 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-5">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  {/* Back button & Title */}
-                  <div className="space-y-2">
+            <div className="w-full bg-[#FAF8F5] rounded-3xl border border-[#ECE5D8] overflow-hidden animate-fadeIn">
+              <div className="grid grid-cols-1 lg:grid-cols-[290px_1fr]" style={{ height: '860px', overflow: 'hidden' }}>
+                
+                {/* ═══════════════════════════════════════════════════════════════
+                    1. LEFT SIDEBAR: COMPLETE 4-LEVEL PRAYER LIBRARY TREE
+                ═══════════════════════════════════════════════════════════════ */}
+                <aside className="flex flex-col bg-[#FAF8F5] border-r border-[#EFEBE4] p-4.5 space-y-4 overflow-y-auto custom-scrollbar overscroll-contain h-full select-none justify-between">
+                  <div className="space-y-4">
+                    {/* Back to Library Link */}
                     <button
                       onClick={() => setPrayerViewMode('grid')}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#855B09] hover:text-[#2C1D07] transition-colors"
+                      className="inline-flex items-center gap-1.5 text-xs font-serif font-bold text-[#855B09] hover:text-[#2C1D07] transition-colors py-1 cursor-pointer"
                     >
                       <ChevronLeft className="w-4 h-4" />
-                      <span>{language === 'en' ? 'Back to Prayer Books List' : 'ወደ ጸሎት መጻሕፍት ዝርዝር ተመለስ'}</span>
+                      <span>{language === 'en' ? 'Back to Prayer Library' : 'ወደ ጸሎት መጻሕፍት'}</span>
                     </button>
 
-                    <h2 className="text-2xl md:text-3xl font-black text-[#2C1D07] font-geez">
-                      {currentPrayerBook.titleAmharic}
-                    </h2>
-                    <p className="text-xs text-[#6B7280]">
-                      {currentPrayerBook.titleEnglish} • {currentPrayerBook.author}
-                    </p>
-                  </div>
+                    {/* Active Prayer Collection Title Badge */}
+                    <div className="bg-[#FAF0D9] text-[#855B09] font-bold p-3 rounded-xl border border-[#EEDBBA] flex items-center gap-2.5 text-xs font-serif shadow-2xs">
+                      <BookOpen className="w-4 h-4 text-[#855B09]" />
+                      <span className="truncate">{language === 'en' ? currentPrayerBook.titleEnglish : currentPrayerBook.titleAmharic}</span>
+                    </div>
 
-                  {/* Format & Elderly Controls */}
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Audio Recitation Trigger */}
-                    {currentPrayerBook.audioUrl && (
-                      <button
-                        onClick={() => setActiveTrackId('zema-3')}
-                        className="bg-[#800020] hover:bg-[#5C0017] text-white py-2 px-4 text-xs font-bold rounded-xl shadow-sm flex items-center gap-2 transition-all"
-                      >
-                        <Volume2 className="w-4 h-4" />
-                        <span>{language === 'en' ? 'Listen Recitation' : 'ዜማውን አዳምጥ'}</span>
-                      </button>
-                    )}
-
-                    {/* Elderly Large-Text Toggle */}
-                    <button
-                      onClick={() => {
-                        setElderlyMode(!elderlyMode);
-                        setPrayerFontSize(elderlyMode ? 'normal' : 'elderly');
-                      }}
-                      className={`px-3.5 py-2 text-xs font-bold rounded-xl border flex items-center gap-2 transition-all ${
-                        elderlyMode
-                          ? 'bg-[#855B09] text-white border-[#855B09] shadow-md ring-2 ring-[#FFF5DB]'
-                          : 'bg-[#FAF8F3] text-[#4A3B22] border-[#E6DFD1] hover:border-[#C8A84B]'
-                      }`}
-                      title="Large-Text Mode for Elderly Users"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-[#C8A84B]" />
-                      <span>{language === 'en' ? 'Senior Large-Text' : 'የአረጋውያን ትልቅ ፊደል'}</span>
-                    </button>
-
-                    {/* Font Size Adjuster */}
-                    <div className="flex items-center gap-1 bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl p-1">
-                      {(['normal', 'large', 'elderly'] as const).map((sz) => (
+                    {/* ── 4-LEVEL HIERARCHICAL ACCORDION TREE ── */}
+                    <div className="space-y-2.5 pt-1">
+                      
+                      {/* ──────────────── COLLECTION 1: ውዳሴ ማርያም ──────────────── */}
+                      <div className="space-y-1">
                         <button
-                          key={sz}
-                          onClick={() => setPrayerFontSize(sz)}
-                          className={`px-2.5 py-1 text-xs font-bold rounded-lg capitalize transition-all ${
-                            prayerFontSize === sz ? 'bg-white text-[#855B09] shadow-sm' : 'text-[#9CA3AF]'
+                          onClick={() => {
+                            if (selectedPrayerBookId !== 'wudase-mariam') {
+                              openPrayerBook('wudase-mariam', 0);
+                            }
+                            setIsPrayerAccordionOpen(!isPrayerAccordionOpen);
+                          }}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-colors ${
+                            selectedPrayerBookId === 'wudase-mariam'
+                              ? 'bg-[#FAF0D9]/70 font-bold text-[#1A1208]'
+                              : 'hover:bg-[#F2ECE0]/60 text-[#4A4033]'
                           }`}
                         >
-                          {sz === 'normal' ? 'A' : sz === 'large' ? 'A+' : 'A++'}
+                          <div className="flex items-center gap-2">
+                            <Heart className="w-3.5 h-3.5 text-[#855B09]" />
+                            <span className="text-xs font-bold font-serif">
+                              {language === 'en' ? 'ውዳሴ ማርያም (Wudase Maryam)' : 'ውዳሴ ማርያም'}
+                            </span>
+                          </div>
+                          <ChevronDown className={`w-3.5 h-3.5 text-[#8C8275] transition-transform duration-200 ${isPrayerAccordionOpen && selectedPrayerBookId === 'wudase-mariam' ? 'rotate-180' : ''}`} />
                         </button>
+
+                        {/* Wudase Maryam Sub-Sections */}
+                        {isPrayerAccordionOpen && selectedPrayerBookId === 'wudase-mariam' && (
+                          <div className="pl-3 space-y-1 pt-1 border-l-2 border-[#E8DFC8] ml-3 animate-fadeIn">
+                            
+                            {/* Sub-Group: የዕለቱ ውዳሴ (7 Days) */}
+                            <div className="space-y-1">
+                              <span className="text-[11px] font-bold text-[#8C8275] uppercase tracking-wider block px-2.5 py-1">
+                                {language === 'en' ? 'Daily Praises (7 Days)' : 'የዕለቱ ውዳሴ'}
+                              </span>
+                              
+                              {[
+                                { idx: 0, am: 'ሰኞ', en: 'Monday' },
+                                { idx: 1, am: 'ማክሰኞ', en: 'Tuesday' },
+                                { idx: 2, am: 'ረቡዕ', en: 'Wednesday' },
+                                { idx: 3, am: 'ሐሙስ', en: 'Thursday' },
+                                { idx: 4, am: 'ዓርብ', en: 'Friday' },
+                                { idx: 5, am: 'ቅዳሜ', en: 'Saturday' },
+                                { idx: 6, am: 'እሁድ', en: 'Sunday' },
+                              ].map((day) => {
+                                const isSelected = selectedSectionIdx === day.idx;
+                                return (
+                                  <button
+                                    key={day.idx}
+                                    onClick={() => setSelectedSectionIdx(day.idx)}
+                                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-[#FAF0D9] text-[#855B09] font-black shadow-2xs'
+                                        : 'text-[#6B5E4F] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60'
+                                    }`}
+                                  >
+                                    <span>{language === 'en' ? day.en : day.am}</span>
+                                    <ChevronRight className={`w-3 h-3 ${isSelected ? 'text-[#855B09]' : 'text-[#C5BCAD]'}`} />
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            {/* Marian Companion Prayers */}
+                            <div className="pt-2 space-y-1">
+                              {[
+                                { idx: 7, am: 'የዘወትር ጸሎት', en: 'Yezewotir Tselot' },
+                                { idx: 8, am: 'አንቀጸ ብርሃን', en: 'Anqetse Berhan' },
+                                { idx: 9, am: 'የውዳሴዋ መልእክት', en: 'Yewudasewa Mele\'kt' },
+                                { idx: 10, am: 'መልክአ ማርያም', en: 'Melkea Maryam' },
+                                { idx: 11, am: 'መልክአ ኢየሱስ', en: 'Melkea Iyesus' },
+                              ].map((item) => {
+                                const isSelected = selectedSectionIdx === item.idx;
+                                return (
+                                  <button
+                                    key={item.idx}
+                                    onClick={() => setSelectedSectionIdx(item.idx)}
+                                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer ${
+                                      isSelected
+                                        ? 'bg-[#FAF0D9] text-[#855B09] font-black shadow-2xs'
+                                        : 'text-[#4A4033] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60'
+                                    }`}
+                                  >
+                                    <span>{language === 'en' ? item.en : item.am}</span>
+                                    <ChevronRight className={`w-3 h-3 ${isSelected ? 'text-[#855B09]' : 'text-[#C5BCAD]'}`} />
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ──────────────── COLLECTION 2: የዕለት ጸሎታት ──────────────── */}
+                      <div className="space-y-1">
+                        <button
+                          onClick={() => {
+                            if (selectedPrayerBookId !== 'seytat') {
+                              openPrayerBook('seytat', 0);
+                            }
+                          }}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-colors ${
+                            selectedPrayerBookId === 'seytat'
+                              ? 'bg-[#FAF0D9]/70 font-bold text-[#1A1208]'
+                              : 'hover:bg-[#F2ECE0]/60 text-[#4A4033]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-3.5 h-3.5 text-[#855B09]" />
+                            <span className="text-xs font-bold font-serif">
+                              {language === 'en' ? 'የዕለት ጸሎታት (Daily Horologion)' : 'የዕለት ጸሎታት'}
+                            </span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 text-[#8C8275]" />
+                        </button>
+
+                        {/* Seytat Sub-Sections */}
+                        {selectedPrayerBookId === 'seytat' && (
+                          <div className="pl-3 space-y-1 pt-1 border-l-2 border-[#E8DFC8] ml-3 animate-fadeIn">
+                            {[
+                              { idx: 0, am: 'ጸሎተ ነግህ (Morning)', en: 'Morning Matins' },
+                              { idx: 1, am: 'ጸሎተ ሠርክ (Evening)', en: 'Evening Vespers' },
+                              { idx: 2, am: 'ጸሎተ ሌሊት (Night Vigil)', en: 'Night Vigil' },
+                            ].map((sec) => {
+                              const isSelected = selectedSectionIdx === sec.idx;
+                              return (
+                                <button
+                                  key={sec.idx}
+                                  onClick={() => setSelectedSectionIdx(sec.idx)}
+                                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-[#FAF0D9] text-[#855B09] font-black shadow-2xs'
+                                      : 'text-[#6B5E4F] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60'
+                                  }`}
+                                >
+                                  <span>{language === 'en' ? sec.en : sec.am}</span>
+                                  <ChevronRight className={`w-3 h-3 ${isSelected ? 'text-[#855B09]' : 'text-[#C5BCAD]'}`} />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ──────────────── COLLECTION 3: የበዓላት ጸሎታት ──────────────── */}
+                      <div className="space-y-1">
+                        <button
+                          onClick={() => {
+                            if (selectedPrayerBookId !== 'selam') {
+                              openPrayerBook('selam', 0);
+                            }
+                          }}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-left cursor-pointer transition-colors ${
+                            selectedPrayerBookId === 'selam'
+                              ? 'bg-[#FAF0D9]/70 font-bold text-[#1A1208]'
+                              : 'hover:bg-[#F2ECE0]/60 text-[#4A4033]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Sun className="w-3.5 h-3.5 text-[#855B09]" />
+                            <span className="text-xs font-bold font-serif">
+                              {language === 'en' ? 'የበዓላት ጸሎታት (Festal Salutations)' : 'የበዓላት ጸሎታት'}
+                            </span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 text-[#8C8275]" />
+                        </button>
+
+                        {/* Selam Sub-Sections */}
+                        {selectedPrayerBookId === 'selam' && (
+                          <div className="pl-3 space-y-1 pt-1 border-l-2 border-[#E8DFC8] ml-3 animate-fadeIn">
+                            {[
+                              { idx: 0, am: 'ሰላመ ማርያም ዘፍልሰታ', en: 'Salutation of Filseta' },
+                              { idx: 1, am: 'ሰላመ ልደታ', en: 'Salutation of Nativity' },
+                              { idx: 2, am: 'ሰላመ አስተርእዮ', en: 'Salutation of Astereyo' },
+                            ].map((sec) => {
+                              const isSelected = selectedSectionIdx === sec.idx;
+                              return (
+                                <button
+                                  key={sec.idx}
+                                  onClick={() => setSelectedSectionIdx(sec.idx)}
+                                  className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs font-serif transition-all cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-[#FAF0D9] text-[#855B09] font-black shadow-2xs'
+                                      : 'text-[#6B5E4F] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60'
+                                  }`}
+                                >
+                                  <span>{language === 'en' ? sec.en : sec.am}</span>
+                                  <ChevronRight className={`w-3 h-3 ${isSelected ? 'text-[#855B09]' : 'text-[#C5BCAD]'}`} />
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ──────────────── COLLECTION 4: ሌሎች መጻሕፍተ ጸሎት ──────────────── */}
+                      <div className="space-y-1">
+                        <div className="px-2.5 py-1.5">
+                          <span className="text-[11px] font-bold text-[#8C8275] uppercase tracking-wider block">
+                            {language === 'en' ? 'Other Sacred Books' : 'ሌሎች መጻሕፍተ ጸሎት'}
+                          </span>
+                        </div>
+
+                        {[
+                          { id: 'arganona-wudase', am: 'አርጋኖነ ውዳሴ', en: 'Arganona Wudase' },
+                          { id: 'metshaf-tselot', am: 'መጽሐፈ ጸሎት', en: 'Metshaf Tselot' },
+                          { id: 'tsome-deggwa', am: 'መጽሐፈ ጾም', en: 'Tsome Deggwa' },
+                        ].map((b) => {
+                          const isCurrent = selectedPrayerBookId === b.id;
+                          return (
+                            <button
+                              key={b.id}
+                              onClick={() => openPrayerBook(b.id, 0)}
+                              className={`w-full flex items-center justify-between p-2 rounded-xl text-xs font-serif transition-all cursor-pointer ${
+                                isCurrent
+                                  ? 'bg-[#FAF0D9] text-[#855B09] font-black shadow-2xs'
+                                  : 'text-[#4A4033] hover:text-[#1A1208] hover:bg-[#F2ECE0]/60'
+                              }`}
+                            >
+                              <span>{language === 'en' ? b.en : b.am}</span>
+                              <ChevronRight className={`w-3.5 h-3.5 ${isCurrent ? 'text-[#855B09]' : 'text-[#A3998C]'}`} />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Bottom Settings Link */}
+                  <div className="pt-3 border-t border-[#E8E1D5] flex items-center gap-2 text-xs font-serif font-bold text-[#8C8275] hover:text-[#2C1D07] cursor-pointer transition-colors">
+                    <Settings className="w-4 h-4" />
+                    <span>{language === 'en' ? 'Settings' : 'ቅንብሮች'}</span>
+                  </div>
+                </aside>
+
+                {/* ═══════════════════════════════════════════════════════════════
+                    2. CENTER MAIN READING PANE (Cardless Verses & Multi-Tier Breadcrumbs)
+                ═══════════════════════════════════════════════════════════════ */}
+                <main className="flex-1 bg-white p-6 sm:p-10 md:p-12 overflow-y-auto custom-scrollbar overscroll-contain flex flex-col justify-between h-full">
+                  <div className="space-y-6 max-w-3xl">
+                    
+                    {/* Top Breadcrumb & Control Action Buttons */}
+                    <div className="flex items-center justify-between gap-4 pb-2 border-b border-[#F2ECE0]">
+                      
+                      {/* Multi-Tier Breadcrumbs: Prayer Library → Collection → Book/Section → Reading */}
+                      <div className="flex items-center gap-1.5 text-xs font-serif text-[#8C8275] truncate">
+                        <span className="hover:text-[#1A1208] cursor-pointer" onClick={() => setPrayerViewMode('grid')}>
+                          {language === 'en' ? 'Prayer Library' : 'የጸሎት መጻሕፍት'}
+                        </span>
+                        <ChevronRight className="w-3 h-3 text-[#C5BCAD] shrink-0" />
+                        <span className="text-[#855B09] font-bold">
+                          {selectedPrayerBookId === 'wudase-mariam'
+                            ? 'ውዳሴ ማርያም'
+                            : selectedPrayerBookId === 'seytat'
+                            ? 'የዕለት ጸሎታት'
+                            : selectedPrayerBookId === 'selam'
+                            ? 'የበዓላት ጸሎታት'
+                            : currentPrayerBook.titleAmharic}
+                        </span>
+                        {selectedPrayerBookId === 'wudase-mariam' && selectedSectionIdx <= 6 && (
+                          <>
+                            <ChevronRight className="w-3 h-3 text-[#C5BCAD] shrink-0" />
+                            <span className="text-[#6B5E4F]">{language === 'en' ? 'Daily Praises' : 'የዕለቱ ውዳሴ'}</span>
+                          </>
+                        )}
+                        <ChevronRight className="w-3 h-3 text-[#C5BCAD] shrink-0" />
+                        <span className="text-[#855B09] font-black">{currentPrayerSection?.titleAmharic || ''}</span>
+                      </div>
+
+                      {/* Header Control Buttons */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {/* Audio / Recitation */}
+                        <button
+                          onClick={() => {
+                            if (currentPrayerBook.audioUrl) {
+                              setIsPlayingAudio(!isPlayingAudio);
+                            }
+                          }}
+                          className={`p-2 rounded-xl border transition-all cursor-pointer ${
+                            isPlayingAudio
+                              ? 'bg-[#855B09] text-white border-[#855B09] shadow-2xs'
+                              : 'bg-[#FAF8F5] text-[#4A4033] border-[#E8E1D5] hover:bg-[#F2ECE0]'
+                          }`}
+                          title="Audio Recitation"
+                        >
+                          <Volume2 className="w-4 h-4" />
+                        </button>
+
+                        {/* Font size / typography */}
+                        <button
+                          onClick={() => {
+                            setPrayerFontSize(
+                              prayerFontSize === 'normal' ? 'large' : prayerFontSize === 'large' ? 'elderly' : 'normal'
+                            );
+                          }}
+                          className="px-2.5 py-1.5 rounded-xl border border-[#E8E1D5] bg-[#FAF8F5] hover:bg-[#F2ECE0] text-xs font-serif font-black text-[#4A4033] cursor-pointer transition-all"
+                          title="Font Size (Aa)"
+                        >
+                          Aa
+                        </button>
+
+                        {/* Theme Toggle */}
+                        <button
+                          onClick={() => {
+                            setPrayerTheme(prayerTheme === 'parchment' ? 'dark' : 'parchment');
+                          }}
+                          className="p-2 rounded-xl border border-[#E8E1D5] bg-[#FAF8F5] hover:bg-[#F2ECE0] text-[#4A4033] cursor-pointer transition-all"
+                          title="Toggle Light/Dark Theme"
+                        >
+                          <Sun className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Section Title & Subtitle */}
+                    <div className="space-y-1 pt-2">
+                      <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1208] font-serif">
+                        {currentPrayerSection?.titleAmharic || 'ውዳሴ ማርያም'}
+                      </h1>
+                      <p className="text-xs sm:text-sm font-serif italic text-[#8C8275]">
+                        {selectedPrayerBookId === 'wudase-mariam' && selectedSectionIdx <= 6
+                          ? (language === 'en' ? 'Daily Praise of St. Mary' : 'የዘወትር ውዳሴ')
+                          : currentPrayerSection?.titleEnglish || ''}
+                      </p>
+                    </div>
+
+                    {/* Verses Plain Numbered List */}
+                    <div className="space-y-5 pt-4">
+                      {currentPrayerSection?.verses.map((v) => (
+                        <div key={v.number} className="flex items-start gap-4 sm:gap-6 group">
+                          {/* Verse Number Column */}
+                          <span className="text-sm sm:text-base font-serif font-bold text-[#855B09] pt-0.5 w-5 shrink-0 text-right select-none opacity-90">
+                            {v.number}
+                          </span>
+
+                          {/* Verse Text Content */}
+                          <div className="flex-1 space-y-1">
+                            <p
+                              className={`font-serif text-[#1A1208] leading-[1.85] ${
+                                prayerFontSize === 'elderly'
+                                  ? 'text-xl sm:text-2xl font-bold'
+                                  : prayerFontSize === 'large'
+                                  ? 'text-lg sm:text-xl'
+                                  : 'text-[15.5px] sm:text-base font-medium'
+                              }`}
+                            >
+                              {v.amharic}
+                            </p>
+                            {language !== 'am' && v.english && (
+                              <p className="text-xs sm:text-sm text-[#8C8275] font-serif leading-relaxed italic">
+                                "{v.english}"
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
 
-                    {/* Theme Selector (Parchment, Dark Vigil, Clean) */}
-                    <div className="flex items-center gap-1 bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl p-1">
-                      <button
-                        onClick={() => setPrayerTheme('parchment')}
-                        className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
-                          prayerTheme === 'parchment' ? 'bg-[#FFF5DB] text-[#855B09] shadow-sm' : 'text-[#9CA3AF]'
-                        }`}
-                        title="Parchment Theme"
-                      >
-                        <Sun className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        onClick={() => setPrayerTheme('dark')}
-                        className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
-                          prayerTheme === 'dark' ? 'bg-[#0D1F30] text-[#C8A84B] shadow-sm' : 'text-[#9CA3AF]'
-                        }`}
-                        title="Night Vigil Theme"
-                      >
-                        <Moon className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
                   </div>
-                </div>
 
-                {/* Section Quick Selector Tabs */}
-                {currentPrayerBook.sections.length > 1 && (
-                  <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-3 border-t border-[#E6DFD1]">
-                    <span className="text-xs font-bold text-[#855B09] whitespace-nowrap shrink-0 pr-2">
-                      {language === 'en' ? 'Sections:' : 'ክፍሎች:'}
-                    </span>
-                    {currentPrayerBook.sections.map((sec, idx) => (
+                  {/* Floating Bottom Section Switcher Pill */}
+                  <div className="pt-10 pb-2 flex items-center justify-center">
+                    <div className="inline-flex items-center gap-3 bg-white border border-[#E8E1D5] px-5 py-2 rounded-full text-xs font-bold text-[#4A4033] shadow-2xs">
                       <button
-                        key={sec.id}
-                        onClick={() => setSelectedSectionIdx(idx)}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                          selectedSectionIdx === idx
-                            ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-sm font-black'
-                            : 'bg-[#FAF8F3] text-[#4A3B22] hover:bg-[#FFF5DB] border border-[#E6DFD1]'
-                        }`}
+                        onClick={() => setSelectedSectionIdx(Math.max(0, selectedSectionIdx - 1))}
+                        disabled={selectedSectionIdx === 0}
+                        className="hover:text-[#B8860B] disabled:opacity-30 cursor-pointer p-0.5"
                       >
-                        {sec.titleAmharic}
+                        <ChevronLeft className="w-4 h-4" />
                       </button>
-                    ))}
-                  </div>
-                )}
-              </div>
 
-              {/* Devotional Prayer Verses Body */}
-              <div
-                className={`p-6 md:p-12 rounded-3xl border shadow-sm space-y-6 max-w-4xl mx-auto transition-all ${
-                  prayerTheme === 'dark'
-                    ? 'bg-[#0D1F30] border-[#1A3A5C] text-white'
-                    : prayerTheme === 'parchment'
-                    ? 'bg-[#FFFDF9] border-[#E6DFD1]'
-                    : 'bg-white border-[#E6DFD1]'
-                }`}
-              >
-                {/* Section Header */}
-                <div className="text-center pb-6 border-b border-[#E6DFD1]/80 space-y-2">
-                  <span className="text-xs font-mono text-[#855B09] font-bold uppercase tracking-widest">
-                    {currentPrayerBook.category}
-                  </span>
-                  <h3
-                    className={`font-black font-geez ${
-                      prayerTheme === 'dark' ? 'text-[#C8A84B]' : 'text-[#2C1D07]'
-                    } ${prayerFontSize === 'elderly' ? 'text-3xl md:text-4xl' : 'text-2xl md:text-3xl'}`}
-                  >
-                    {currentPrayerSection.titleAmharic}
-                  </h3>
-                  <p className="text-xs text-[#855B09] font-medium">
-                    {currentPrayerSection.titleEnglish}
-                  </p>
-                </div>
-
-                {/* Verses */}
-                <div className="space-y-4 pt-2">
-                  {currentPrayerSection.verses.map((v) => (
-                    <div
-                      key={v.number}
-                      className={`p-5 rounded-2xl border transition-all flex gap-4 items-start ${
-                        prayerTheme === 'dark'
-                          ? 'bg-[#13283E] border-[#1A3A5C]'
-                          : 'bg-white border-[#E6DFD1]/80 shadow-sm'
-                      } ${elderlyMode ? 'border-l-4 border-l-[#C8A84B] p-6' : ''}`}
-                    >
-                      {/* Number Pill */}
-                      <span className="w-8 h-8 rounded-full bg-[#FFF5DB] text-[#855B09] border border-[#C8A84B] text-xs font-black flex items-center justify-center shrink-0 font-mono shadow-sm">
-                        {v.number}
+                      <span className="font-serif font-bold flex items-center gap-1.5 cursor-pointer px-1">
+                        <span>{currentPrayerSection?.titleAmharic || ''}</span>
+                        <ChevronDown className="w-3 h-3 text-[#8C8275]" />
                       </span>
 
-                      {/* Content */}
-                      <div className="flex-1 space-y-3">
-                        {/* Ge'ez Line */}
-                        <p
-                          className={`font-geez font-bold ${
-                            prayerTheme === 'dark' ? 'text-[#F5E6C8]' : 'text-[#2C1D07]'
-                          } ${
-                            prayerFontSize === 'elderly'
-                              ? 'text-2xl md:text-3xl leading-[2.2]'
-                              : prayerFontSize === 'large'
-                              ? 'text-xl leading-relaxed'
-                              : 'text-lg leading-relaxed'
-                          }`}
-                        >
-                          {v.geez}
-                        </p>
-
-                        {/* Amharic Line */}
-                        <p
-                          className={`font-geez ${
-                            prayerTheme === 'dark' ? 'text-[#C8A84B]' : 'text-[#855B09]'
-                          } ${
-                            prayerFontSize === 'elderly'
-                              ? 'text-xl md:text-2xl leading-[2.0]'
-                              : prayerFontSize === 'large'
-                              ? 'text-base leading-relaxed'
-                              : 'text-sm leading-relaxed'
-                          }`}
-                        >
-                          {v.amharic}
-                        </p>
-
-                        {/* English Translation Line */}
-                        <p
-                          className={`italic font-body ${
-                            prayerTheme === 'dark' ? 'text-[#94A3B8]' : 'text-[#6B7280]'
-                          } ${
-                            prayerFontSize === 'elderly'
-                              ? 'text-base leading-relaxed'
-                              : 'text-xs leading-relaxed'
-                          }`}
-                        >
-                          "{v.english}"
-                        </p>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 shrink-0 opacity-70 hover:opacity-100 pt-1">
-                        <button
-                          onClick={() => {
-                            if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                              navigator.clipboard.writeText(`${currentPrayerBook.titleEnglish} - ${v.number}: ${v.amharic}`);
-                            }
-                            setCopiedToast(true);
-                            setTimeout(() => setCopiedToast(false), 2500);
-                          }}
-                          title="Copy Verse"
-                          className="p-1.5 text-[#9CA3AF] hover:text-[#C8A84B] rounded-lg"
-                        >
-                          <Share2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          title="Bookmark Verse"
-                          className="p-1.5 text-[#9CA3AF] hover:text-[#800020] rounded-lg"
-                        >
-                          <Bookmark className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <button
+                        onClick={() =>
+                          setSelectedSectionIdx(
+                            Math.min(currentPrayerBook.sections.length - 1, selectedSectionIdx + 1)
+                          )
+                        }
+                        disabled={selectedSectionIdx === currentPrayerBook.sections.length - 1}
+                        className="hover:text-[#B8860B] disabled:opacity-30 cursor-pointer p-0.5"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
 
-              {/* Reader Navigation Footer */}
-              <div className="flex items-center justify-between pt-6 border-t border-[#E6DFD1] bg-white p-5 rounded-2xl shadow-sm">
-                <button
-                  onClick={() => {
-                    setSelectedSectionIdx(Math.max(0, selectedSectionIdx - 1));
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  disabled={selectedSectionIdx === 0}
-                  className="px-5 py-2.5 bg-white border border-[#E6DFD1] hover:bg-[#FAF8F3] rounded-xl text-xs font-bold text-[#2C1D07] disabled:opacity-40 flex items-center gap-2 shadow-sm transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>{language === 'en' ? 'Previous Section' : 'የቀደመው ክፍል'}</span>
-                </button>
+                </main>
 
-                <span className="text-sm text-[#855B09] font-bold bg-[#FFF5DB] px-5 py-2 rounded-full border border-[#C8A84B] font-mono">
-                  {selectedSectionIdx + 1} of {currentPrayerBook.sections.length}
-                </span>
-
-                <button
-                  onClick={() => {
-                    setSelectedSectionIdx(
-                      Math.min(currentPrayerBook.sections.length - 1, selectedSectionIdx + 1)
-                    );
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  disabled={selectedSectionIdx === currentPrayerBook.sections.length - 1}
-                  className="px-5 py-2.5 bg-white border border-[#E6DFD1] hover:bg-[#FAF8F3] rounded-xl text-xs font-bold text-[#2C1D07] disabled:opacity-40 flex items-center gap-2 shadow-sm transition-all"
-                >
-                  <span>{language === 'en' ? 'Next Section' : 'የሚቀጥለው ክፍል'}</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
               </div>
             </div>
           )}

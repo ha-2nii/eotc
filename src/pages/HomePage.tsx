@@ -38,6 +38,23 @@ const LATEST_NEWS_SLIDES = [
 
 export const HomePageView: React.FC = () => {
   const { language, setActiveView } = useLanguage();
+  const [scrollY, setScrollY] = React.useState<number>(0);
+
+  // Parallax scroll listener (optimized with requestAnimationFrame)
+  React.useEffect(() => {
+    let ticking = false;
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrollY(window.scrollY);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div style={{ background: 'var(--parchment)', minHeight: '100vh', fontFamily: 'var(--font-sans)', width: '100%', overflowX: 'hidden' }}>
@@ -220,19 +237,51 @@ export const HomePageView: React.FC = () => {
 
       </section>
 
-      <div style={{ width: '100%', background: 'var(--parchment)' }}>
+      <div style={{ width: '100%', background: 'var(--parchment)', position: 'relative', overflow: 'hidden' }}>
 
-      {/* ─── 2. FEATURES (Exact Reference Design) ───────────────────── */}
-      <section style={{ width: '100%', padding: '64px 0 0' }}>
-        <div className="container" style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '0',
-          maxWidth: '1480px',
-          margin: '0 auto',
-          paddingLeft: 'clamp(24px, 5vw, 72px)',
-          paddingRight: 'clamp(24px, 5vw, 72px)',
-        }}>
+        {/* ── Parallax Sacred Cross Watermarks for Section 2 — one per column ── */}
+        {[
+          { left: '3%' },
+          { left: '28%' },
+          { left: '53%' },
+          { left: '78%' },
+        ].map((pos, i) => (
+          <div
+            key={i}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              left: pos.left,
+              width: 'min(20vw, 200px)',
+              height: '250px',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              zIndex: 0,
+              opacity: 0.07,
+              transform: `translateY(${scrollY * 0.14}px)`,
+              willChange: 'transform',
+              transition: 'transform 0.08s linear',
+            }}
+          >
+            <img
+              src="/assets/images/eotc_cross_watermark_transparent.png"
+              alt="EOTC Sacred Cross Watermark"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            />
+          </div>
+        ))}
+
+        {/* ─── 2. FEATURES (Exact Reference Design) ───────────────────── */}
+        <section style={{ width: '100%', padding: '64px 0 0', position: 'relative', zIndex: 1 }}>
+          <div className="container" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '0',
+            maxWidth: '1480px',
+            margin: '0 auto',
+            paddingLeft: 'clamp(24px, 5vw, 72px)',
+            paddingRight: 'clamp(24px, 5vw, 72px)',
+          }}>
           {[
             {
               iconEl: (
@@ -868,8 +917,33 @@ export const HomePageView: React.FC = () => {
         borderBottom: '1px solid #E6DFD1',
         padding: '84px 0 92px',
         position: 'relative',
+        overflow: 'hidden',
       }}>
-        <div className="w-full px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto">
+        {/* ── Parallax Sacred Cross Watermark for Last Section (Left side, moves slower than content) ── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '120px',
+            left: 'clamp(10px, 5vw, 60px)',
+            width: 'min(38vw, 320px)',
+            height: '400px',
+            pointerEvents: 'none',
+            userSelect: 'none',
+            zIndex: 0,
+            opacity: 0.09,
+            transform: `translateY(${(scrollY - 3000) * 0.18}px)`,
+            willChange: 'transform',
+            transition: 'transform 0.08s linear',
+          }}
+        >
+          <img
+            src="/assets/images/eotc_cross_watermark_transparent.png"
+            alt="EOTC Sacred Cross Watermark"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+
+        <div className="w-full px-4 sm:px-8 lg:px-12 max-w-7xl mx-auto" style={{ position: 'relative', zIndex: 1 }}>
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
             {/* Left Column (Heading + Orange Bar + Subtitle + Glowing View All CTA) */}
             <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-28">

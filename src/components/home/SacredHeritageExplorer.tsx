@@ -211,6 +211,25 @@ export const SacredHeritageExplorer: React.FC = () => {
   const [favorites, setFavorites] = useState<string[]>(['lalibela', 'axum']);
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+  const sectionRef = React.useRef<HTMLElement>(null);
+
+  // Scroll-triggered fade-in via IntersectionObserver
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.08 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   // Auto-rotate the huge sanctuary showcase card every 3 seconds
   useEffect(() => {
@@ -240,19 +259,41 @@ export const SacredHeritageExplorer: React.FC = () => {
   };
 
   return (
-    <section style={{
-      width: '100%',
-      background: 'var(--parchment, #FDFBF7)',
-      padding: '40px 0 64px',
-      fontFamily: 'var(--font-sans)',
-      overflowX: 'hidden',
-    }}>
+    <section
+      ref={sectionRef}
+      style={{
+        width: '100%',
+        background: 'var(--parchment, #FDFBF7)',
+        padding: '0 0 64px',
+        fontFamily: 'var(--font-sans)',
+        overflowX: 'hidden',
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? 'translateY(0)' : 'translateY(36px)',
+        transition: 'opacity 0.75s cubic-bezier(0.22, 1, 0.36, 1), transform 0.75s cubic-bezier(0.22, 1, 0.36, 1)',
+      }}
+    >
+      {/* ── Smooth curved wave divider from section 2 ── */}
+      <div style={{ width: '100%', lineHeight: 0, marginBottom: '8px', overflow: 'hidden' }}>
+        <svg
+          viewBox="0 0 1440 56"
+          preserveAspectRatio="none"
+          style={{ display: 'block', width: '100%', height: '56px' }}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M0,0 C240,56 480,0 720,32 C960,56 1200,0 1440,24 L1440,0 L0,0 Z"
+            fill="var(--parchment, #FDFBF7)"
+          />
+        </svg>
+      </div>
+
       <div className="container" style={{
         maxWidth: '1480px',
         margin: '0 auto',
         paddingLeft: 'clamp(20px, 4vw, 64px)',
         paddingRight: 'clamp(20px, 4vw, 64px)',
       }}>
+
 
         {/* ─── TOP HERO DESTINATION (ENLARGED FULL ROTATING SHOWCASE) ─── */}
         <div
@@ -267,7 +308,7 @@ export const SacredHeritageExplorer: React.FC = () => {
             transition: 'all 0.5s ease',
           }}
         >
-          {/* Background Image on Right with Smooth Fade into Left */}
+          {/* Background Image on Right with Smooth Cross-Fade Stack */}
           <div style={{
             position: 'absolute',
             top: 0,
@@ -279,18 +320,24 @@ export const SacredHeritageExplorer: React.FC = () => {
             borderRadius: '28px',
             overflow: 'hidden',
           }}>
-            <img
-              key={currentHero.id}
-              src={currentHero.image}
-              alt={currentHero.nameEn}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'right center',
-                transition: 'opacity 0.7s ease, transform 0.9s ease',
-              }}
-            />
+            {SANCTUARIES.map((sanctuary, idx) => (
+              <img
+                key={sanctuary.id}
+                src={sanctuary.image}
+                alt={sanctuary.nameEn}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'right center',
+                  opacity: idx === activeIndex ? 1 : 0,
+                  transform: idx === activeIndex ? 'scale(1)' : 'scale(1.04)',
+                  transition: 'opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              />
+            ))}
             {/* Smooth gradient overlay from left (parchment) to right (revealing picture) */}
             <div style={{
               position: 'absolute',
@@ -307,6 +354,7 @@ export const SacredHeritageExplorer: React.FC = () => {
               zIndex: 2,
               padding: '24px 0 16px',
               maxWidth: '680px',
+              animation: 'fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             {/* Category Text (Clean typography with Gold Cross/Church icon) */}

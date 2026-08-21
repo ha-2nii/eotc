@@ -40,9 +40,171 @@ export const PRAYER_BOOKS: PrayerBook[] = [
     recitor: 'Liqe Mezemeran Tewodros',
     sections: [
       {
+        id: 'monday',
+        titleAmharic: 'ሰኞ',
+        titleEnglish: 'Monday Praise (ውዳሴ ማርያም ዘሰኑይ)',
+        verses: [
+          {
+            number: 1,
+            geez: 'መሠረተ ፡ ዛቲ ፡ ቤተ ፡ ክርስቲያን ፡ በደብረ ፡ መቅደሱ ።',
+            amharic: 'መሠረት ለማርያም በምክር መልአክት ትውዛንድ የተወሰደ፡፡',
+            english: 'The foundation of the holy church was established upon the holy mountain.',
+          },
+          {
+            number: 2,
+            geez: 'ስብሐት ፡ ለእግዚአብሔር ፡ ወለድንግል ፡ ማርያም ፡ ይደሉ ።',
+            amharic: 'ክብር ለእግዚአብሔር እና ለድንግል ማርያም ይሁን፡፡',
+            english: 'Glory be to God and to the Virgin Mary.',
+          },
+          {
+            number: 3,
+            geez: 'በስመ ፡ ማርያም ፡ ዘንነብር ፡ ማኅበረነ ።',
+            amharic: 'በማርያም ስም የምንኖራት ስብሰባችን፡፡',
+            english: 'Our assembly that gathers together in the name of Mary.',
+          },
+          {
+            number: 4,
+            geez: 'አንቲ ፡ ውእቱ ፡ ዕፀ ፡ ጳጦስ ፡ እንተ ፡ ርእያ ፡ ሙሴ ።',
+            amharic: 'አንቺ ነሽ መሰተካከያችን ድንግል ማርያም፡፡',
+            english: 'Thou art the burning bush that Moses beheld on Mount Sinai unconsumed.',
+          },
+          {
+            number: 5,
+            geez: 'አንቲ ፡ ውእቱ ፡ ታቦት ፡ እንተ ፡ ኪዳን ።',
+            amharic: 'አንቺ ነሽ ድርጊትታትበር የምትታመንን፡፡',
+            english: 'Thou art the Ark of the Covenant adorned with pure gold.',
+          },
+          {
+            number: 6,
+            geez: 'አንቲ ፡ ውእቱ ፡ ናዛዚትነ ፡ ድንግል ፡ ማርያም ።',
+            amharic: 'አንቺ ነሽ የእኛ መፅናናት ድንግል ማርያም፡፡',
+            english: 'Thou art our true comfort and refuge, O Virgin Mary.',
+          },
+          {
+            number: 7,
+            geez: 'አንቲ ፡ ውእቱ ፡ ምልጃነ ፡ ወመሠረተ ፡ ድኅነትነ ።',
+            amharic: 'አንቺ ነሽ የእኛ መለማመጥ እና መከላከያ፡፡',
+            english: 'Thou art our intercession and impenetrable shield.',
+          },
+          {
+            number: 8,
+            geez: 'ጽንሰትኪ ፡ ይባርክ ፡ ላዕሌነ ፡ ወይትሣሀለነ ።',
+            amharic: 'እርግዝናሽን በእኛ ላይ ያወዱን እና ይማረረን፡፡',
+            english: 'May thy holy conception bring blessings upon us and grant us mercy.',
+          },
+          {
+            number: 9,
+            geez: 'አሜን ፡ ወአሜን ፡ ለይኩን ።',
+            amharic: 'አሜን፡፡',
+            english: 'Amen and Amen.',
+          },
+        ],
+      },
+      {
+        id: 'tuesday',
+        titleAmharic: 'ማክሰኞ',
+        titleEnglish: 'Tuesday Praise (ውዳሴ ማርያም ዘሠሉስ)',
+        verses: [
+          {
+            number: 1,
+            geez: 'አክሊለ ፡ መመኪያነ ፡ ወመሠረተ ፡ ሕይወትነ ፡ ድንግል ፡ ማርያም ።',
+            amharic: 'የመመኪያችን አክሊል፣ የሕይወታችን መሠረት ድንግል ማርያም ናት።',
+            english: 'The crown of our boasting and the foundation of our life is the Virgin Mary.',
+          },
+          {
+            number: 2,
+            geez: 'ወለደት ፡ ለነ ፡ ዘእምቅድመ ፡ ዓለም ፡ ህልው ፡ ቃለ ፡ እግዚአብሔር ።',
+            amharic: 'ከዓለም በፊት የነበረውን የእግዚአብሔርን ቃል ወለደችልን።',
+            english: 'She bore for us the Word of God who existed before the worlds.',
+          },
+          {
+            number: 3,
+            geez: 'ዕፀ ፡ ጳጦስ ፡ እንተ ፡ ነበልባለ ፡ እሳት ፡ ኢያውዓያ ።',
+            amharic: 'የእሳት ነበልባል ያላቃጠላት ዛፍ አንቺ ነሽ።',
+            english: 'Thou art the bush that the fire of divinity did not consume.',
+          },
+        ],
+      },
+      {
+        id: 'wednesday',
+        titleAmharic: 'ረቡዕ',
+        titleEnglish: 'Wednesday Praise (ውዳሴ ማርያም ዘረቡዕ)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ኵሉ ፡ ሠራዊተ ፡ ሰማያት ፡ ይብሉ ፡ ብፅዕት ፡ አንቲ ።',
+            amharic: 'የሰማይ ሠራዊት ሁሉ የተመሰገንሽ ነሽ ይላሉ።',
+            english: 'All the celestial hosts proclaim: Blessed art thou!',
+          },
+          {
+            number: 2,
+            geez: 'ምልእተ ፡ ጸጋ ፡ እግዚአብሔር ፡ ምስሌኪ ።',
+            amharic: 'ጸጋን የተሞላሽ ሆይ እግዚአብሔር ከአንቺ ጋር ነው።',
+            english: 'O full of grace, the Lord is with thee always.',
+          },
+        ],
+      },
+      {
+        id: 'thursday',
+        titleAmharic: 'ሐሙስ',
+        titleEnglish: 'Thursday Praise (ውዳሴ ማርያም ዘሐሙስ)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ዕፀ ፡ ጳጦስ ፡ እንተ ፡ ርእያ ፡ ሙሴ ፡ በነደ ፡ እሳት ።',
+            amharic: 'ሙሴ በእሳት ነበልባል ውስጥ ያያት ዕፀ ጳጦስ አንቺ ነሽ።',
+            english: 'The bush that Moses saw in the burning flame represents thee.',
+          },
+          {
+            number: 2,
+            geez: 'ኢያውዓያ ፡ ነበልባለ ፡ መለኮት ።',
+            amharic: 'የመለኮት ነበልባል አላቃጠላትም።',
+            english: 'The fire of divinity did not burn her flesh.',
+          },
+        ],
+      },
+      {
+        id: 'friday',
+        titleAmharic: 'ዓርብ',
+        titleEnglish: 'Friday Praise (ውዳሴ ማርያም ዘዓርብ)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ቡርክት ፡ አንቲ ፡ እምአንስቲ ፡ ወቡሩክ ፡ ፍሬ ፡ ከርሥኪ ።',
+            amharic: 'ከሴቶች ሁሉ ተለይተሽ የተባረክሽ ነሽ፥ የማኅፀንሽም ፍሬ የተባረከ ነው።',
+            english: 'Blessed art thou among women, and blessed is the fruit of thy womb.',
+          },
+          {
+            number: 2,
+            geez: 'ድንግል ፡ ማርያም ፡ እመ ፡ አምላክ ፡ ወላዲተ ፡ መድኅን ።',
+            amharic: 'የመድኃኒት እናት የአምላክ ወላጅ ድንግል ማርያም ሆይ።',
+            english: 'O Virgin Mary, Mother of God and Mother of our Savior.',
+          },
+        ],
+      },
+      {
+        id: 'saturday',
+        titleAmharic: 'ቅዳሜ',
+        titleEnglish: 'Saturday Praise (ውዳሴ ማርያም ዘቀዳሚት)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ቅድስት ፡ ወብፅዕት ፡ ስብሕት ፡ ወቡርክት ።',
+            amharic: 'ቅድስትና የተመሰገንሽ፣ የከበርሽና የተባረክሽ ነሽ።',
+            english: 'Holy, blessed, glorified, and honored art thou.',
+          },
+          {
+            number: 2,
+            geez: 'ማኅደረ ፡ መለኮት ፡ ንጽሕት ።',
+            amharic: 'የመለኮት ንጹሕ ማደሪያ ነሽ።',
+            english: 'Pure dwelling place of the divine Godhead.',
+          },
+        ],
+      },
+      {
         id: 'sunday',
-        titleAmharic: 'ውዳሴ ማርያም ዘእሑድ (Sunday)',
-        titleEnglish: 'Sunday Praise',
+        titleAmharic: 'እሑድ',
+        titleEnglish: 'Sunday Praise (ውዳሴ ማርያም ዘእሑድ)',
         verses: [
           {
             number: 1,
@@ -54,38 +216,78 @@ export const PRAYER_BOOKS: PrayerBook[] = [
             number: 2,
             geez: 'ተፈሥሒ ፡ ኦ ፡ ምልእተ ፡ ጸጋ ፡ እግዚአብሔር ፡ ምስሌኪ ፡ ቡርክት ፡ አንቲ ፡ እምአንስቲ ።',
             amharic: 'ጸጋን የተሞላሽ ሆይ ደስ ይበልሽ፤ እግዚአብሔር ከአንቺ ጋር ነውና፤ ከሴቶች ተለይተሽ የተባረክሽ ነሽ።',
-            english: 'Rejoice, O full of grace, the Lord is with thee! Blessed art thou among women, and blessed is the fruit of thy womb.',
-          },
-          {
-            number: 3,
-            geez: 'አክሊለ ፡ መመኪያነ ፡ ወመሠረተ ፡ ሕይወትነ ፡ ወመድኃኒተ ፡ ነፍስነ ፡ ድንግል ፡ ማርያም ።',
-            amharic: 'የመመኪያችን ዘውድ፣ የሕይወታችን መሠረት፣ የነፍሳችን መድኃኒት ድንግል ማርያም ነሽ።',
-            english: 'The crown of our boasting, the foundation of our life, and the salvation of our souls is the Virgin Mary.',
-          },
-          {
-            number: 4,
-            geez: 'ሰአሊ ፡ ለነ ፡ ቅድስት ፡ ኀበ ፡ እግዚአብሔር ፡ አምላክነ ፡ ከመ ፡ ይሥረይ ፡ ለነ ፡ ኃጣውኢነ ።',
-            amharic: 'ኃጢአታችንን ይቅር ይለን ዘንድ ቅድስት ሆይ ወደ አምላካችን ወደ እግዚአብሔር ለምኚልን።',
-            english: 'Pray for us, O Holy Lady, to the Lord our God, that He may forgive us our transgressions.',
+            english: 'Rejoice, O full of grace, the Lord is with thee! Blessed art thou among women.',
           },
         ],
       },
       {
-        id: 'monday',
-        titleAmharic: 'ውዳሴ ማርያም ዘሰኑይ (Monday)',
-        titleEnglish: 'Monday Praise',
+        id: 'zewotir',
+        titleAmharic: 'የዘወትር ጸሎት',
+        titleEnglish: 'Yezewotir Tselot (Daily General Devotions)',
         verses: [
           {
             number: 1,
-            geez: 'ፈቀደ ፡ እግዚእ ፡ ያግዕዞ ፡ ለአዳም ፡ ኅዙነ ፡ ወትኩዘ ፡ ልብ ።',
-            amharic: 'እግዚአብሔር ያዘነውንና ልቡ የተሰበረውን አዳምን ነፃ ያወጣው ዘንድ ወደደ።',
-            english: 'The Lord willed to set free Adam, who was sorrowful and broken of heart.',
+            geez: 'በስመ ፡ አብ ፡ ወወልድ ፡ ወመንፈስ ፡ ቅዱስ ፡ አሐዱ ፡ አምላክ ፡ አሜን ።',
+            amharic: 'በአብ በወልድ በመንፈስ ቅዱስ ስም አንድ አምላክ አሜን።',
+            english: 'In the name of the Father, the Son, and the Holy Spirit, one God, Amen.',
           },
           {
             number: 2,
-            geez: 'ወአግብኦ ፡ ውስተ ፡ ቀዳሚ ፡ መካኑ ፡ በብዙኅ ፡ ሣህሉ ፡ ወምሕረቱ ።',
-            amharic: 'በብዙ ይቅርታውና ምሕረቱ ወደ ቀደመው ቦታው መለሰው።',
-            english: 'And in the abundance of His compassion and mercy, He restored him to his former dwelling.',
+            geez: 'አቡነ ፡ ዘበሰማያት ፡ ይትቀደስ ፡ ስምከ ፡ ትምጻእ ፡ መንግሥትከ ።',
+            amharic: 'አባታችን ሆይ በሰማያት የምትኖር፤ ስምህ ይቀደስ፤ መንግሥትህ ትምጣ፤ ፈቃድህ በሰማይ እንደሆነች እንዲሁ በምድር ትሁን።',
+            english: 'Our Father who art in heaven, hallowed be Thy name; Thy kingdom come; Thy will be done on earth as it is in heaven.',
+          },
+        ],
+      },
+      {
+        id: 'anqetse-berhan',
+        titleAmharic: 'አንቀጸ ብርሃን',
+        titleEnglish: 'Anqetse Berhan (The Gate of Light)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ቅድስት ፡ ወብፅዕት ፡ ስብሕት ፡ ወቡርክት ፡ አንቀጸ ፡ ብርሃን ።',
+            amharic: 'ቅድስትና ብፅዕት፣ የተመሰገንሽና የተባረክሽ የብርሃን መግቢያ አንቺ ነሽ።',
+            english: 'Holy and blessed, glorified and exalted Gate of Light.',
+          },
+        ],
+      },
+      {
+        id: 'yewudasewa-melekt',
+        titleAmharic: 'የውዳሴዋ መልእክት',
+        titleEnglish: 'Yewudasewa Mele\'kt (Epistle of Praise / Angelic Salutation)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ሰላም ፡ ለኪ ፡ ማርያም ፡ እምነ ፡ ቅድስት ፡ ድንግል ።',
+            amharic: 'እናታችን ቅድስት ድንግል ማርያም ሆይ ሰላምታ ለአንቺ ይሁን።',
+            english: 'Peace be unto thee, O Mary our holy Mother and Virgin.',
+          },
+        ],
+      },
+      {
+        id: 'melkea-maryam',
+        titleAmharic: 'መልክአ ማርያም',
+        titleEnglish: 'Melkea Maryam (Effigy of St. Mary)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ሰላም ፡ ለዝክረ ፡ ስምኪ ፡ ዘመንክር ፡ ስሙ ።',
+            amharic: 'ስሙ ድንቅ ለሆነው የስምሽ መታሰቢያ ሰላምታ ይገባል።',
+            english: 'Peace be unto the commemoration of thy wondrous name.',
+          },
+        ],
+      },
+      {
+        id: 'melkea-iyesus',
+        titleAmharic: 'መልክአ ኢየሱስ',
+        titleEnglish: 'Melkea Iyesus (Effigy of Jesus Christ)',
+        verses: [
+          {
+            number: 1,
+            geez: 'ሰላም ፡ ለዝክረ ፡ ስምከ ፡ ስመ ፡ መሐላ ፡ ዘኢይሔሱ ።',
+            amharic: 'ሐሰት ለሌለበት የመሐላ ስም ለስምህ መታሰቢያ ሰላምታ ይገባል።',
+            english: 'Peace be unto the commemoration of thy true oath-bound name.',
           },
         ],
       },
@@ -93,8 +295,8 @@ export const PRAYER_BOOKS: PrayerBook[] = [
   },
   {
     id: 'seytat',
-    titleAmharic: 'መጽሐፈ ሰዓታት (Seytat)',
-    titleEnglish: 'Seytat — Morning & Evening Prayer (Horologion)',
+    titleAmharic: 'የዕለት ጸሎታት (ሰዓታት)',
+    titleEnglish: 'Daily Horologion & Vigils (የዕለት ጸሎታት)',
     subtitle: 'Monastic Nocturnal Vigils & Canonical Liturgical Hours',
     author: 'Saint Abba Giyorgis of Gasicha & Ancient Fathers',
     category: 'Canonical Hours & Vigils',
@@ -105,8 +307,34 @@ export const PRAYER_BOOKS: PrayerBook[] = [
     recitor: 'Monastic Chant Choir of Debre Damo',
     sections: [
       {
+        id: 'negh',
+        titleAmharic: 'ጸሎተ ነግህ (Morning Matins)',
+        titleEnglish: 'Morning Matins Prayer',
+        verses: [
+          {
+            number: 1,
+            geez: 'ስብሐት ፡ ለአብ ፡ ወወልድ ፡ ወመንፈስ ፡ ቅዱስ ፡ ዘአብርሃ ፡ ለነ ፡ ብርሃነ ።',
+            amharic: 'ብርሃንን ላበራልን ለአብ ለወልድ ለመንፈስ ቅዱስ ምስጋና ይሁን።',
+            english: 'Glory be to the Father, Son, and Holy Spirit who has manifested light unto us.',
+          },
+        ],
+      },
+      {
+        id: 'serk',
+        titleAmharic: 'ጸሎተ ሠርክ (Evening Vespers)',
+        titleEnglish: 'Evening Vespers Prayer',
+        verses: [
+          {
+            number: 1,
+            geez: 'በሠርክ ፡ ንሴብሖ ፡ ለእግዚአብሔር ፡ አምላክነ ።',
+            amharic: 'በሠርክ ሰዓት አምላካችንን እግዚአብሔርን እናመሰግነዋለን።',
+            english: 'At eventide we glorify the Lord our God with songs of gratitude.',
+          },
+        ],
+      },
+      {
         id: 'nocturn',
-        titleAmharic: 'ጸሎተ ሌሊት (Night Vigil / Matins)',
+        titleAmharic: 'ጸሎተ ሌሊት (Night Vigil)',
         titleEnglish: 'Night Vigil Prayer',
         verses: [
           {
@@ -190,8 +418,8 @@ export const PRAYER_BOOKS: PrayerBook[] = [
     sections: [
       {
         id: 'filseta',
-        titleAmharic: 'ሰላም ዘፍልሰታ (Feast of the Assumption)',
-        titleEnglish: 'Salutation of Filseta',
+        titleAmharic: 'ሰላመ ማርያም ዘፍልሰታ (Filseta)',
+        titleEnglish: 'Salutation of Filseta (Assumption)',
         verses: [
           {
             number: 1,
@@ -201,31 +429,70 @@ export const PRAYER_BOOKS: PrayerBook[] = [
           },
         ],
       },
-    ],
-  },
-  {
-    id: 'ye-selot-metsihaf',
-    titleAmharic: 'የጸሎት መጽሐፍ (Ye-Selot Metsihaf — Horologion)',
-    titleEnglish: 'Ye-Selot Metsihaf — Canonical Book of Hours',
-    subtitle: 'The Canonical Hours of Prayer: 3rd, 6th, 9th, and 12th Hours',
-    author: 'Church Fathers (አበው ሊቃውንት)',
-    category: 'Canonical Daytime Hours',
-    descriptionEn: 'The traditional Ethiopian Horologion detailing prayers for the 3rd hour (Teret), 6th hour (Qetr), 9th hour (Nono), and Evening.',
-    descriptionAm: 'በ፫ቱ፣ በ፮ቱ፣ በ፱ቱና በ፲፪ቱ ሰዓት የሚጸለዩ የዕለቱ ቀኖናዊ የጸሎት ሰዓታት።',
-    audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
-    audioDuration: '22:15',
-    recitor: 'Abba Yohannes & Monks',
-    sections: [
       {
-        id: 'hour3',
-        titleAmharic: 'ጸሎተ ሠለስት (Third Hour — 9:00 AM)',
-        titleEnglish: 'Third Hour Prayer',
+        id: 'lideta',
+        titleAmharic: 'ሰላመ ልደታ (Nativity of Mary)',
+        titleEnglish: 'Salutation of Nativity (Lideta)',
         verses: [
           {
             number: 1,
-            geez: 'ኦ ፡ ጐሥዓ ፡ ልብየ ፡ ቃለ ፡ ሠናየ ፡ ወአነ ፡ እነግር ፡ ግብርየ ፡ ለንጉሥ ።',
-            amharic: 'ልቤ መልካም ነገርን አወጣ፤ እኔ ሥራዬን ለንጉሥ እነግራለሁ።',
-            english: 'My heart is inditing a good matter: I speak of the things which I have made touching the king.',
+            geez: 'ሰላም ፡ ለልደትኪ ፡ እምሐና ፡ ወኢያቄም ፡ ድንግል ፡ ማርያም።',
+            amharic: 'ከሐናና ከኢያቄም ለተገኘው ለልደትሽ ሰላምታ ይገባል ድንግል ማርያም ሆይ።',
+            english: 'Peace be unto thy holy Nativity from Hannah and Joachim, O Virgin Mary.',
+          },
+        ],
+      },
+      {
+        id: 'astereyo',
+        titleAmharic: 'ሰላመ አስተርእዮ (Epiphany & Dormition)',
+        titleEnglish: 'Salutation of Astereyo',
+        verses: [
+          {
+            number: 1,
+            geez: 'ሰላም ፡ ለአስተርእዮትኪ ፡ ቅድስት ፡ ወብፅዕት ፡ ድንግል ።',
+            amharic: 'ቅድስትና ብፅዕት ለሆንሽው ለእመቤታችን መታሰቢያ ሰላምታ ይገባል።',
+            english: 'Peace be unto the commemoration and revelation of thy holy glory.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'tsome-deggwa',
+    titleAmharic: 'መጽሐፈ ጾም (Tsome Deggwa)',
+    titleEnglish: 'Tsome Deggwa — Book of Fasting Praises',
+    subtitle: 'Great Lent Prayers, Hymns of Repentance and Liturgical Vigils',
+    author: 'Saint Yared (ቅዱስ ያሬድ)',
+    category: 'Lenten & Fasting Prayers',
+    descriptionEn: 'The monumental Ethiopian Orthodox fasting compendium recited during the 55 days of the Great Holy Fast (ዐቢይ ጾም).',
+    descriptionAm: 'በዐቢይ ጾም ፶፭ ቀናት በየሳምንቱ የሚጸለይና የሚዘመር የቅዱስ ያሬድ ታላቅ የጾም ጸሎት መጽሐፍ።',
+    audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3',
+    audioDuration: '24:50',
+    recitor: 'Monastic Choir',
+    sections: [
+      {
+        id: 'zewerede',
+        titleAmharic: 'ዘወረደ (Zewerede — 1st Week of Lent)',
+        titleEnglish: 'Zewerede — He Who Came Down',
+        verses: [
+          {
+            number: 1,
+            geez: 'ዘወረደ ፡ እምላዕሉ ፡ አይሁድ ፡ ሰቀልዎ ።',
+            amharic: 'ከልዑል ሰማይ የወረደውን ጌታ አይሁድ ሰቀሉት፤ እኛ ግን በትንሣኤው እናምናለን።',
+            english: 'He who came down from above was crucified, yet we glorify His holy Resurrection.',
+          },
+        ],
+      },
+      {
+        id: 'kidist',
+        titleAmharic: 'ቅድስት (Qidist — 2nd Week of Lent)',
+        titleEnglish: 'Qidist — The Holy Day',
+        verses: [
+          {
+            number: 1,
+            geez: 'ቅድስት ፡ ዕለት ፡ ዘአክበራ ፡ እግዚአብሔር ።',
+            amharic: 'እግዚአብሔር ያከበራት ቅድስት ቀን ናት።',
+            english: 'The holy day which the Lord has sanctified and honored above all.',
           },
         ],
       },
