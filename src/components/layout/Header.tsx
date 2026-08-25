@@ -75,15 +75,14 @@ export const Header: React.FC = () => {
     },
     { 
       id: 'worship',
-      labelEn: 'Worship',
-      labelAm: 'አምልኮ',
+      labelEn: 'Orthodox Resources',
+      labelAm: 'ኦርቶዶክሳዊ ሀብታት',
       dropdown: [
-        { id: 'worship', labelEn: 'Worship Hub', labelAm: 'የአምልኮ ማዕከል' },
-        { id: 'worship/zema', labelEn: 'Zema & Chant', labelAm: 'ዜማ እና ዝማሬ' },
-        { id: 'worship/stand', labelEn: 'Digital Chant Stand', labelAm: 'የዜማ መቆሚያ' },
+        { id: 'worship', labelEn: 'Orthodox Resources Hub', labelAm: 'የሀብታት ማዕከል' },
         { id: 'worship/calendar', labelEn: 'Liturgical Calendar', labelAm: 'የአብነት የቀን መቁጠሪያ' },
         { id: 'worship/fasting', labelEn: 'Fasting Guide', labelAm: 'የጾም መመሪያ' },
         { id: 'worship/sermons', labelEn: 'Sermons', labelAm: 'ስብከቶች' },
+        { id: 'worship/mezmur', labelEn: 'Mezmur & Hymns', labelAm: 'መዝሙራት' },
       ]
     },
     { 

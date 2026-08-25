@@ -7,6 +7,8 @@ import { PRAYER_BOOKS } from '../data/mockChants';
 import type { PrayerBook } from '../data/mockChants';
 import { LITURGICAL_CATEGORIES, EOTC_14_ANAPHORAS } from '../data/mockLiturgy';
 import type { LiturgicalCategory, LiturgicalItem } from '../data/mockLiturgy';
+import { LiturgicalTextsView } from '../components/scripture/LiturgicalTextsView';
+import { GeezLearningView } from '../components/scripture/GeezLearningView';
 import {
   GEEZ_TRACKS,
   FIDEL_ALPHABET_DATA,
@@ -394,26 +396,6 @@ export const ScriptureView: React.FC = () => {
     setActiveTrackId('zema-1');
   };
 
-  // Quiz Option Selector & XP Handler
-  const handleSelectQuizOption = (qId: string, optIdx: number, correctIdx: number) => {
-    setQuizAnswers((prev) => ({ ...prev, [qId]: optIdx }));
-    const isCorrect = optIdx === correctIdx;
-    setQuizFeedback((prev) => ({ ...prev, [qId]: isCorrect }));
-    if (isCorrect && !quizFeedback[qId]) {
-      setUserXp((prev) => prev + 50);
-    }
-  };
-
-  // Toggle Lesson Completion
-  const handleToggleLessonComplete = (lessonId: string) => {
-    if (completedLessonIds.includes(lessonId)) {
-      setCompletedLessonIds((prev) => prev.filter((id) => id !== lessonId));
-    } else {
-      setCompletedLessonIds((prev) => [...prev, lessonId]);
-      setUserXp((prev) => prev + 25);
-    }
-  };
-
   // Copy share verse link handler
   const handleShareVerse = (verseNum: number) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -432,13 +414,13 @@ export const ScriptureView: React.FC = () => {
   return (
     <div
       className={`w-full mx-auto animate-fadeIn ${
-        activeSection === 'bible' ? 'max-w-[1560px] space-y-4' : 'max-w-[1480px] space-y-8'
+        activeSection === 'bible' ? 'max-w-[1560px] space-y-4' : (activeSection === 'liturgy' || activeSection === 'geez') ? '' : 'max-w-[1480px] space-y-8'
       }`}
       style={{
-        paddingLeft: activeSection === 'bible' ? 'clamp(8px, 1.2vw, 20px)' : 'clamp(24px, 5vw, 72px)',
-        paddingRight: activeSection === 'bible' ? 'clamp(8px, 1.2vw, 20px)' : 'clamp(24px, 5vw, 72px)',
-        paddingTop: activeSection === 'bible' ? '12px' : '24px',
-        paddingBottom: activeSection === 'bible' ? '24px' : '64px',
+        paddingLeft: activeSection === 'bible' ? 'clamp(8px, 1.2vw, 20px)' : (activeSection === 'liturgy' || activeSection === 'geez') ? '0' : 'clamp(24px, 5vw, 72px)',
+        paddingRight: activeSection === 'bible' ? 'clamp(8px, 1.2vw, 20px)' : (activeSection === 'liturgy' || activeSection === 'geez') ? '0' : 'clamp(24px, 5vw, 72px)',
+        paddingTop: activeSection === 'bible' ? '12px' : (activeSection === 'liturgy' || activeSection === 'geez') ? '0' : '24px',
+        paddingBottom: activeSection === 'bible' ? '24px' : (activeSection === 'liturgy' || activeSection === 'geez') ? '0' : '64px',
       }}
     >
       {/* Toast Notification */}
@@ -451,7 +433,14 @@ export const ScriptureView: React.FC = () => {
 
       {/* ═══ CLEAN TOP PILL NAV BAR (Visible when exploring Sub-Pages) ═══════ */}
       {activeSection !== 'hub' && (
-        <div className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-[#E6DFD1]/80">
+        <div
+          className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-[#E6DFD1]/80"
+          style={
+            activeSection === 'liturgy' || activeSection === 'geez'
+              ? { padding: '16px clamp(16px, 4vw, 56px) 8px' }
+              : undefined
+          }
+        >
           <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
             {[
               { id: 'hub' as ScriptureSubSection, labelEn: 'Scripture Hub', labelAm: 'ዋና መግቢያ', icon: Layers },
@@ -2448,7 +2437,7 @@ export const ScriptureView: React.FC = () => {
           SECTION 4: LITURGICAL TEXTS & PATRISTICS (ሥርዓተ ቅዳሴ)
       ═══════════════════════════════════════════════════════════════ */}
       {activeSection === 'liturgy' && (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="animate-fadeIn">
           {/* Download / Print Toast Notification */}
           {downloadToast && (
             <div className="fixed bottom-8 right-8 z-50 bg-[#1A2C1C] text-[#C8A84B] border border-[#C8A84B] px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold animate-slideUp">
@@ -2458,106 +2447,15 @@ export const ScriptureView: React.FC = () => {
           )}
 
           {/* ─────────────────────────────────────────────────────────────
-              VIEW A: LITURGICAL SERVICE CATEGORIES DIRECTORY
+              VIEW A: LITURGICAL SERVICE DIRECTORY & SACRED MANUSCRIPT HUB
           ───────────────────────────────────────────────────────────── */}
           {liturgyViewMode === 'categories' && (
-            <div className="space-y-8 animate-fadeIn">
-              {/* Header Banner */}
-              <div className="bg-white p-8 md:p-10 rounded-3xl border border-[#E6DFD1] shadow-sm relative overflow-hidden space-y-4">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#E8F0FE] to-transparent rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/3"></div>
-
-                <div className="relative z-10 space-y-3 max-w-3xl">
-                  <div className="inline-flex items-center gap-2 bg-[#FFF5DB] border border-[#1A2C1C]/40 px-3.5 py-1 rounded-full text-xs text-[#1A2C1C] font-bold uppercase tracking-wider">
-                    <BookMarked className="w-3.5 h-3.5 text-[#C8A84B]" />
-                    <span>ሥርዓተ ቅዳሴ ወመጻሕፍተ ሊቃውንት • Sacred Liturgical Texts</span>
-                  </div>
-
-                  <h2 className="text-3xl md:text-5xl font-black text-[#2C1D07] font-geez leading-tight">
-                    {language === 'en'
-                      ? 'Liturgical Texts, Anaphoras & Yaredic Deggwa'
-                      : 'ሥርዓተ ቅዳሴ፥ ማሕሌት፥ ድጓ ወቆሎ'}
-                  </h2>
-
-                  <p className="text-sm md:text-base text-[#4A3B22] leading-relaxed">
-                    {language === 'en'
-                      ? 'Explore the complete treasury of Ethiopian Orthodox worship: all 14 Eucharistic Anaphoras, festal Mahelet chants, Saint Yared’s three-mode Deggwa system, and the sacred Zema school neume curriculum.'
-                      : 'አሥራ አራቱ ቅዳሴያት፣ የበዓላት ማሕሌት፣ የቅዱስ ያሬድ ፫ቱ የዜማ ስልቶች (ግዕዝ፣ ዕዝል፣ አራራይ) እና የዜማ ትምህርት ቤት ምልክቶች።'}
-                  </p>
-                </div>
-              </div>
-
-              {/* 6 Liturgical Categories Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {LITURGICAL_CATEGORIES.map((cat) => (
-                  <div
-                    key={cat.id}
-                    className="bg-white rounded-3xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-xl transition-all duration-300 p-6 flex flex-col justify-between group space-y-4"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="w-10 h-10 rounded-2xl bg-[#FFF5DB] text-[#855B09] border border-[#C8A84B]/40 flex items-center justify-center font-bold">
-                          {cat.id === 'qidase' && <BookMarked className="w-5 h-5" />}
-                          {cat.id === 'mahelet' && <Sparkles className="w-5 h-5" />}
-                          {cat.id === 'deggwa' && <Music className="w-5 h-5" />}
-                          {cat.id === 'yebelat-minbabat' && <Calendar className="w-5 h-5" />}
-                          {cat.id === 'qolo' && <FileText className="w-5 h-5" />}
-                          {cat.id === 'ye-zema-timhirt-bet' && <Languages className="w-5 h-5" />}
-                        </div>
-
-                        <span className="text-xs font-mono font-bold text-[#855B09] bg-[#FAF8F3] px-2.5 py-1 rounded-full border border-[#E6DFD1]">
-                          {cat.itemCount} {cat.itemCount === 1 ? 'Resource' : 'Texts / Anaphoras'}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="text-xl font-bold text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors leading-snug">
-                          {cat.titleAmharic}
-                        </h3>
-                        <p className="text-xs font-semibold text-[#855B09] mt-0.5">
-                          {cat.titleEnglish}
-                        </p>
-                      </div>
-
-                      <p className="text-xs text-[#4A3B22] leading-relaxed line-clamp-3">
-                        {language === 'en' ? cat.descriptionEn : cat.descriptionAm}
-                      </p>
-                    </div>
-
-                    {/* Quick Items / Action */}
-                    <div className="pt-4 border-t border-[#E6DFD1]/70 space-y-3">
-                      {cat.id === 'qidase' ? (
-                        <div className="space-y-2">
-                          <p className="text-[11px] font-bold text-[#855B09] uppercase tracking-wider">
-                            14 Anaphoras (ቅዳሴያት):
-                          </p>
-                          <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto custom-scrollbar">
-                            {EOTC_14_ANAPHORAS.slice(0, 5).map((ana) => (
-                              <button
-                                key={ana.id}
-                                onClick={() => openLiturgyItem('qidase', 'qidase-apostles')}
-                                className="text-[10px] font-geez font-bold bg-[#FAF8F3] hover:bg-[#FFF5DB] text-[#2C1D07] px-2 py-1 rounded-md border border-[#E6DFD1] transition-colors"
-                              >
-                                {ana.nameAm}
-                              </button>
-                            ))}
-                            <span className="text-[10px] text-[#9CA3AF] self-center pl-1">+9 more</span>
-                          </div>
-                        </div>
-                      ) : null}
-
-                      <button
-                        onClick={() => openLiturgyItem(cat.id, cat.items[0]?.id || 'qidase-apostles')}
-                        className="w-full bg-[#1A2C1C] hover:bg-[#0D1A0F] text-[#C8A84B] hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold border border-[#C8A84B] flex items-center justify-center gap-2 shadow-sm transition-all"
-                      >
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>{language === 'en' ? 'Open Liturgical Reader' : 'ሥርዓተ ጽሑፉን አንብብ'}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <LiturgicalTextsView
+              onOpenItem={(catId, itemId) => openLiturgyItem(catId, itemId)}
+              onOpenPrayerBook={(bookId, secIdx) => openPrayerBook(bookId, secIdx)}
+              onOpenBible={(bookId, chap) => openBookInReader(bookId, chap)}
+              onSelectCategory={(catId) => setSelectedLiturgyCategoryId(catId)}
+            />
           )}
 
           {/* ─────────────────────────────────────────────────────────────
@@ -2565,7 +2463,7 @@ export const ScriptureView: React.FC = () => {
               (Large Ge'ez, Dialogue Attributions, Audio & PDF Export)
           ───────────────────────────────────────────────────────────── */}
           {liturgyViewMode === 'reader' && (
-            <div className="space-y-6 animate-fadeIn">
+            <div className="space-y-6 animate-fadeIn" style={{ padding: '24px clamp(16px, 4vw, 56px) 64px' }}>
               {/* Sticky Controls Header */}
               <div className="bg-white p-6 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-5">
                 <div className="flex flex-wrap items-center justify-between gap-4">
@@ -2775,493 +2673,15 @@ export const ScriptureView: React.FC = () => {
         </div>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-          SECTION 5: GE'EZ LEARNING & PRIMER (ትምህርተ ግዕዝ)
+            {/* ═══════════════════════════════════════════════════════════════
+          SECTION 5: GE'EZ LEARNING PORTAL (ትምህርተ ግዕዝ) — Card-Free Flat
       ═══════════════════════════════════════════════════════════════ */}
       {activeSection === 'geez' && (
-        <div className="space-y-8 animate-fadeIn">
-          {/* Header Banner & User Progress Tracker Card */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            {/* Left Header Hero */}
-            <div className="lg:col-span-8 bg-white p-8 md:p-10 rounded-3xl border border-[#E6DFD1] shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
-              <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-br from-[#EFF6FF] to-transparent rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/4"></div>
-
-              <div className="relative z-10 space-y-3">
-                <div className="inline-flex items-center gap-2 bg-[#EFF6FF] border border-[#3B82F6]/40 px-3.5 py-1 rounded-full text-xs text-[#1D4ED8] font-bold uppercase tracking-wider">
-                  <Languages className="w-3.5 h-3.5 text-[#1D4ED8]" />
-                  <span>ትምህርተ ግዕዝ ወሰዋስው • Ge’ez Learning Portal</span>
-                </div>
-
-                <h2 className="text-3xl md:text-5xl font-black text-[#2C1D07] font-geez leading-tight">
-                  {language === 'en' ? 'Master the Sacred Ge’ez Language' : 'የቅዱስ ቋንቋችን የግዕዝ ትምህርት'}
-                </h2>
-
-                <p className="text-sm md:text-base text-[#4A3B22] leading-relaxed">
-                  {language === 'en'
-                    ? 'Explore the ancient liturgical tongue of Ethiopian Orthodoxy: from the 7-order Fidel alphabet and sacred biblical vocabulary to liturgical chanting and advanced seminary grammar.'
-                    : 'ስምንቱን የፊደል ቤቶች፣ ሰባቱን ድምፆች፣ ቅዱሳት ቃላትንና የሰዋስው ሥርዓትን በድምፅና በልምምድ ይማሩ።'}
-                </p>
-              </div>
-
-              {/* Quick Navigation Tabs for Tracks */}
-              <div className="relative z-10 flex flex-wrap items-center gap-2 pt-2">
-                {GEEZ_TRACKS.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => setActiveGeezTrack(t.id)}
-                    className={`px-4 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-2 ${
-                      activeGeezTrack === t.id
-                        ? 'bg-[#1E3A8A] text-white shadow-md'
-                        : 'bg-[#FAF8F3] text-[#4A3B22] border border-[#E6DFD1] hover:border-[#3B82F6]'
-                    }`}
-                  >
-                    <span className="font-geez">{t.titleAmharic.split(' ')[0]}</span>
-                    <span className="opacity-80 text-[10px]">({t.level})</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Right Student Progress & Mastery Tracker */}
-            <div className="lg:col-span-4 bg-gradient-to-br from-[#1E3A8A] to-[#0F172A] p-6 md:p-8 rounded-3xl text-white shadow-lg flex flex-col justify-between space-y-6 relative overflow-hidden border border-[#3B82F6]/30">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-[#3B82F6]/30 text-[#93C5FD] border border-[#3B82F6]/50 flex items-center gap-1.5">
-                    <Award className="w-3 h-3 text-[#93C5FD]" />
-                    <span>Progress Tracker</span>
-                  </span>
-
-                  <span className="text-xs font-mono font-bold text-[#FDE047] flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>{userXp} XP</span>
-                  </span>
-                </div>
-
-                <div>
-                  <h3 className="text-xl font-bold font-geez text-[#F8FAFC]">
-                    ደቀ መዝሙር (Disciple Level 2)
-                  </h3>
-                  <p className="text-xs text-[#94A3B8] mt-0.5">
-                    Overall Curriculum Mastery: 68%
-                  </p>
-                </div>
-
-                {/* Main Progress Bar */}
-                <div className="space-y-1.5">
-                  <div className="w-full bg-white/10 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-[#3B82F6] to-[#60A5FA] h-full rounded-full w-[68%] transition-all duration-500"></div>
-                  </div>
-                  <div className="flex justify-between text-[10px] text-[#94A3B8] font-mono">
-                    <span>18 of 26 Lessons Complete</span>
-                    <span>🔥 5-Day Streak</span>
-                  </div>
-                </div>
-
-                {/* Track mini-progress list */}
-                <div className="space-y-2 pt-2 text-xs">
-                  <div className="flex items-center justify-between text-[#E2E8F0]">
-                    <span>Fidel Alphabet (ፊደል)</span>
-                    <span className="font-mono text-[#93C5FD] font-bold">85%</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[#E2E8F0]">
-                    <span>Sacred Vocab (ቃላት)</span>
-                    <span className="font-mono text-[#93C5FD] font-bold">60%</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[#E2E8F0]">
-                    <span>Liturgical Reading (ቅዳሴ)</span>
-                    <span className="font-mono text-[#93C5FD] font-bold">40%</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[#E2E8F0]">
-                    <span>Advanced Grammar (ሰዋሰው)</span>
-                    <span className="font-mono text-[#93C5FD] font-bold">20%</span>
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setUserXp((prev) => prev + 50)}
-                className="w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
-              >
-                <Trophy className="w-4 h-4 text-[#FDE047]" />
-                <span>Earn Daily Study XP (+50 XP)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* ─────────────────────────────────────────────────────────────
-              INTERACTIVE TRACK 1: FIDEL ALPHABET MATRIX & PRONUNCIATION
-          ───────────────────────────────────────────────────────────── */}
-          {activeGeezTrack === 'fidel' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-                  <div>
-                    <h3 className="text-xl md:text-2xl font-black text-[#2C1D07] font-geez">
-                      The Seven Phonetic Orders of the Fidel (ሳብዓዊ የፊደል ክፍሎች)
-                    </h3>
-                    <p className="text-xs text-[#6B7280]">
-                      Click on any Ge’ez letter to listen to its authentic vocal pronunciation and see example sacred words.
-                    </p>
-                  </div>
-
-                  {/* Consonant Family Picker */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar">
-                    {FIDEL_ALPHABET_DATA.map((fam, idx) => (
-                      <button
-                        key={fam.baseConsonant}
-                        onClick={() => {
-                          setSelectedFidelFamilyIndex(idx);
-                          setSelectedFidelOrder(null);
-                        }}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                          selectedFidelFamilyIndex === idx
-                            ? 'bg-[#1E3A8A] text-white shadow-sm'
-                            : 'bg-[#FAF8F3] text-[#4A3B22] border border-[#E6DFD1] hover:bg-[#EFF6FF]'
-                        }`}
-                      >
-                        {fam.letterNameAmharic} ({fam.baseConsonant})
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 7 Orders Interactive Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 text-center">
-                  {FIDEL_ALPHABET_DATA[selectedFidelFamilyIndex].orders.map((ord) => {
-                    const isSelected = selectedFidelOrder?.order === ord.order;
-                    return (
-                      <div
-                        key={ord.order}
-                        onClick={() => {
-                          setSelectedFidelOrder(ord);
-                          playGeezAudioTone(ord.character);
-                        }}
-                        className={`p-5 rounded-2xl border transition-all cursor-pointer space-y-2 group ${
-                          isSelected
-                            ? 'bg-[#EFF6FF] border-[#1D4ED8] shadow-md ring-2 ring-[#BFDBFE]'
-                            : 'bg-[#FAF8F3] hover:bg-[#FFF5DB] border-[#E6DFD1] hover:border-[#C8A84B]'
-                        }`}
-                      >
-                        <span className="text-[10px] font-bold text-[#855B09] uppercase block">
-                          {ord.nameAmharic}
-                        </span>
-
-                        <span className="text-4xl font-black text-[#1E3A8A] font-geez block group-hover:scale-110 transition-transform">
-                          {ord.character}
-                        </span>
-
-                        <div className="space-y-0.5">
-                          <span className="text-xs font-mono font-bold text-[#2C1D07] block">
-                            [{ord.transliteration}]
-                          </span>
-                          <span className="text-[10px] text-[#6B7280] block">
-                            Vowel: /{ord.vowelSound}/
-                          </span>
-                        </div>
-
-                        <div className="pt-2 border-t border-[#E6DFD1]/60 flex items-center justify-center gap-1 text-[10px] text-[#1D4ED8] font-bold">
-                          <Volume2 className="w-3 h-3" />
-                          <span>Listen</span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Selected Letter Popup Detail */}
-                {selectedFidelOrder && (
-                  <div className="p-6 rounded-2xl bg-gradient-to-r from-[#EFF6FF] to-[#FAF8F3] border border-[#3B82F6]/40 flex flex-wrap items-center justify-between gap-4 animate-fadeIn">
-                    <div className="flex items-center gap-4">
-                      <span className="w-16 h-16 rounded-2xl bg-[#1E3A8A] text-white text-3xl font-black font-geez flex items-center justify-center shadow-md">
-                        {selectedFidelOrder.character}
-                      </span>
-                      <div className="space-y-0.5">
-                        <span className="text-xs font-bold text-[#1D4ED8] uppercase tracking-wider">
-                          Order #{selectedFidelOrder.order} • {selectedFidelOrder.nameAmharic} ({selectedFidelOrder.nameEnglish})
-                        </span>
-                        <h4 className="text-lg font-bold text-[#2C1D07]">
-                          Example Word: <span className="font-geez font-black text-[#1E3A8A]">{selectedFidelOrder.exampleWordGeez}</span> ({selectedFidelOrder.exampleWordMeaning})
-                        </h4>
-                        <p className="text-xs text-[#6B7280]">
-                          Phonetic Pronunciation: <span className="font-mono font-bold text-[#855B09]">/{selectedFidelOrder.transliteration}/</span> with vowel <span className="font-mono">/{selectedFidelOrder.vowelSound}/</span>
-                        </p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => handleToggleLessonComplete(`fidel-${selectedFidelOrder.character}`)}
-                      className="bg-[#1E3A8A] hover:bg-[#172554] text-white px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-all"
-                    >
-                      <Check className="w-4 h-4" />
-                      <span>{completedLessonIds.includes(`fidel-${selectedFidelOrder.character}`) ? 'Learned ✓' : 'Mark as Learned (+25 XP)'}</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              INTERACTIVE TRACK 2: SACRED VOCABULARY FLASHCARDS
-          ───────────────────────────────────────────────────────────── */}
-          {activeGeezTrack === 'basic' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-2xl font-bold text-[#2C1D07] font-geez">
-                    Sacred Liturgical Vocabulary & Theological Roots
-                  </h3>
-                  <p className="text-xs text-[#6B7280]">
-                    Core theological terms used in the Holy Scriptures, Divine Liturgy, and Marian Praises.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {SACRED_VOCABULARY.map((word) => (
-                  <div
-                    key={word.id}
-                    className="bg-white rounded-3xl border border-[#E6DFD1] hover:border-[#3B82F6] shadow-sm hover:shadow-lg p-6 flex flex-col justify-between space-y-4 transition-all"
-                  >
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]">
-                          {word.category}
-                        </span>
-
-                        <button
-                          onClick={() => playGeezAudioTone(word.geezWord)}
-                          className="p-1.5 bg-[#FAF8F3] hover:bg-[#EFF6FF] rounded-lg text-[#1D4ED8] transition-colors"
-                          title="Listen to Pronunciation"
-                        >
-                          <Volume2 className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      <h4 className="text-3xl font-black text-[#1E3A8A] font-geez leading-tight">
-                        {word.geezWord}
-                      </h4>
-                      <p className="text-xs font-mono font-bold text-[#855B09]">
-                        [{word.transliteration}]
-                      </p>
-
-                      <div className="p-3.5 bg-[#FAF8F3] rounded-2xl border border-[#E6DFD1] space-y-1.5">
-                        <p className="text-sm font-bold text-[#2C1D07] font-geez">
-                          {word.meaningAmharic}
-                        </p>
-                        <p className="text-xs text-[#4A3B22] italic font-body">
-                          {word.meaningEnglish}
-                        </p>
-                      </div>
-
-                      <p className="text-[11px] text-[#6B7280]">
-                        <span className="font-semibold text-[#855B09]">Root:</span> {word.root}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => handleToggleLessonComplete(word.id)}
-                      className={`w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 border transition-all ${
-                        completedLessonIds.includes(word.id)
-                          ? 'bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]'
-                          : 'bg-white text-[#1E3A8A] border-[#E6DFD1] hover:bg-[#EFF6FF]'
-                      }`}
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{completedLessonIds.includes(word.id) ? 'Mastered ✓' : 'Mark Learned (+25 XP)'}</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              INTERACTIVE TRACK 3: LITURGICAL READ-ALONG
-          ───────────────────────────────────────────────────────────── */}
-          {activeGeezTrack === 'liturgical' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="bg-white p-8 md:p-10 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6 max-w-4xl mx-auto">
-                <div className="text-center pb-6 border-b border-[#E6DFD1] space-y-1">
-                  <span className="text-xs font-mono text-[#1D4ED8] font-bold uppercase tracking-widest">
-                    Read-Along Exercise • ልምምደ ንባብ
-                  </span>
-                  <h3 className="text-2xl md:text-3xl font-black text-[#2C1D07] font-geez">
-                    ጸሎተ ሃይማኖት (The Nicene Creed in Ge’ez)
-                  </h3>
-                  <p className="text-xs text-[#6B7280]">
-                    Listen to the liturgical recitation while practicing continuous Ge’ez sacred reading.
-                  </p>
-                </div>
-
-                <div className="space-y-4">
-                  {[
-                    {
-                      num: 1,
-                      geez: 'ነአምን ፡ በአሐዱ ፡ አምላክ ፡ እግዚአብሔር ፡ አብ ፡ አኃዜ ፡ ኵሉ ፡ ገባሬ ፡ ሰማይ ፡ ወምድር ፡ ዘያስተርኢ ፡ ወዘኢያስተርኢ ።',
-                      am: 'ሁሉን በፈጠረ በአንድ አምላክ በእግዚአብሔር አብ እናምናለን፤ ሰማይንና ምድርን የሚታየውንና የማይታየውን በፈጠረ።',
-                      en: 'We believe in one God, the Father Almighty, Maker of heaven and earth, and of all things visible and invisible.',
-                    },
-                    {
-                      num: 2,
-                      geez: 'ወበአሐዱ ፡ እግዚእ ፡ ኢየሱስ ፡ ክርስቶስ ፡ ወልደ ፡ አብ ፡ ዋሕድ ፡ ዘህልው ፡ ምስሌሁ ፡ እምቅድመ ፡ ይትፈጠር ፡ ዓለም ።',
-                      am: 'ዓለም ሳይፈጠር ከእርሱ ጋር በነበረ በአንድ ጌታ በኢየሱስ ክርስቶስም እናምናለን፤ የአብ አንድያ ልጅ በሆነ።',
-                      en: 'And in one Lord Jesus Christ, the only-begotten Son of God, begotten of the Father before all worlds.',
-                    },
-                  ].map((row) => (
-                    <div key={row.num} className="p-6 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-3">
-                      <span className="w-7 h-7 rounded-full bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE] text-xs font-bold flex items-center justify-center">
-                        {row.num}
-                      </span>
-                      <p className="text-xl md:text-2xl font-black text-[#2C1D07] font-geez leading-loose">
-                        {row.geez}
-                      </p>
-                      <div className="pt-2 border-t border-[#E6DFD1]/60 space-y-1">
-                        <p className="text-sm font-geez font-medium text-[#855B09]">{row.am}</p>
-                        <p className="text-xs text-[#6B7280] italic">"{row.en}"</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              INTERACTIVE TRACK 4: ADVANCED GRAMMAR
-          ───────────────────────────────────────────────────────────── */}
-          {activeGeezTrack === 'grammar' && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {GRAMMAR_LESSONS.map((gram, i) => (
-                  <div key={i} className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-4">
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#FAF8F3] text-[#855B09] border border-[#E6DFD1]">
-                        Rule #{i + 1}
-                      </span>
-                      <h4 className="text-xl font-bold text-[#2C1D07] font-geez mt-2 leading-snug">
-                        {gram.titleAmharic}
-                      </h4>
-                      <p className="text-xs font-semibold text-[#1E3A8A]">
-                        {gram.titleEnglish}
-                      </p>
-                    </div>
-
-                    <p className="text-xs text-[#4A3B22] leading-relaxed">
-                      {language === 'en' ? gram.explanationEn : gram.explanationAm}
-                    </p>
-
-                    <div className="p-4 bg-[#FAF8F3] rounded-2xl border border-[#E6DFD1] space-y-2">
-                      <p className="text-xs font-bold text-[#855B09] uppercase tracking-wider">
-                        Examples & Conjugations:
-                      </p>
-                      <div className="space-y-2 text-xs">
-                        {gram.examples.map((ex, exIdx) => (
-                          <div key={exIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-[#E6DFD1]/50 pb-1.5 last:border-0 last:pb-0">
-                            <span className="font-geez font-black text-[#1E3A8A] text-sm">{ex.geez}</span>
-                            <span className="text-[#6B7280] italic">{ex.english}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ─────────────────────────────────────────────────────────────
-              PRACTICE EXERCISES & QUIZ CHALLENGE
-          ───────────────────────────────────────────────────────────── */}
-          <div className="bg-white p-8 md:p-10 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-            <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#855B09]">
-                  <HelpCircle className="w-4 h-4 text-[#855B09]" />
-                  <span>Interactive Exercises • የዕውቀት መፈተኛ</span>
-                </div>
-                <h3 className="text-2xl font-black text-[#2C1D07] font-geez">
-                  Test Your Ge’ez Knowledge & Earn XP
-                </h3>
-              </div>
-
-              <button
-                onClick={() => {
-                  setQuizAnswers({});
-                  setQuizFeedback({});
-                }}
-                className="text-xs text-[#6B7280] hover:text-[#2C1D07] flex items-center gap-1 font-bold"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Quiz</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {PRACTICE_QUIZZES.map((q) => {
-                const selectedOpt = quizAnswers[q.id];
-                const hasAnswered = selectedOpt !== undefined;
-                const isCorrect = quizFeedback[q.id];
-
-                return (
-                  <div
-                    key={q.id}
-                    className="p-6 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-4 flex flex-col justify-between"
-                  >
-                    <div className="space-y-3">
-                      <span className="w-12 h-12 rounded-2xl bg-white border border-[#E6DFD1] text-2xl font-black font-geez text-[#1E3A8A] flex items-center justify-center shadow-sm">
-                        {q.geezPrompt}
-                      </span>
-
-                      <p className="text-sm font-bold text-[#2C1D07] leading-snug">
-                        {q.question}
-                      </p>
-
-                      <div className="space-y-2 pt-1">
-                        {q.options.map((opt, optIdx) => {
-                          let btnStyle = 'bg-white border-[#E6DFD1] text-[#4A3B22] hover:border-[#3B82F6]';
-                          if (hasAnswered) {
-                            if (optIdx === q.correctIndex) {
-                              btnStyle = 'bg-[#ECFDF5] border-[#059669] text-[#065F46] font-bold';
-                            } else if (optIdx === selectedOpt && !isCorrect) {
-                              btnStyle = 'bg-[#FEF2F2] border-[#DC2626] text-[#991B1B] font-bold';
-                            } else {
-                              btnStyle = 'bg-white border-[#E6DFD1] opacity-50 text-[#9CA3AF]';
-                            }
-                          }
-
-                          return (
-                            <button
-                              key={optIdx}
-                              onClick={() => handleSelectQuizOption(q.id, optIdx, q.correctIndex)}
-                              disabled={hasAnswered}
-                              className={`w-full text-left p-3 rounded-xl text-xs border transition-all ${btnStyle}`}
-                            >
-                              {opt}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {hasAnswered && (
-                      <div className={`p-3 rounded-xl text-xs space-y-1 animate-fadeIn ${
-                        isCorrect ? 'bg-[#ECFDF5] text-[#065F46]' : 'bg-[#FEF2F2] text-[#991B1B]'
-                      }`}>
-                        <p className="font-bold">
-                          {isCorrect ? '✓ Correct! (+50 XP Earned)' : '✕ Incorrect'}
-                        </p>
-                        <p className="text-[11px] leading-relaxed text-[#4A3B22]">
-                          {q.explanation}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
+        <GeezLearningView
+          userXp={userXp}
+          onAddXp={(amount) => setUserXp((prev) => prev + amount)}
+          playAudioTone={playGeezAudioTone}
+        />
       )}
     </div>
   );

@@ -5,6 +5,7 @@ import { MOCK_CALENDAR_EVENTS, UPCOMING_FEASTS } from '../data/mockCalendar';
 import { DIGITAL_CHANT_SERVICES } from '../data/mockChants';
 import type { ChantSection, ChantVerse } from '../data/mockChants';
 import { TODAY_LITURGY, CANONICAL_FASTS, MOCK_SERMONS } from '../data/mockWorship';
+import { MezmurView } from '../components/worship/MezmurView';
 import type { SermonItem } from '../data/mockWorship';
 import {
   Calendar as CalendarIcon,
@@ -45,7 +46,7 @@ import {
   Share2,
 } from 'lucide-react';
 
-type WorshipSubTab = 'hub' | 'zema' | 'calendar' | 'chant-stand' | 'fasting' | 'sermons';
+type WorshipSubTab = 'hub' | 'calendar' | 'fasting' | 'sermons' | 'mezmur';
 
 export const WorshipView: React.FC = () => {
   const { activeView, activeTrackId, setActiveTrackId, language } = useLanguage();
@@ -148,11 +149,10 @@ export const WorshipView: React.FC = () => {
 
   // Sync route with activeView
   useEffect(() => {
-    if (activeView === 'worship/zema') setSubTab('zema');
-    else if (activeView === 'worship/stand') setSubTab('chant-stand');
-    else if (activeView === 'worship/calendar') setSubTab('calendar');
+    if (activeView === 'worship/calendar') setSubTab('calendar');
     else if (activeView === 'worship/fasting') setSubTab('fasting');
     else if (activeView === 'worship/sermons') setSubTab('sermons');
+    else if (activeView === 'worship/mezmur') setSubTab('mezmur');
     else if (activeView === 'worship') {
       setSubTab('hub');
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -170,12 +170,11 @@ export const WorshipView: React.FC = () => {
   };
 
   const NAV_TABS: { id: WorshipSubTab; labelEn: string; labelAm: string; icon: React.ElementType }[] = [
-    { id: 'hub',         labelEn: 'Worship Hub',        labelAm: 'አምልኮ ማዕከል',       icon: Sparkles },
-    { id: 'zema',        labelEn: 'Zema Library',        labelAm: 'ዜማ ቤተ-መጻሕፍት',     icon: Volume2 },
+    { id: 'hub',         labelEn: 'Resources Hub',        labelAm: 'የሀብታት ማዕከል',       icon: Sparkles },
     { id: 'calendar',    labelEn: 'Liturgical Calendar', labelAm: 'የቤተ ክርስቲያን ቀን',   icon: CalendarIcon },
-    { id: 'chant-stand', labelEn: 'Chant Stand',         labelAm: 'ዜማ መቆሚያ',         icon: Book },
-    { id: 'fasting',     labelEn: 'Fasting Guide',       labelAm: 'የጾም መምሪያ',         icon: Moon },
+    { id: 'fasting',     labelEn: 'Fasting Guide',       labelAm: 'የጾም መመሪያ',         icon: Moon },
     { id: 'sermons',     labelEn: 'Sermons',             labelAm: 'ስብከቶች',             icon: Mic2 },
+    { id: 'mezmur',      labelEn: 'Mezmur & Hymns',      labelAm: 'መዝሙራት',             icon: Volume2 },
   ];
 
   return (
@@ -217,616 +216,293 @@ export const WorshipView: React.FC = () => {
           VIEW 1: WORSHIP MAIN HUB
       ═══════════════════════════════════════════ */}
       {subTab === 'hub' && (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="animate-fadeIn bg-[#FAF8F3] -mx-4 md:-mx-8 -mt-8 pb-12">
 
-          {/* Hero Banner */}
-          <div className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-tr from-[#FFF5DB] via-[#FAF8F3] to-transparent rounded-full blur-3xl opacity-60 -translate-y-1/2 translate-x-1/3 pointer-events-none" />
-
-            <div className="relative z-10 max-w-3xl space-y-4">
-              <div className="inline-flex items-center gap-2 bg-[#FFF5DB] border border-[#C8A84B] px-4 py-1.5 rounded-full text-xs text-[#855B09] font-bold uppercase tracking-wider">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>ሥርዓተ አምልኮ • Sacred Worship</span>
+          {/* ── Split Hero: Left text / Right manuscript image ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[420px]">
+            {/* Left: Text */}
+            <div className="bg-[#FAF8F3] px-8 md:px-14 py-12 md:py-16 flex flex-col justify-center space-y-6">
+              <div className="inline-flex items-center gap-2 text-xs font-extrabold text-[#C8A84B] uppercase tracking-widest">
+                <span className="w-4 h-px bg-[#C8A84B]" />
+                Orthodox Resources Hub
               </div>
-
-              <h1 className="text-4xl md:text-6xl font-black text-[#2C1D07] font-geez leading-tight">
+              <h1 className="text-3xl md:text-5xl font-black text-[#2C1D07] font-geez leading-tight">
                 {language === 'en'
-                  ? 'Worship & Liturgy — አምልኮ'
-                  : 'ሥርዓተ አምልኮ ወሥርዓተ ቅዳሴ'}
+                  ? <><span>Rooted in Faith.</span><br /><span className="text-[#C8A84B]">Guided by Tradition.</span></>
+                  : <><span>በእምነት ሥር.</span><br /><span className="text-[#C8A84B]">በወግ ተመርቷል።</span></>}
               </h1>
-
-              <p className="text-sm md:text-base text-[#4A3B22] leading-relaxed">
+              <p className="text-sm text-[#6B7280] leading-relaxed max-w-md">
                 {language === 'en'
-                  ? "Immerse in the ancient worship tradition of the Ethiopian Orthodox Tewahedo Church: Sacred Qidase, Saint Yared's 6th-century Zema, the 55-day Great Lent, the sacred fasting calendar, and the liturgical year cycle."
-                  : 'ጌጥ የሆነው ሥርዓተ ቅዳሴ፣ የቅዱስ ያሬድ ዜማ፣ አቢይ ጾምና ሌሎች ሰባቱ ጾሞች፣ ስብከቶችና ሥርዓተ ቤተ ክርስቲያን ያጠቃለለ የአምልኮ ማዕከል።'}
+                  ? 'Your center for the liturgical life of the Ethiopian Orthodox Tewahedo Church. Explore the calendar, fasting seasons, sermons, hymns and daily spiritual resources to grow in faith and walk in the light of Christ.'
+                  : 'ጌጥ የሆነው ሥርዓተ ቅዳሴ፣ አቢይ ጾምና ሌሎች ሰባቱ ጾሞች፣ ስብከቶችና ሥርዓተ ቤተ ክርስቲያን ያጠቃለለ ምንጭ።'}
               </p>
+              <div className="flex items-center gap-2 pt-2">
+                <span className="text-[#C8A84B] text-xl">✦</span>
+                <span className="text-[#C8A84B] text-xl">✦</span>
+                <span className="text-[#C8A84B] text-xl">✦</span>
+              </div>
+            </div>
+
+            {/* Right: Manuscript Image */}
+            <div className="relative overflow-hidden min-h-[300px] lg:min-h-[420px]">
+              <img
+                src="/manuscript_hero.jpg"
+                alt="Ancient Ethiopian Orthodox Manuscript"
+                className="absolute inset-0 w-full h-full object-cover object-center"
+              />
+              <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#FAF8F3]/20" />
             </div>
           </div>
 
-          {/* 5 Category Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
-            {[
-              {
-                id: 'zema' as WorshipSubTab,
-                icon: Volume2,
-                titleAm: 'ዜማ ወዝማሬ',
-                titleEn: "Zema & Chant",
-                descEn: "All 3 Yaredic modes \u2014 Ge'ez, Araray, Ezil \u2014 with cantor audio recordings.",
-                descAm: 'ሦስቱ የቅዱስ ያሬድ ዜማ ስልቶች፣ ሙሉ ቤተ መጻሕፍት።',
-                color: '#C8A84B',
-                bg: '#FFF5DB',
-                border: '#C8A84B',
-              },
-              {
-                id: 'chant-stand' as WorshipSubTab,
-                icon: Book,
-                titleAm: 'ዲጂታል ዜማ መቆሚያ',
-                titleEn: "Digital Chant Stand",
-                descEn: "Full-screen Ge'ez text for Debteras & cantors during live services.",
-                descAm: 'ለዲያቆናትና ለዜማ ቤት ሙሉ ማስገቢያ ታቦት ዜማ።',
-                color: '#800020',
-                bg: '#FDF2F2',
-                border: '#FECACA',
-              },
-              {
-                id: 'calendar' as WorshipSubTab,
-                icon: CalendarIcon,
-                titleAm: 'የቤተ ክርስቲያን ዘመን',
-                titleEn: 'Liturgical Calendar',
-                descEn: 'Dual Ethiopic & Gregorian dates with feast days, saint commemorations & readings.',
-                descAm: 'የኢትዮጵያ ዘመን ቍጥርና ግሪጎሪያን ቀን ቀን አቆጣጠር።',
-                color: '#1A2C1C',
-                bg: '#F0FDF4',
-                border: '#BBF7D0',
-              },
-              {
-                id: 'fasting' as WorshipSubTab,
-                icon: Moon,
-                titleAm: 'ፆምና ጸሎት',
-                titleEn: 'Fasting Guide',
-                descEn: 'All 7 canonical fasts: Filseta, Abiy Tsom, Tsome Nebiyat, Nineveh & more.',
-                descAm: 'ሰባቱ አቅደ ጾሞች፣ የጾም ሥርዓት፣ ምግብና ጸሎት።',
-                color: '#1D4ED8',
-                bg: '#EFF6FF',
-                border: '#BFDBFE',
-              },
-              {
-                id: 'sermons' as WorshipSubTab,
-                icon: Mic2,
-                titleAm: 'ስብከቶች',
-                titleEn: 'Sermons',
-                descEn: 'Inspiring homilies from Patriarchs, scholars, and deacons on Holy Scripture.',
-                descAm: 'ከፓትርያርክ፣ ሊቃውንት እና ዲያቆናት ቅዱስ ስብከቶች።',
-                color: '#7C3AED',
-                bg: '#F5F3FF',
-                border: '#DDD6FE',
-              },
-            ].map((card) => {
-              const Icon = card.icon;
-              return (
-                <div
-                  key={card.id}
-                  onClick={() => setSubTab(card.id)}
-                  className="bg-white rounded-3xl border border-[#E6DFD1] hover:shadow-xl hover:border-[#C8A84B] transition-all duration-300 p-6 flex flex-col justify-between group cursor-pointer space-y-4"
-                >
-                  <div className="space-y-3">
+          {/* ── EXPLORE BY CATEGORY row ── */}
+          <div className="px-8 md:px-14 py-10 bg-white border-y border-[#E6DFD1]">
+            <div className="flex items-center gap-3 mb-8">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#855B09]">Explore by Category</span>
+              <span className="flex-1 h-px bg-[#E6DFD1]" />
+            </div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+              {[
+                {
+                  id: 'calendar' as WorshipSubTab,
+                  icon: CalendarIcon,
+                  titleEn: 'Liturgical Calendar',
+                  titleAm: 'የቤተ ክርስቲያን ዘመን',
+                  descEn: 'Follow the daily cycle of the Church. Feasts, commemorations and lectionary readings.',
+                  descAm: 'የቤተ ክርስቲያንን የዕለት ዑደት ይከተሉ። ክብረ በዓላት፣ የቅዱሳን ቀናት እና ምንባባት።',
+                  iconColor: '#1A2C1C',
+                },
+                {
+                  id: 'fasting' as WorshipSubTab,
+                  icon: Moon,
+                  titleEn: 'Fasting Guide',
+                  titleAm: 'ፆምና ጸሎት',
+                  descEn: 'Understand the sacred fasts, their meaning, traditions and guidelines.',
+                  descAm: 'ቅዱሱን ጾሞች ፣ ትርጉሙን፣ ወጉን እና ሥርዓቱን ይረዱ።',
+                  iconColor: '#1D4ED8',
+                },
+                {
+                  id: 'sermons' as WorshipSubTab,
+                  icon: Mic2,
+                  titleEn: 'Sermons',
+                  titleAm: 'ስብከቶች',
+                  descEn: 'Listen and reflect on inspiring teachings from bishops, priests and deacons.',
+                  descAm: 'ከጳጳሳት፣ ካህናትና ዲያቆናት አነቃቂ ትምህርቶች ያዳምጡ።',
+                  iconColor: '#7C3AED',
+                },
+                {
+                  id: 'mezmur' as WorshipSubTab,
+                  icon: Volume2,
+                  titleEn: 'Mezmur & Hymns',
+                  titleAm: 'መዝሙራት',
+                  descEn: 'Sacred hymns of praise, devotion and repentance from our rich spiritual heritage.',
+                  descAm: 'ከሃብታማ ክርስቲያናዊ ቅርሳችን የሚወጡ ቅዱሳን ዝማሬዎች።',
+                  iconColor: '#C8A84B',
+                },
+              ].map((cat) => {
+                const Icon = cat.icon;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSubTab(cat.id)}
+                    className="text-left group space-y-3"
+                  >
+                    {/* Icon */}
                     <div
-                      className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm"
-                      style={{ background: card.bg, border: `1px solid ${card.border}` }}
+                      className="w-11 h-11 rounded-xl flex items-center justify-center mb-3 transition-transform group-hover:scale-110"
+                      style={{ background: cat.iconColor + '12', border: `1.5px solid ${cat.iconColor}25` }}
                     >
-                      <Icon className="w-6 h-6" style={{ color: card.color }} />
+                      <Icon className="w-5 h-5" style={{ color: cat.iconColor }} />
                     </div>
-
-                    <div>
-                      <h3 className="text-base font-bold text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors">
-                        {language === 'en' ? card.titleEn : card.titleAm}
-                      </h3>
-                    </div>
-
+                    <h3 className="text-sm font-black text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors">
+                      {language === 'en' ? cat.titleEn : cat.titleAm}
+                    </h3>
                     <p className="text-xs text-[#6B7280] leading-relaxed">
-                      {language === 'en' ? card.descEn : card.descAm}
+                      {language === 'en' ? cat.descEn : cat.descAm}
                     </p>
-                  </div>
-
-                  <div className="flex items-center gap-1 text-xs font-bold text-[#855B09] group-hover:gap-2 transition-all">
-                    <span>{language === 'en' ? 'Explore' : 'ፍለጋ'}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Today's Liturgy Preview */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Left: Feast & Fast Status */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-[#1A2C1C] to-[#0D1A0F] p-8 rounded-3xl border border-[#C8A84B]/30 text-white space-y-5 relative overflow-hidden shadow-xl">
-              <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=60 height=60 viewBox=0 0 60 60 xmlns=http://www.w3.org/2000/svg%3E%3Cg fill=none fill-rule=evenodd%3E%3Cg fill=%23C8A84B fill-opacity=0.04%3E%3Cpath d=M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20" />
-
-              <div className="relative z-10 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="inline-flex items-center gap-1.5 bg-[#C8A84B]/20 border border-[#C8A84B]/50 text-[#C8A84B] px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-widest">
-                    <Sun className="w-3 h-3" />
-                    <span>Today's Liturgy</span>
-                  </div>
-                  <span className="text-[10px] text-[#94A3B8] font-mono">{TODAY_LITURGY.gregorianDate.split(',')[1]?.trim()}</span>
-                </div>
-
-                <div>
-                  <p className="text-xs text-[#C8A84B] font-bold font-geez">{TODAY_LITURGY.ethiopianDate}</p>
-                  <h2 className="text-xl md:text-2xl font-black text-white font-geez leading-snug mt-1">
-                    {language === 'en' ? TODAY_LITURGY.feastNameEnglish : TODAY_LITURGY.feastNameAmharic}
-                  </h2>
-                </div>
-
-                {/* Saint of the Day */}
-                <div className="p-4 rounded-2xl bg-white/10 border border-white/10 space-y-1">
-                  <span className="text-[10px] text-[#C8A84B] font-extrabold uppercase tracking-wider">
-                    Saint of the Day:
-                  </span>
-                  <p className="text-sm font-bold text-white font-geez">
-                    {language === 'en' ? TODAY_LITURGY.saintOfDayEnglish : TODAY_LITURGY.saintOfDayAmharic}
-                  </p>
-                </div>
-
-                {/* Fast Status */}
-                {TODAY_LITURGY.isFast && (
-                  <div className="p-3.5 rounded-xl bg-[#006B3C]/30 border border-[#A3E6C2]/30 space-y-1">
-                    <span className="text-[10px] text-[#A3E6C2] font-extrabold uppercase tracking-wider flex items-center gap-1">
-                      <Moon className="w-3 h-3" /> {language === 'en' ? 'Fasting Today:' : 'የዛሬ ጾም:'}
-                    </span>
-                    <p className="text-xs text-[#D1FAE5] font-geez">{TODAY_LITURGY.fastNameAmharic}</p>
-                    <p className="text-[10px] text-[#94A3B8]">{TODAY_LITURGY.fastStatusText}</p>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setSubTab('calendar')}
-                  className="w-full bg-[#C8A84B] hover:bg-[#B8973A] text-[#1A2C1C] py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
-                >
-                  <CalendarIcon className="w-4 h-4" />
-                  <span>{language === 'en' ? 'View Full Calendar' : 'ሙሉ ቀን መቁጠሪያ ይመልከቱ'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Daily Readings */}
-            <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-5">
-              <div className="flex items-center justify-between border-b border-[#E6DFD1] pb-4">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#855B09]">
-                    <BookOpen className="w-4 h-4" />
-                    <span>{language === 'en' ? 'Today\'s Lectionary Readings' : 'የዛሬ ምንባባት'}</span>
-                  </div>
-                  <h3 className="text-lg font-black text-[#2C1D07] font-geez mt-1">
-                    {TODAY_LITURGY.readings.psalm.verseAmharic} • {TODAY_LITURGY.readings.epistle.verseAmharic} • {TODAY_LITURGY.readings.gospel.verseAmharic}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {/* Psalm */}
-                <div className="p-5 rounded-2xl bg-[#FFF5DB] border border-[#C8A84B]/40 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1">
-                      <Star className="w-3 h-3" />
-                      {TODAY_LITURGY.readings.psalm.titleAmharic} ({TODAY_LITURGY.readings.psalm.verseEnglish})
-                    </span>
-                  </div>
-                  <p className="text-base font-black text-[#2C1D07] font-geez leading-loose">
-                    {TODAY_LITURGY.readings.psalm.textGeez}
-                  </p>
-                  <p className="text-xs text-[#6B7280] italic">"{TODAY_LITURGY.readings.psalm.textEnglish}"</p>
-                </div>
-
-                {/* Epistle */}
-                <div className="p-5 rounded-2xl bg-[#F0FDF4] border border-[#86EFAC] space-y-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#15803D] flex items-center gap-1">
-                    <BookMarked className="w-3 h-3" />
-                    {TODAY_LITURGY.readings.epistle.titleAmharic} ({TODAY_LITURGY.readings.epistle.verseEnglish})
-                  </span>
-                  <p className="text-base font-black text-[#2C1D07] font-geez leading-loose">
-                    {TODAY_LITURGY.readings.epistle.textGeez}
-                  </p>
-                  <p className="text-xs text-[#6B7280] italic">"{TODAY_LITURGY.readings.epistle.textEnglish}"</p>
-                </div>
-
-                {/* Gospel */}
-                <div className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#800020] flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    {TODAY_LITURGY.readings.gospel.titleAmharic} ({TODAY_LITURGY.readings.gospel.verseEnglish})
-                  </span>
-                  <p className="text-base font-black text-[#2C1D07] font-geez leading-loose">
-                    {TODAY_LITURGY.readings.gospel.textGeez}
-                  </p>
-                  <p className="text-xs text-[#6B7280] italic">"{TODAY_LITURGY.readings.gospel.textEnglish}"</p>
-                </div>
-              </div>
+                    <div className="flex items-center gap-1 text-xs font-bold pt-1" style={{ color: cat.iconColor }}>
+                      <span>Discover</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Featured Zema Tracks */}
-          <div className="bg-[#FAF8F3] p-8 rounded-3xl border border-[#E6DFD1] space-y-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="inline-flex items-center gap-2 text-xs font-bold text-[#855B09]">
-                  <Volume2 className="w-4 h-4" />
-                  <span>{language === 'en' ? 'Featured Zema Tracks (ዜማ)' : 'ተመሳጥሮ ዜማዎች'}</span>
+          {/* ── 3-Column Bottom: Today in Church / Lectionary / Upcoming Feasts ── */}
+          <div className="px-4 md:px-8 py-8 grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+            {/* Col 1: TODAY IN THE CHURCH (dark green panel) */}
+            <div className="bg-gradient-to-br from-[#1A2C1C] to-[#0D1A0F] p-6 rounded-2xl border border-[#C8A84B]/20 text-white space-y-4 relative overflow-hidden">
+              <div className="absolute inset-0 opacity-[0.05]" style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23C8A84B' fill-rule='evenodd'%3E%3Crect x='27' y='0' width='6' height='60'/%3E%3Crect x='0' y='27' width='60' height='6'/%3E%3C/g%3E%3C/svg%3E")`
+              }} />              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-px bg-[#C8A84B]" />
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#C8A84B]">Today in the Church</span>
                 </div>
-                <h2 className="text-xl font-black text-[#2C1D07] font-geez mt-1">
-                  {language === 'en' ? 'Seasonally Relevant Saint Yared Zema' : 'ለዚህ ዘመን የሚስማሙ ዜማዎች'}
-                </h2>
+
+                {/* Saint icon + feast */}
+                <div className="flex items-start gap-3">
+                  <div className="w-14 h-14 rounded-xl bg-[#C8A84B]/20 border border-[#C8A84B]/30 flex items-center justify-center shrink-0 text-2xl">
+                    ✝
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[#C8A84B] font-bold">{TODAY_LITURGY.ethiopianDate}</p>
+                    <h3 className="text-sm font-black text-white font-geez leading-snug mt-0.5">
+                      {language === 'en' ? TODAY_LITURGY.feastNameEnglish : TODAY_LITURGY.feastNameAmharic}
+                    </h3>
+                    <p className="text-[10px] text-[#94A3B8] mt-0.5">{TODAY_LITURGY.gregorianDate}</p>
+                  </div>
+                </div>
+
+                {/* Stat pills */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="bg-white/8 border border-white/10 rounded-lg px-2 py-2 space-y-0.5">
+                    <p className="text-[8px] font-extrabold uppercase tracking-wider text-[#94A3B8]">Fast Day</p>
+                    <p className="text-[11px] font-bold text-white">{TODAY_LITURGY.isFast ? `Yes (${TODAY_LITURGY.fastNameAmharic})` : 'No Fast'}</p>
+                  </div>
+                  <div className="bg-white/8 border border-white/10 rounded-lg px-2 py-2 space-y-0.5">
+                    <p className="text-[8px] font-extrabold uppercase tracking-wider text-[#94A3B8]">Mode (Degua)</p>
+                    <p className="text-[11px] font-bold text-white">Ezil</p>
+                  </div>
+                  <div className="bg-white/8 border border-white/10 rounded-lg px-2 py-2 space-y-0.5">
+                    <p className="text-[8px] font-extrabold uppercase tracking-wider text-[#94A3B8]">Reading</p>
+                    <p className="text-[11px] font-bold text-white font-geez truncate">{TODAY_LITURGY.readings.epistle.verseEnglish}</p>
+                  </div>
+                  <div className="bg-white/8 border border-white/10 rounded-lg px-2 py-2 space-y-0.5">
+                    <p className="text-[8px] font-extrabold uppercase tracking-wider text-[#94A3B8]">Gospel</p>
+                    <p className="text-[11px] font-bold text-white font-geez truncate">{TODAY_LITURGY.readings.gospel.verseEnglish}</p>
+                  </div>
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setSubTab('calendar')}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-[#C8A84B] hover:bg-[#B8973A] text-[#1A2C1C] py-2 rounded-lg text-[10px] font-bold transition-all"
+                  >
+                    <CalendarIcon className="w-3 h-3" />
+                    View Full Calendar
+                  </button>
+                  <button
+                    onClick={() => setSubTab('calendar')}
+                    className="flex-1 flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white py-2 rounded-lg text-[10px] font-bold border border-white/20 transition-all"
+                  >
+                    <BookOpen className="w-3 h-3" />
+                    See Today's Readings
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={() => setSubTab('zema')}
-                className="text-xs font-bold text-[#855B09] hover:text-[#2C1D07] flex items-center gap-1 transition-colors"
-              >
-                <span>{language === 'en' ? 'All Zema' : 'ሁሉም ዜማ'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+            </div>
+
+            {/* Col 2: TODAY'S LECTIONARY READINGS */}
+            <div className="bg-white rounded-2xl border border-[#E6DFD1] p-6 space-y-4">
+              <div className="flex items-center gap-2 border-b border-[#E6DFD1] pb-3">
+                <span className="w-3 h-px bg-[#855B09]" />
+                <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#855B09]">Today's Lectionary Readings</span>
+              </div>
+
+              {/* Epistle */}
+              <div onClick={() => setSubTab('calendar')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAF8F3] cursor-pointer transition-colors group border border-transparent hover:border-[#E6DFD1]">
+                <div className="w-8 h-8 rounded-lg bg-[#F0FDF4] border border-[#86EFAC] flex items-center justify-center shrink-0">
+                  <BookMarked className="w-3.5 h-3.5 text-[#15803D]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-[#855B09]">Epistle · {TODAY_LITURGY.readings.epistle.verseEnglish}</p>
+                  <p className="text-xs font-black text-[#2C1D07] font-geez truncate mt-0.5">{TODAY_LITURGY.readings.epistle.textGeez}</p>
+                  <p className="text-[10px] text-[#6B7280] italic truncate">"{TODAY_LITURGY.readings.epistle.textEnglish}"</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#C8A84B] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+
+              {/* Gospel */}
+              <div onClick={() => setSubTab('calendar')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAF8F3] cursor-pointer transition-colors group border border-transparent hover:border-[#E6DFD1]">
+                <div className="w-8 h-8 rounded-lg bg-[#FFF5DB] border border-[#C8A84B]/40 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-3.5 h-3.5 text-[#855B09]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-[#855B09]">Gospel · {TODAY_LITURGY.readings.gospel.verseEnglish}</p>
+                  <p className="text-xs font-black text-[#2C1D07] font-geez truncate mt-0.5">{TODAY_LITURGY.readings.gospel.textGeez}</p>
+                  <p className="text-[10px] text-[#6B7280] italic truncate">"{TODAY_LITURGY.readings.gospel.textEnglish}"</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#C8A84B] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+
+              {/* Memory Verse */}
+              <div onClick={() => setSubTab('calendar')} className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#FAF8F3] cursor-pointer transition-colors group border border-transparent hover:border-[#E6DFD1]">
+                <div className="w-8 h-8 rounded-lg bg-[#F5F3FF] border border-[#DDD6FE] flex items-center justify-center shrink-0">
+                  <Star className="w-3.5 h-3.5 text-[#7C3AED]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] font-extrabold uppercase tracking-wider text-[#7C3AED]">Memory Verse · {TODAY_LITURGY.readings.psalm.verseEnglish}</p>
+                  <p className="text-xs font-black text-[#2C1D07] font-geez truncate mt-0.5">{TODAY_LITURGY.readings.psalm.textGeez}</p>
+                  <p className="text-[10px] text-[#6B7280] italic truncate">"{TODAY_LITURGY.readings.psalm.textEnglish}"</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#C8A84B] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+
+              <button onClick={() => setSubTab('calendar')} className="w-full text-center text-xs text-[#855B09] font-bold hover:text-[#2C1D07] transition-colors pt-1">
+                View All Readings →
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {MOCK_ZEMA_TRACKS.slice(0, 3).map((track) => (
-                <div
-                  key={track.id}
-                  className="bg-white p-5 rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm space-y-4 transition-all hover:shadow-md"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-1 bg-[#FFF5DB] text-[#855B09] border border-[#C8A84B] rounded-full">
-                      {track.mode} Mode
-                    </span>
-                    <span className="text-[10px] font-mono text-[#9CA3AF]">{track.duration}</span>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-bold text-[#2C1D07] font-geez leading-snug">{track.titleAmharic}</h4>
-                    <p className="text-[10px] text-[#6B7280] mt-0.5">{track.cantor}</p>
-                  </div>
-
-                  <p className="text-[11px] text-[#4A3B22] leading-relaxed line-clamp-2">{track.description}</p>
-
-                  <button
-                    onClick={() => setActiveTrackId(track.id)}
-                    className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      activeTrackId === track.id
-                        ? 'bg-[#1A2C1C] text-[#C8A84B]'
-                        : 'bg-[#C8A84B] text-[#1A2C1C] hover:bg-[#B8973A]'
-                    } shadow-sm`}
-                  >
-                    {activeTrackId === track.id ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-                    <span>{activeTrackId === track.id ? 'Now Playing...' : `Play Track (${track.duration})`}</span>
-                  </button>
+            {/* Col 3: UPCOMING FEASTS */}
+            <div className="bg-white rounded-2xl border border-[#E6DFD1] p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-[#E6DFD1] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-px bg-[#855B09]" />
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#855B09]">Upcoming Feasts</span>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══════════════════════════════════════════
-          VIEW 2: ZEMA LIBRARY (FULL)
-      ═══════════════════════════════════════════ */}
-      {subTab === 'zema' && (
-        <div className="space-y-6 animate-fadeIn pb-32">
-
-          {/* Header + Filters */}
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-6">
-              <div>
-                <button onClick={() => setSubTab('hub')} className="inline-flex items-center gap-1 text-xs text-[#855B09] font-bold hover:text-[#2C1D07] mb-2 transition-colors">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>{language === 'en' ? 'Back to Worship Hub' : 'ወደ ማዕከሉ ተመለስ'}</span>
+                <button onClick={() => setSubTab('calendar')} className="text-[10px] font-bold text-[#855B09] hover:text-[#2C1D07] flex items-center gap-0.5 transition-colors">
+                  View Calendar <ArrowRight className="w-3 h-3" />
                 </button>
-                <div className="inline-flex items-center gap-2 bg-[#FFF5DB] border border-[#C8A84B] px-3 py-1 rounded-full text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider mb-2">
-                  <Volume2 className="w-3 h-3" />
-                  <span>የቅዱስ ያሬድ ዜማ ቤተ-መጻሕፍት • Yaredic Chant Library</span>
-                </div>
-                <h2 className="text-2xl md:text-3xl font-black text-[#2C1D07] font-geez">
-                  {language === 'en' ? 'Zema & Chant Library' : 'ዜማ ወዝማሬ ቤተ-መጻሕፍት'}
-                </h2>
-                <p className="text-sm text-[#6B7280] mt-1">
-                  {filteredZema.length} {language === 'en' ? 'tracks' : 'ዜማዎች'} &nbsp;•&nbsp;
-                  {language === 'en' ? '3 sacred Yaredic modes' : 'ሦስቱ ዜማ ስልቶች'}
-                </p>
               </div>
-              <div className="flex items-center gap-2">
-                <a
-                  href={activeZemaTrack?.audioUrl}
-                  download
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all ${activeZemaTrack ? 'bg-[#1A2C1C] text-[#C8A84B] border-transparent hover:bg-[#0D1A0F]' : 'bg-white border-[#E6DFD1] text-[#9CA3AF] cursor-not-allowed'}`}
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>{language === 'en' ? 'Download' : 'አውርድ'}</span>
-                </a>
-              </div>
-            </div>
 
-            {/* Dual Filter Row */}
-            <div className="flex flex-wrap items-center gap-4">
-              {/* Mode Filter */}
-              <div className="flex items-center gap-1 bg-[#FAF8F3] p-1.5 rounded-xl border border-[#E6DFD1]">
-                <span className="text-[10px] text-[#855B09] px-2 font-extrabold uppercase tracking-wider flex items-center gap-1">
-                  <Gauge className="w-3 h-3" /> Mode:
-                </span>
-                {["ALL", "Ge'ez", 'Araray', 'Ezil'].map((m) => {
-                  const modeColors: Record<string, string> = { "Ge'ez": 'bg-[#C8A84B] text-[#1A2C1C]', 'Araray': 'bg-[#006B3C] text-white', 'Ezil': 'bg-[#1D4ED8] text-white', 'ALL': 'bg-[#1A2C1C] text-[#C8A84B]' };
+              <div className="space-y-1">
+                {UPCOMING_FEASTS.slice(0, 4).map((feast) => {
+                  const dateStr = feast.dateGreg.split(',')[0];
+                  const parts = dateStr.trim().split(' ');
+                  const month = parts[0]?.slice(0, 3).toUpperCase() ?? '';
+                  const day = parts[1] ?? '';
                   return (
-                    <button
-                      key={m}
-                      onClick={() => setZemaMode(m)}
-                      className={`px-3 py-1.5 text-[11px] rounded-lg font-bold transition-all ${
-                        zemaMode === m ? modeColors[m] + ' shadow-sm' : 'text-[#6B7280] hover:text-[#2C1D07] hover:bg-white'
-                      }`}
+                    <div
+                      key={feast.id}
+                      onClick={() => setSubTab('calendar')}
+                      className="flex items-center gap-3 py-2.5 border-b border-[#F5F0E8] last:border-0 group cursor-pointer hover:bg-[#FAF8F3] rounded-lg px-1 transition-colors"
                     >
-                      {m}
-                    </button>
+                      <div className="w-11 shrink-0 text-center">
+                        <p className="text-[8px] font-extrabold uppercase tracking-widest text-[#855B09]">{month}</p>
+                        <p className="text-xl font-black text-[#2C1D07] leading-none">{day}</p>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-black text-[#2C1D07] font-geez truncate group-hover:text-[#855B09] transition-colors">
+                          {language === 'en' ? feast.nameEnglish : feast.nameAmharic}
+                        </p>
+                        <p className="text-[10px] text-[#9CA3AF] truncate">{feast.dateEth} E.C. • {feast.category}</p>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-[#C8A84B] shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    </div>
                   );
                 })}
               </div>
 
-              {/* Category Filter */}
-              <div className="flex items-center gap-1 bg-[#FAF8F3] p-1.5 rounded-xl border border-[#E6DFD1]">
-                <span className="text-[10px] text-[#855B09] px-2 font-extrabold uppercase tracking-wider flex items-center gap-1">
-                  <Filter className="w-3 h-3" /> Category:
-                </span>
-                {['ALL', 'Feast', 'Prayer', 'Mahelet', 'Qidase', 'Wudase'].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setZemaCategory(cat)}
-                    className={`px-3 py-1.5 text-[11px] rounded-lg font-bold transition-all ${
-                      zemaCategory === cat
-                        ? 'bg-[#800020] text-white shadow-sm'
-                        : 'text-[#6B7280] hover:text-[#2C1D07] hover:bg-white'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
+              <button onClick={() => setSubTab('calendar')} className="w-full text-center text-xs text-[#855B09] font-bold hover:text-[#2C1D07] transition-colors">
+                View All Feasts →
+              </button>
             </div>
-          </div>
 
-          {/* Track List */}
-          <div className="space-y-3">
-            {filteredZema.length === 0 && (
-              <div className="bg-white p-12 rounded-3xl border border-[#E6DFD1] text-center text-[#9CA3AF] font-geez">
-                <Volume2 className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                <p className="font-bold">{language === 'en' ? 'No tracks match this filter.' : 'ምንም ዜማ አልተገኘም።'}</p>
-              </div>
-            )}
-            {filteredZema.map((t, idx) => {
-              const isActive = activeTrackId === t.id;
-              const modeColor = t.mode === "Ge'ez" ? '#C8A84B' : t.mode === 'Araray' ? '#006B3C' : '#1D4ED8';
-              const modeBg = t.mode === "Ge'ez" ? '#FFF5DB' : t.mode === 'Araray' ? '#F0FDF4' : '#EFF6FF';
-              return (
-                <div
-                  key={t.id}
-                  className={`rounded-2xl border transition-all duration-200 ${
-                    isActive
-                      ? 'bg-[#1A2C1C] border-[#C8A84B] shadow-xl'
-                      : 'bg-white border-[#E6DFD1] hover:border-[#C8A84B] hover:shadow-md'
-                  }`}
-                >
-                  <div className="flex items-center gap-4 p-4 md:p-5">
-                    {/* Track Number */}
-                    <span className={`text-[11px] font-mono font-bold w-6 text-center shrink-0 ${ isActive ? 'text-[#C8A84B]' : 'text-[#9CA3AF]' }`}>
-                      {String(idx + 1).padStart(2, '0')}
-                    </span>
-
-                    {/* Play Button */}
-                    <button
-                      onClick={() => setActiveTrackId(isActive ? null : t.id)}
-                      className={`w-11 h-11 rounded-full flex items-center justify-center shrink-0 hover:scale-110 transition-transform shadow-md ${
-                        isActive ? 'bg-[#C8A84B] text-[#1A2C1C]' : 'bg-[#FAF8F3] border border-[#E6DFD1] text-[#2C1D07] hover:bg-[#C8A84B] hover:text-[#1A2C1C]'
-                      }`}
-                    >
-                      {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
-                    </button>
-
-                    {/* Track Info */}
-                    <div className="flex-1 min-w-0">
-                      {/* Ge'ez title (primary) */}
-                      <p className={`text-sm md:text-base font-black font-geez leading-snug truncate ${ isActive ? 'text-white' : 'text-[#2C1D07]' }`}>
-                        {t.titleGeez}
-                      </p>
-                      {/* Amharic / English subtitle */}
-                      <p className={`text-[11px] mt-0.5 truncate ${ isActive ? 'text-[#94A3B8]' : 'text-[#6B7280]' }`}>
-                        {t.titleAmharic} — <span className="italic">{t.cantorRole}</span>
-                      </p>
-                      {/* Feast tag */}
-                      {t.feast && (
-                        <p className={`text-[10px] mt-1 font-semibold ${ isActive ? 'text-[#C8A84B]' : 'text-[#855B09]' }`}>
-                          ✦ {t.feast}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Badges + Duration */}
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span
-                        className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full"
-                        style={{ background: modeBg, color: modeColor, border: `1px solid ${modeColor}40` }}
-                      >
-                        {t.mode}
-                      </span>
-                      <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${ isActive ? 'bg-white/10 text-[#94A3B8]' : 'bg-[#FAF8F3] text-[#6B7280] border border-[#E6DFD1]' }`}>
-                        {t.category}
-                      </span>
-                      <span className={`text-[11px] font-mono font-bold ${ isActive ? 'text-[#C8A84B]' : 'text-[#855B09]' }`}>
-                        {t.duration}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Active Track Progress Inline */}
-                  {isActive && (
-                    <div className="px-5 pb-4 space-y-2">
-                      <div className="h-1 bg-white/20 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-[#C8A84B] rounded-full transition-all"
-                          style={{ width: `${audioProgress}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-[10px] text-[#94A3B8] font-mono">
-                        <span>{formatTime(audioProgress, t.durationSecs)}</span>
-                        <span>{t.duration}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Saint Yared Info Panel */}
-          <div className="bg-gradient-to-br from-[#1A2C1C] to-[#0D1A0F] p-8 rounded-3xl border border-[#C8A84B]/30 text-white space-y-5 shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#C8A84B]/20 border border-[#C8A84B]/50 flex items-center justify-center">
-                <Info className="w-5 h-5 text-[#C8A84B]" />
-              </div>
-              <div>
-                <p className="text-[10px] text-[#C8A84B] font-extrabold uppercase tracking-widest">About Yaredic Chant</p>
-                <h3 className="text-lg font-black font-geez">ቅዱስ ያሬድ — Saint Yared (505–571 AD)</h3>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                {
-                  mode: "Ge'ez Mode (ግዕዝ)",
-                  color: '#C8A84B',
-                  desc: 'The foundational mode — balanced, majestic, and ceremonial. Used for ordinary Sundays and major feast-day liturgies.',
-                  usage: 'Sunday Liturgy, Feasts',
-                },
-                {
-                  mode: 'Araray Mode (አራራይ)',
-                  color: '#4ADE80',
-                  desc: 'A high, exuberant, joyful mode evoking celebratory praise. Used for great feasts like Christmas, Epiphany, and Easter.',
-                  usage: 'Major Feasts, Gospel',
-                },
-                {
-                  mode: 'Ezil Mode (እዝል)',
-                  color: '#60A5FA',
-                  desc: 'Deep, solemn, and penitential — used during fasting seasons, night vigils, and the Passion Week of Holy Week.',
-                  usage: 'Fasting, Vigils, Wudase',
-                },
-              ].map((info) => (
-                <div key={info.mode} className="p-4 rounded-2xl bg-white/8 border border-white/10 space-y-2">
-                  <h4 className="text-sm font-black font-geez" style={{ color: info.color }}>{info.mode}</h4>
-                  <p className="text-xs text-[#94A3B8] leading-relaxed">{info.desc}</p>
-                  <p className="text-[10px] font-bold" style={{ color: info.color }}>Used: {info.usage}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-[#64748B] leading-relaxed">
-              Saint Yared, born in Axum in 505 AD, composed the entire Yaredic chant system — the Deggwa, Mewasit, Zimare, and Mehaleyat — in three distinct musical modes inspired by divine revelation. His sacred music remains unchanged after 1,500 years, preserved by the Debteras (ordained chanters) of the Ethiopian Orthodox Tewahedo Church.
-            </p>
           </div>
 
         </div>
       )}
 
+
       {/* ═══════════════════════════════════════════
-          STICKY AUDIO PLAYER (shown when playing)
+          VIEW 2: MEZMUR & HYMNS (FULL)
       ═══════════════════════════════════════════ */}
-      {activeZemaTrack && subTab === 'zema' && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1A2C1C] border-t-2 border-[#C8A84B] shadow-2xl">
-          <div className="container mx-auto px-4 py-3">
-            {/* Progress Bar */}
-            <div
-              className="h-1 bg-white/10 rounded-full overflow-hidden mb-3 cursor-pointer"
-              onClick={(e) => {
-                const rect = e.currentTarget.getBoundingClientRect();
-                const pct = ((e.clientX - rect.left) / rect.width) * 100;
-                setAudioProgress(Math.max(0, Math.min(100, pct)));
-              }}
-            >
-              <div
-                className="h-full bg-[#C8A84B] rounded-full transition-all duration-1000"
-                style={{ width: `${audioProgress}%` }}
-              />
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Track Info */}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-black text-white font-geez truncate">{activeZemaTrack.titleGeez}</p>
-                <p className="text-[10px] text-[#94A3B8] truncate">{activeZemaTrack.cantorRole} • {activeZemaTrack.mode} Mode</p>
-              </div>
-
-              {/* Time */}
-              <div className="text-[10px] font-mono text-[#94A3B8] shrink-0">
-                {formatTime(audioProgress, activeZemaTrack.durationSecs)}
-                <span className="mx-1">/</span>
-                {activeZemaTrack.duration}
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => {
-                    const idx = MOCK_ZEMA_TRACKS.findIndex((t) => t.id === activeTrackId);
-                    if (idx > 0) setActiveTrackId(MOCK_ZEMA_TRACKS[idx - 1].id);
-                  }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-[#94A3B8] hover:text-white hover:bg-white/10 transition-all"
-                >
-                  <SkipBack className="w-4 h-4" />
-                </button>
-
-                <button
-                  onClick={() => setActiveTrackId(activeTrackId ? null : activeZemaTrack.id)}
-                  className="w-10 h-10 rounded-full bg-[#C8A84B] flex items-center justify-center text-[#1A2C1C] hover:bg-[#B8973A] transition-all shadow-md"
-                >
-                  {activeTrackId ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5 ml-0.5" />}
-                </button>
-
-                <button
-                  onClick={() => {
-                    const idx = MOCK_ZEMA_TRACKS.findIndex((t) => t.id === activeTrackId);
-                    if (idx < MOCK_ZEMA_TRACKS.length - 1) setActiveTrackId(MOCK_ZEMA_TRACKS[idx + 1].id);
-                  }}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-[#94A3B8] hover:text-white hover:bg-white/10 transition-all"
-                >
-                  <SkipForward className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Speed Control */}
-              <div className="flex items-center gap-1 bg-white/10 rounded-lg px-2 py-1 shrink-0">
-                <Gauge className="w-3 h-3 text-[#C8A84B]" />
-                {[0.75, 1, 1.25, 1.5].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setAudioSpeed(s)}
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded transition-all ${
-                      audioSpeed === s ? 'bg-[#C8A84B] text-[#1A2C1C]' : 'text-[#94A3B8] hover:text-white'
-                    }`}
-                  >
-                    {s}x
-                  </button>
-                ))}
-              </div>
-
-              {/* Download */}
-              <a
-                href={activeZemaTrack.audioUrl}
-                download
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#94A3B8] hover:text-[#C8A84B] hover:bg-white/10 transition-all"
-              >
-                <Download className="w-4 h-4" />
-              </a>
-
-              {/* Close */}
-              <button
-                onClick={() => setActiveTrackId(null)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[#6B7280] hover:text-white hover:bg-white/10 text-lg font-bold transition-all"
-              >
-                ✕
-              </button>
-            </div>
-          </div>
-        </div>
+      {subTab === 'mezmur' && (
+        <MezmurView onBackToHub={() => setSubTab('hub')} />
       )}
 
       {/* ═══════════════════════════════════════════

@@ -41,7 +41,7 @@ export const Footer: React.FC = () => {
           </h4>
           <ul className="space-y-2 text-xs">
             <li><button onClick={() => setActiveView('scripture')} className="hover:text-white transition">Scripture Library (፹፩ መጻሕፍት)</button></li>
-            <li><button onClick={() => setActiveView('worship')} className="hover:text-white transition">Worship Hub & Zema</button></li>
+            <li><button onClick={() => setActiveView('worship')} className="hover:text-white transition">Orthodox Resources & Zema</button></li>
             <li><button onClick={() => setActiveView('find-a-church')} className="hover:text-white transition">Church Finder Map</button></li>
             <li><button onClick={() => setActiveView('give')} className="hover:text-white transition">Giving Portal (ምጽዋት)</button></li>
             <li><button onClick={() => setActiveView('academy')} className="hover:text-white transition">Tewahedo Academy</button></li>
