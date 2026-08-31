@@ -149,8 +149,8 @@ export const HomePageView: React.FC = () => {
               maxWidth: '460px', marginBottom: '32px', fontFamily: 'var(--font-body)'
             }}>
               {language === 'en'
-                ? 'Explore Scripture, worship, churches, and timeless teachings that strengthen our faith and unite us in love.'
-                : 'ቅዱሳት መጻሕፍትን፣ አምልኮን፣ አብያተ ክርስቲያናትን እና እምነትን ያጠናክሩ።'}
+                ? 'Explore Scripture, Orthodox resources, churches, and timeless teachings that strengthen our faith and unite us in love.'
+                : 'ቅዱሳት መጻሕፍትን፣ ኦርቶዶክሳዊ ሀብታትን፣ አብያተ ክርስቲያናትን እና እምነትን ያጠናክሩ።'}
             </p>
 
             {/* CTA Buttons */}
@@ -341,13 +341,13 @@ export const HomePageView: React.FC = () => {
                   </g>
                 </svg>
               ),
-              titleEn: 'Worship & Calendar',
-              titleAm: 'አምልኮ እና ቀን መቁጠሪያ',
-              descEn: 'Track feast days, fasting periods, daily readings, and access zema and worship resources.',
+              titleEn: 'Orthodox Resources & Calendar',
+              titleAm: 'ኦርቶዶክሳዊ ሀብታት እና ቀን መቁጠሪያ',
+              descEn: 'Track feast days, fasting periods, daily readings, and access zema and spiritual resources.',
               descAm: 'የበዓላት፣ ጾም ቀናት፣ ዕለታዊ ምንባቦች ይሙሉ።',
               linkEn: 'View Calendar',
               linkAm: 'ቀን መቁጠሪያ',
-              route: 'worship'
+              route: 'resources'
             },
             {
               iconEl: (
@@ -639,8 +639,8 @@ export const HomePageView: React.FC = () => {
                     textShadow: '0 1px 8px rgba(0, 0, 0, 0.9), 0 2px 18px rgba(0, 0, 0, 0.95)',
                   }}>
                     {language === 'en'
-                      ? 'A unified digital sanctuary for the Ethiopian Orthodox Tewahedo Church to grow in apostolic faith, worship, and service — together.'
-                      : 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በእምነት፣ በአምልኮ እና በአገልግሎት በጋራ የምታድግበት አንድ የተቀናጀ ዲጂታል መድረክ።'}
+                      ? 'A unified digital sanctuary for the Ethiopian Orthodox Tewahedo Church to grow in apostolic faith, spiritual life, and service — together.'
+                      : 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በእምነት፣ በመንፈሳዊ ሕይወት እና በአገልግሎት በጋራ የምታድግበት አንድ የተቀናጀ ዲጂታል መድረክ።'}
                   </p>
 
                   {/* CTA Button */}
@@ -740,7 +740,7 @@ export const HomePageView: React.FC = () => {
 
                     {/* Item 2: Liturgical Calendar */}
                     <div
-                      onClick={() => setActiveView('worship')}
+                      onClick={() => setActiveView('resources')}
                       className="group cursor-pointer transition-all duration-300"
                       style={{
                         padding: '28px 24px 20px 0',

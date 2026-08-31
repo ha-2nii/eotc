@@ -12,8 +12,8 @@ import {
 } from '../data/mockAcademy';
 import {
   GraduationCap, Play, CheckCircle, Award,
-  Tv, HelpCircle, Download, BookOpen,
-  Sparkles, Baby, Users, ShieldCheck,
+  Tv, HelpCircle, Download,
+  Sparkles, ShieldCheck,
   ChevronRight, X, Search, Video
 } from 'lucide-react';
 
@@ -181,36 +181,7 @@ Digitally signed & verified by Holy Synod Sunday School Dept.`;
           </p>
         </div>
 
-        {/* Sub-Tabs */}
-        <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center gap-2">
-          {[
-            { id: 'hub' as const, labelEn: 'Academy Hub', labelAm: 'ዋና ማዕከል', icon: BookOpen },
-            { id: 'children' as const, labelEn: 'Children (5–12)', labelAm: 'ሕፃናት (5-12)', icon: Baby },
-            { id: 'youth' as const, labelEn: 'Youth (13–18)', labelAm: 'ወጣቶች (13-18)', icon: Sparkles },
-            { id: 'gebi-gubaye' as const, labelEn: 'Gebi Gubaye (18–25)', labelAm: 'ግቢ ጉባኤ', icon: GraduationCap },
-            { id: 'adults' as const, labelEn: 'Adults & Catechumens', labelAm: 'አዋቂዎች', icon: Users },
-            { id: 'clergy' as const, labelEn: 'Clergy & Scholars', labelAm: 'ካህናት', icon: Award },
-            { id: 'certificates' as const, labelEn: 'My Certificates', labelAm: 'የምስክር ወረቀቶች', icon: ShieldCheck },
-            { id: 'webinars' as const, labelEn: 'Live Webinars', labelAm: 'የቀጥታ ስብከቶች', icon: Tv },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = currentSection === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setCurrentSection(tab.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  isActive
-                    ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-md scale-105'
-                    : 'bg-white/10 text-stone-200 hover:bg-white/20 border border-white/10'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{language === 'am' ? tab.labelAm : tab.labelEn}</span>
-              </button>
-            );
-          })}
-        </div>
+
       </section>
 
       {/* ══ 2. ACADEMY HUB (MAIN VIEW) ═════════════════════════════ */}

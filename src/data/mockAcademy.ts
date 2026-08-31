@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════════════
    EOTC — Comprehensive Mock Data for Tewahedo Academy
    Structured curriculum built on Mahibere Kidusan & Holy Synod standards
 ═══════════════════════════════════════════════════════════════ */
@@ -389,7 +389,7 @@ export const MOCK_COURSES: Course[] = [
           question: 'What is the primary mission of Mahibere Kidusan Gebi Gubaye?',
           options: ['Political lobbying', 'Spiritual nurturing and preservation of youth in faith', 'Commercial business', 'Athletics'],
           correctIndex: 1,
-          explanation: 'Gebi Gubaye nurtures higher education students in authentic Orthodox doctrine and worship.',
+          explanation: 'Gebi Gubaye nurtures higher education students in authentic Orthodox doctrine and spiritual life.',
         },
       },
     ],
@@ -576,3 +576,4 @@ export const MOCK_CERTIFICATES: UserCertificate[] = [
     grade: 'Honor Roll (96%)',
   },
 ];
+

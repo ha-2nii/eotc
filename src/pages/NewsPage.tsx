@@ -166,39 +166,6 @@ export const NewsView: React.FC = () => {
               : 'Official patriarchal communiqués, Holy Synod decrees, sister Pan-Orthodox updates, digital magazine editions, and the weekly community digest.'}
           </p>
         </div>
-
-        {/* Navigation Tabs */}
-        <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center gap-2">
-          {[
-            { id: 'hub' as const, labelEn: 'News Hub', labelAm: 'ዋና ማዕከል', icon: Newspaper },
-            { id: 'announcements' as const, labelEn: 'EOTC Announcements', labelAm: 'የቤተ ክርስቲያን ማስታወቂያዎች', icon: ShieldCheck },
-            { id: 'pan-orthodox' as const, labelEn: 'Pan-Orthodox News', labelAm: 'ዓለም አቀፍ ኦርቶዶክስ', icon: Globe },
-            { id: 'magazine' as const, labelEn: 'Official Magazine', labelAm: 'ስምዐ ጽድቅ መጽሔት', icon: BookOpen },
-            { id: 'newsletter' as const, labelEn: 'Weekly Newsletter', labelAm: 'ሳምንታዊ ዜና መጽሔት', icon: Mail },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = currentSection === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setCurrentSection(tab.id);
-                  setSelectedAnnouncement(null);
-                  setSelectedPanNews(null);
-                  setSelectedArticle(null);
-                }}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  isActive
-                    ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-md scale-105'
-                    : 'bg-white/10 text-stone-200 hover:bg-white/20 border border-white/10'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{language === 'am' ? tab.labelAm : tab.labelEn}</span>
-              </button>
-            );
-          })}
-        </div>
       </section>
 
       {/* ══ 2. NEWS HUB (MAIN OVERVIEW) ════════════════════════════ */}

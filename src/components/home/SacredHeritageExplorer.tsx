@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../layout/LanguageContext';
 import {
   Heart,
@@ -85,7 +85,7 @@ const SANCTUARIES: SanctuaryHeritage[] = [
     country: 'Ethiopia',
     categoryEn: 'Patriarchal Cathedral',
     categoryAm: 'መንበረ ፓትርያርክ ካቴድራል',
-    descriptionEn: 'The sacred seat of the EOTC Patriarchate, revered for its majestic imperial architecture, historic stained glass artistry, and rich spiritual heritage as the heart of Orthodox worship.',
+    descriptionEn: 'The sacred seat of the EOTC Patriarchate, revered for its majestic imperial architecture, historic stained glass artistry, and rich spiritual heritage as the heart of Orthodox liturgical life.',
     descriptionAm: 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን መንበረ ፓትርያርክ ካቴድራል፤ በንጉሠ ነገሥት ዘመን የተገነባ፣ በታላላቅ ባለቀለም መስታወቶች የተዋበና ታሪካዊ ቅርሶችን የያዘ ቅዱስ ስፍራ ነው።',
     altitudeEn: '2,355m Altitude',
     altitudeAm: '፪ሺ፫፻፶፭ ሜትር ከፍታ',
@@ -649,3 +649,4 @@ export const SacredHeritageExplorer: React.FC = () => {
     </section>
   );
 };
+

@@ -205,39 +205,6 @@ This official receipt is eligible for charitable tax deduction.`;
             "Each of you should give what you have decided in your heart to give, not reluctantly or under compulsion, for God loves a cheerful giver." (2 Corinthians 9:7)
           </p>
         </div>
-
-        {/* Navigation Sub-Tabs */}
-        <div className="relative z-10 pt-4 border-t border-white/10 flex flex-wrap items-center gap-2">
-          {[
-            { id: 'hub' as const, labelEn: 'Giving Hub', labelAm: 'ዋና ማዕከል', icon: Heart },
-            { id: 'church' as const, labelEn: 'Give to a Church', labelAm: 'ለደብር መዋጮ', icon: ChurchIcon },
-            { id: 'monastery' as const, labelEn: 'Adopt a Monastery', labelAm: 'ገዳም ይደግፉ', icon: Landmark },
-            { id: 'campaigns' as const, labelEn: 'Active Campaigns', labelAm: 'ልዩ ዘመቻዎች', icon: Target },
-            { id: 'general' as const, labelEn: 'General Church Fund', labelAm: 'ማዕከላዊ ፈንድ', icon: Building },
-            { id: 'transparency' as const, labelEn: 'Transparency & Audits', labelAm: 'የፋይናንስ ግልጽነት', icon: BarChart3 },
-            { id: 'account' as const, labelEn: 'Donor Portal', labelAm: 'የለጋሽ ፖርታል', icon: User },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = currentSection === tab.id || (tab.id === 'campaigns' && currentSection === 'campaign_detail');
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setCurrentSection(tab.id);
-                  if (tab.id === 'campaigns') setSelectedCampaignSlug(null);
-                }}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  isActive
-                    ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-md scale-105'
-                    : 'bg-white/10 text-stone-200 hover:bg-white/20 border border-white/10'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{language === 'am' ? tab.labelAm : tab.labelEn}</span>
-              </button>
-            );
-          })}
-        </div>
       </section>
 
       {/* ══ 2. SUCCESS RECEIPT BANNER ══ */}
