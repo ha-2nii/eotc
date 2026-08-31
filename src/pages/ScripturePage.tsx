@@ -932,7 +932,7 @@ export const ScriptureView: React.FC = () => {
                       titleAm: 'መጽሐፍ ቅዱስ ፹፩ (ሙሉው ቀኖና)',
                       subEn: 'Complete Canon in Ge’ez, Amharic & English',
                       subAm: 'የተሟላው የ፹፩ መጻሕፍት ቀኖና በግዕዝ፣ አማርኛና እንግሊዝኛ',
-                      borderAccent: '#C8A84B',
+
                     },
                     {
                       id: 'prayers' as ScriptureSubSection,
@@ -941,7 +941,7 @@ export const ScriptureView: React.FC = () => {
                       titleAm: 'መጻሕፍተ ጸሎት',
                       subEn: 'Wudase Mariam • Mezmur • Agpeya',
                       subAm: 'ውዳሴ ማርያም • ሰዓታት • መዝሙረ ዳዊት',
-                      borderAccent: '#800020',
+
                     },
                     {
                       id: 'liturgy' as ScriptureSubSection,
@@ -950,7 +950,7 @@ export const ScriptureView: React.FC = () => {
                       titleAm: 'ሥርዓተ ቅዳሴና መጻሕፍተ ሊቃውንት',
                       subEn: '14 Anaphoras • Synaxarium • Church Fathers',
                       subAm: '፲፬ቱ ቅዳሴያት • መጽሐፈ ስንክሳር • ሃይማኖተ አበው',
-                      borderAccent: '#1A2C1C',
+
                     },
                     {
                       id: 'geez' as ScriptureSubSection,
@@ -959,7 +959,7 @@ export const ScriptureView: React.FC = () => {
                       titleAm: 'ትምህርተ ግዕዝ ወዜማ',
                       subEn: 'Alphabet • Grammar • Chant Notation',
                       subAm: 'ፊደል • ሰዋስው • የቅዱስ ያሬድ ዜማ ምልክቶች',
-                      borderAccent: '#1E3A8A',
+
                     },
                   ].map((item) => {
                     const Icon = item.icon;
@@ -974,7 +974,7 @@ export const ScriptureView: React.FC = () => {
                           }
                         }}
                         className="group cursor-pointer bg-white hover:bg-[#FAF8F3] p-3.5 sm:p-4 rounded-xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-2xs hover:shadow-md transition-all duration-300 flex items-center justify-between gap-4 relative overflow-hidden"
-                        style={{ borderLeftWidth: '4px', borderLeftColor: item.borderAccent }}
+
                       >
                         <div className="flex items-center gap-3.5 min-w-0">
                           <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-[#FAF8F3] group-hover:bg-[#FFF5DB] border border-[#E6DFD1] text-[#855B09] shrink-0 transition-colors">

@@ -1,4 +1,4 @@
-export interface Book {
+﻿export interface Book {
   id: string;
   number: number;
   nameAmharic: string;
@@ -31,12 +31,12 @@ export const EOTC_81_BOOKS: Book[] = [
   { id: 'samuel2', number: 10, nameAmharic: 'መጽሐፈ ሳሙኤል ካልዕ', nameEnglish: '2 Samuel', nameGeez: 'ሳሙኤል ፪', testament: 'OT', chaptersCount: 24, category: 'Historical (ታሪክ)', description: 'Reign of King David over all Israel and Jerusalem.' },
   { id: 'kings1', number: 11, nameAmharic: 'መጽሐፈ ነገሥት ቀዳማዊ', nameEnglish: '1 Kings', nameGeez: 'ነገሥት ፩', testament: 'OT', chaptersCount: 22, category: 'Historical (ታሪክ)', description: 'Solomon’s Temple and the divided monarchies.' },
   { id: 'kings2', number: 12, nameAmharic: 'መጽሐፈ ነገሥት ካልዕ', nameEnglish: '2 Kings', nameGeez: 'ነገሥት ፪', testament: 'OT', chaptersCount: 25, category: 'Historical (ታሪክ)', description: 'Prophet Elijah & Elisha, decline, and Babylonian exile.' },
-  { id: 'chronicles1', number: 13, nameAmharic: 'መጽሐፈ ዜና መዋዕል ቀዳማዊ', nameEnglish: '1 Chronicles', nameGeez: 'ዜና መዋዕል ፩', testament: 'OT', chaptersCount: 29, category: 'Historical (ታሪክ)', description: 'Genealogies and David’s temple worship preparations.' },
+  { id: 'chronicles1', number: 13, nameAmharic: 'መጽሐፈ ዜና መዋዕል ቀዳማዊ', nameEnglish: '1 Chronicles', nameGeez: 'ዜና መዋዕል ፩', testament: 'OT', chaptersCount: 29, category: 'Historical (ታሪክ)', description: 'Genealogies and David’s temple liturgical preparations.' },
   { id: 'chronicles2', number: 14, nameAmharic: 'መጽሐፈ ዜና መዋዕል ካልዕ', nameEnglish: '2 Chronicles', nameGeez: 'ዜና መዋዕል ፪', testament: 'OT', chaptersCount: 36, category: 'Historical (ታሪክ)', description: 'The Davidic dynasty, temple dedication, and renewal.' },
   { id: 'ezra_nehemiah', number: 15, nameAmharic: 'መጽሐፈ ዕዝራ ወነህምያ', nameEnglish: 'Ezra & Nehemiah', nameGeez: 'ዕዝራ ወነህምያ', testament: 'OT', chaptersCount: 23, category: 'Historical (ታሪክ)', description: 'Return from exile and reconstruction of Jerusalem’s walls.' },
   { id: 'esther', number: 16, nameAmharic: 'መጽሐፈ አስቴር', nameEnglish: 'Esther', nameGeez: 'አስቴር', testament: 'OT', chaptersCount: 10, category: 'Historical (ታሪክ)', description: 'Queen Esther’s courage and deliverance in Persia.' },
   { id: 'job', number: 17, nameAmharic: 'መጽሐፈ ኢዮብ', nameEnglish: 'Job', nameGeez: 'ኢዮብ', testament: 'OT', chaptersCount: 42, category: 'Poetic & Wisdom (ጥበብ)', description: 'Endurance in righteous suffering and divine sovereignty.' },
-  { id: 'psalms', number: 18, nameAmharic: 'መዝሙረ ዳዊት', nameEnglish: 'Psalms (151 Dawit)', nameGeez: 'መዝሙረ ዳዊት', testament: 'OT', chaptersCount: 151, category: 'Poetic & Worship (መዝሙር)', description: '151 Holy Psalms of King David, central to EOTC daily prayers.' },
+  { id: 'psalms', number: 18, nameAmharic: 'መዝሙረ ዳዊት', nameEnglish: 'Psalms (151 Dawit)', nameGeez: 'መዝሙረ ዳዊት', testament: 'OT', chaptersCount: 151, category: 'Poetic & Praise (መዝሙር)', description: '151 Holy Psalms of King David, central to EOTC daily prayers.' },
   { id: 'proverbs', number: 19, nameAmharic: 'መጽሐፈ ምሳሌ', nameEnglish: 'Proverbs', nameGeez: 'ምሳሌ', testament: 'OT', chaptersCount: 31, category: 'Wisdom (ጥበብ)', description: 'Wisdom of Solomon for holy and virtuous living.' },
   { id: 'ecclesiastes', number: 20, nameAmharic: 'መጽሐፈ መክብብ', nameEnglish: 'Ecclesiastes', nameGeez: 'መክብብ', testament: 'OT', chaptersCount: 12, category: 'Wisdom (ጥበብ)', description: 'Vanity of worldly pursuits and fearing the Lord.' },
   { id: 'song_of_songs', number: 21, nameAmharic: 'መኃልየ መኃልይ ዘሰሎሞን', nameEnglish: 'Song of Songs', nameGeez: 'መኃልየ መኃልይ', testament: 'OT', chaptersCount: 8, category: 'Wisdom (ጥበብ)', description: 'Allegory of divine love between Christ and His Holy Church.' },
@@ -288,3 +288,4 @@ export const MOCK_PARALLEL_VERSES: Record<string, Verse[]> = {
     },
   ],
 };
+
