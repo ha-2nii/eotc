@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../components/layout/LanguageContext';
+import { CrossWatermark } from '../components/ui/CrossWatermark';
+import { DiocesesDirectory } from '../components/dioceses/DiocesesDirectory';
+import { SaintsDirectory } from '../components/saints/SaintsDirectory';
 import { 
   PATRIARCH_BIO, 
   PATRIARCH_LINEAGE, 
@@ -7,27 +10,18 @@ import {
   type PatriarchTeachingMessage
 } from '../data/mockPatriarch';
 import { 
-  QUICK_STATS, 
-  PILLARS_OF_MYSTERY, 
-  MOCK_DIOCESES, 
   MOCK_HISTORY_TIMELINE, 
-  MOCK_SAINTS, 
   MOCK_SYNOD_MEMBERS,
   MOCK_SYNOD_DECISIONS,
   MOCK_SYNOD_SCHEDULE,
   MOCK_HISTORICAL_SYNOD_DOCS,
   MOCK_HISTORICAL_FIGURES,
-  MOCK_DIOCESAN_NEWS,
-  type DioceseInfo, 
-  type SaintProfile,
   type SynodMember,
   type SynodDecision,
   type HistoricalSynodDocument,
-  type HistoricalFigure,
-  type DiocesanNewsItem
+  type HistoricalFigure
 } from '../data/mockChurchHub';
 import { 
-  UserCheck, 
   Clock, 
   Award, 
   ChevronRight, 
@@ -38,7 +32,6 @@ import {
   Church, 
   Users, 
   BookOpen, 
-  ArrowRight, 
   Globe, 
   Scroll, 
   Layers, 
@@ -49,26 +42,12 @@ import {
   Calendar,
   Scale,
   Landmark,
-  Compass,
-  Music,
-  Sun,
-  Flame,
-  Phone,
-  Mail,
-  ExternalLink,
-  Building,
-  Newspaper
+  Compass
 } from 'lucide-react';
 
 export const OurChurchView: React.FC = () => {
   const { language, activeView, setActiveView } = useLanguage();
   const [subSection, setSubSection] = useState<'overview' | 'patriarch' | 'synod' | 'history' | 'saints' | 'dioceses'>('overview');
-  const [selectedDioceseRegion, setSelectedDioceseRegion] = useState<'All' | 'Ethiopia' | 'Diaspora' | 'Historical See'>('All');
-  const [selectedDiasporaSubRegion, setSelectedDiasporaSubRegion] = useState<string>('All');
-  const [dioceseSearchQuery, setDioceseSearchQuery] = useState<string>('');
-  const [selectedSaint, setSelectedSaint] = useState<SaintProfile | null>(null);
-  const [selectedDiocese, setSelectedDiocese] = useState<DioceseInfo | null>(null);
-  const [selectedDiocesanNews, setSelectedDiocesanNews] = useState<DiocesanNewsItem | null>(null);
 
   // Patriarch-specific state
   const [selectedLineageEra, setSelectedLineageEra] = useState<'All' | 'Ancient Apostolic Era' | 'Middle Ages' | 'Modern Patriarchs'>('All');
@@ -88,11 +67,6 @@ export const OurChurchView: React.FC = () => {
   const [selectedHistoryEraFilter, setSelectedHistoryEraFilter] = useState<string>('All');
   const [selectedHistoricalFigure, setSelectedHistoricalFigure] = useState<HistoricalFigure | null>(null);
 
-  // Saints-specific state
-  const [selectedSaintCategory, setSelectedSaintCategory] = useState<'All' | 'Theotokos (St. Mary)' | 'Apostles' | 'Martyrs' | 'Monks & Ascetics' | 'Church Fathers' | 'Ethiopian Saints'>('All');
-  const [synaxariumMonth, setSynaxariumMonth] = useState<string>('All');
-  const [saintSearchQuery, setSaintSearchQuery] = useState<string>('');
-  const [copiedHymnId, setCopiedHymnId] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeView === 'our-church/patriarch') {
@@ -120,479 +94,576 @@ export const OurChurchView: React.FC = () => {
     }
   };
 
-  const filteredDioceses = MOCK_DIOCESES.filter((diocese) => {
-    const matchesRegion = selectedDioceseRegion === 'All' || diocese.region === selectedDioceseRegion;
-    const matchesSubRegion = selectedDiasporaSubRegion === 'All' || diocese.subRegion === selectedDiasporaSubRegion;
-    const matchesQuery = 
-      diocese.nameEnglish.toLowerCase().includes(dioceseSearchQuery.toLowerCase()) ||
-      diocese.nameAmharic.includes(dioceseSearchQuery) ||
-      diocese.seeCity.toLowerCase().includes(dioceseSearchQuery.toLowerCase()) ||
-      diocese.cathedral.toLowerCase().includes(dioceseSearchQuery.toLowerCase()) ||
-      diocese.archbishopEnglish.toLowerCase().includes(dioceseSearchQuery.toLowerCase());
-    return matchesRegion && matchesSubRegion && matchesQuery;
-  });
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-10 animate-fadeIn max-w-7xl">
-      {/* Sub-nav switcher bar */}
-      <div className="bg-white p-2 rounded-2xl border border-[#E6DFD1] flex flex-wrap items-center justify-between gap-2 shadow-sm sticky top-[72px] z-30 backdrop-blur-md bg-white/95">
-        <div className="flex flex-wrap items-center gap-1.5 overflow-x-auto py-1 scrollbar-none w-full md:w-auto">
-          {[
-            { id: 'overview', labelEn: 'Church Overview', labelAm: 'ቤተ ክርስቲያናችን' },
-            { id: 'patriarch', labelEn: 'Patriarch', labelAm: 'ፓትርያርክ' },
-            { id: 'synod', labelEn: 'Holy Synod', labelAm: 'ቅዱስ ሲኖዶስ' },
-            { id: 'history', labelEn: 'Church History', labelAm: 'የቤተ ክርስቲያን ታሪክ' },
-            { id: 'saints', labelEn: 'Saints', labelAm: 'ቅዱሳን' },
-            { id: 'dioceses', labelEn: 'Dioceses', labelAm: 'አህጉረ ስብከት' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id as any)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-                subSection === tab.id
-                  ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-sm font-extrabold'
-                  : 'text-[#6B7280] hover:text-[#2C1D07] hover:bg-[#FAF8F3]'
-              }`}
-            >
-              <span>{language === 'am' ? tab.labelAm : tab.labelEn}</span>
-              <span className="opacity-60 text-[10px] hidden sm:inline">
-                ({language === 'am' ? tab.labelEn : tab.labelAm})
-              </span>
-            </button>
-          ))}
-        </div>
-
-        <div className="hidden lg:flex items-center gap-2 text-xs font-medium text-[#855B09] px-3">
-          <Church className="w-4 h-4 text-[#C8A84B]" />
-          <span>Ethiopian Orthodox Tewahedo Church Hub</span>
-        </div>
-      </div>
+    <div className="space-y-12 animate-fadeIn">
 
       {/* =========================================================================
           VIEW 1: Main Our Church Hub (Overview)
           ========================================================================= */}
       {subSection === 'overview' && (
-        <div className="space-y-12 animate-fadeIn">
-          {/* 1. HERO SECTION */}
-          <section className="bg-gradient-to-br from-[#FAF8F3] via-white to-[#FFF8E7] p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-[0_6px_30px_rgba(0,0,0,0.04)] relative overflow-hidden">
-            {/* Background ambient lighting */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-[#C8A84B]/20 via-[#9E7F1E]/10 to-transparent rounded-full blur-3xl -translate-y-1/3 translate-x-1/4 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-72 h-72 bg-[#D4AF37]/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="space-y-16 animate-fadeIn -mt-8 -mx-4 sm:-mx-8 lg:-mx-12">
+          
+          {/* ═══════════════════════════════════════════
+              1. HERO SECTION WITH CURVED GOLD BORDER
+          ═══════════════════════════════════════════ */}
+          <div className="relative bg-[#120B05] text-white overflow-hidden min-h-[540px] md:min-h-[620px] flex items-center">
+            {/* Background Cathedral Image on Right */}
+            <div 
+              className="absolute inset-0 bg-cover bg-right md:bg-[center_right] opacity-85 mix-blend-luminosity scale-100 transition-transform duration-1000"
+              style={{ backgroundImage: "url('/assets/images/our_church_hero_cathedral.jpg')" }}
+            />
+            {/* Dark & Gold Gradient Vignettes */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0E0803] via-[#120B05]/95 md:via-[#120B05]/85 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0E0803] via-transparent to-transparent opacity-85" />
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-8 space-y-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="badge-gold text-[11px] uppercase tracking-wider font-bold">
-                    {language === 'am' ? 'ስለ ቤተ ክርስቲያን • OUR CHURCH' : 'OUR CHURCH • ስለ ቤተ ክርስቲያን'}
-                  </span>
-                  <span className="text-[11px] font-semibold text-[#855B09] bg-[#FFF5DB] px-3 py-1 rounded-full border border-[#E6DFD1]">
-                    {language === 'am' ? 'በ፬ኛው መቶ ክፍለ ዘመን የተመሠረተች' : 'Founded in the 4th Century AD'}
-                  </span>
+            {/* Sacred Ethiopian Cross Watermark behind text */}
+            <CrossWatermark size="xl" opacity={12} position="left" className="hidden md:block" />
+
+            <div className="relative z-10 max-w-[1480px] mx-auto w-full px-6 sm:px-12 md:px-16 lg:px-[72px] pt-[130px] pb-[85px]">
+              <div className="max-w-2xl space-y-6">
+                
+                {/* Ge'ez Top Subtitle */}
+                <div className="text-xs md:text-sm font-geez font-bold text-[#E5C158] tracking-widest drop-shadow-sm">
+                  አንዲት ሃይማኖት አንዲት ቤተ ክርስቲያን አንዲት ቅርስ
                 </div>
 
-                <div className="space-y-2">
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-[#2C1D07] font-geez leading-tight tracking-tight">
-                    {language === 'am' ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን' : 'The Ethiopian Orthodox Tewahedo Church'}
-                  </h1>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#855B09] font-serif">
-                    {language === 'am' ? 'Africa’s Oldest Autocephalous Christian Church' : 'ቤተ ክርስቲያናችን — ጥንታዊትና ሐዋርያዊት'}
-                  </h2>
+                {/* Main Heading: "Our" in White, "Church" in Gold */}
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-serif tracking-tight leading-tight drop-shadow-md">
+                  <span className="text-white">Our </span>
+                  <span className="text-[#C8A84B]">Church</span>
+                </h1>
+
+                {/* Fine Horizontal Gold Line & Centered Ethiopian Cross Motif */}
+                <div className="flex items-center gap-3 py-1">
+                  <div className="w-16 h-px bg-[#C8A84B]/70" />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#D4AF37]">
+                    <path d="M12 2V22M2 12H22M7 7L17 17M7 17L17 7" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
+                  </svg>
+                  <div className="w-16 h-px bg-[#C8A84B]/70" />
                 </div>
 
-                <p className="text-base sm:text-lg text-[#4A3B22] leading-relaxed max-w-3xl">
+                {/* Subtitle / Tagline */}
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#C8A84B] leading-snug">
+                  One Faith. One Church. One Heritage.
+                </h2>
+
+                {/* Paragraph */}
+                <p className="text-xs sm:text-sm md:text-base text-[#D1D5DB] leading-relaxed font-body drop-shadow-xs max-w-xl">
                   {language === 'am'
-                    ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በአፍሪካ እጅግ ጥንታዊትና በዓለም ቀዳሚ ከሆኑት ሐዋርያዊ አብያተ ክርስቲያናት አንዷ ናት። በሐዋርያው ቅዱስ ፊልጶስ (የሐዋ. ፰፡፳፮) ጥምቀት የጀመረው መንፈሳዊ ጉዞዋ በ፬ኛው መቶ ክፍለ ዘመን በንጉሥ ኢዛና እና በቅዱስ ፍሬምናጦስ (ከሣቴ ብርሃን) አማካኝነት የመንግሥት ሃይማኖት ሆኖ ታውጇል።'
-                    : 'The Ethiopian Orthodox Tewahedo Church is Africa’s oldest Christian institution and one of the world’s most venerable apostolic churches. Rooted in the 1st-century baptism of the Ethiopian royal official (Acts 8) and established as the imperial state faith in the 4th century under King Ezana and Saint Frumentius (Abba Salama Kesate Birhan), she preserves millennia of uncorrupted apostolic faith, liturgical Zema, and sacred heritage.'}
+                    ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በዓለም ላይ ካሉ እጅግ ጥንታዊ እና ዘላቂ ከሆኑ የክርስትና ተቋማት አንዷ ናት። ቅዱስ ቅርሳችንን፣ መለኮታዊ መዋቅራችንን እና ዓለም አቀፍ መንፈሳዊ ተልእኳችንን ይመርምሩ።'
+                    : "The Ethiopian Orthodox Tewahedo Church is one of the world's oldest and most enduring Christian institutions. Explore our sacred heritage, established structure, and spiritual mission to the world."}
                 </p>
 
-                <div className="flex flex-wrap items-center gap-4 pt-3">
+                {/* Two Action Buttons: "Our History" & "Our Structure" */}
+                <div className="flex flex-wrap items-center gap-4 pt-2">
+                  {/* Button 1: Solid Gold */}
                   <button
                     onClick={() => handleTabChange('history')}
-                    className="btn-gold flex items-center gap-2 text-sm py-3 px-6 shadow-md hover:shadow-lg transition-all"
+                    className="px-6 py-3 rounded-xl bg-[#C8A84B] hover:bg-[#B8860B] text-white font-bold text-xs sm:text-sm flex items-center gap-2.5 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 cursor-pointer"
                   >
-                    <span>{language === 'am' ? 'ታሪኳን ይመርምሩ' : 'Explore Church History'}</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <BookOpen className="w-4 h-4 text-white" />
+                    <span>Our History</span>
                   </button>
+
+                  {/* Button 2: Gold Outlined */}
                   <button
-                    onClick={() => handleTabChange('patriarch')}
-                    className="bg-white hover:bg-[#FAF8F3] text-[#2C1D07] font-bold text-sm py-3 px-6 rounded-lg border border-[#C8A84B] flex items-center gap-2 shadow-sm transition-all"
+                    onClick={() => {
+                      document.getElementById('explore-church')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-6 py-3 rounded-xl bg-transparent hover:bg-[#C8A84B]/15 border border-[#C8A84B] text-[#E5C158] font-bold text-xs sm:text-sm flex items-center gap-2.5 transition-all cursor-pointer"
                   >
-                    <span>{language === 'am' ? 'ብፁዕ ወቅዱስ ፓትርያርክ' : 'His Holiness Patriarch'}</span>
-                    <ChevronRight className="w-4 h-4 text-[#855B09]" />
+                    <Church className="w-4 h-4 text-[#E5C158]" />
+                    <span>Our Structure</span>
                   </button>
                 </div>
-              </div>
 
-              {/* Visual Hero Badge / Emblem Card */}
-              <div className="lg:col-span-4 flex justify-center">
-                <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl border-2 border-[#C8A84B] shadow-xl text-center space-y-4 max-w-sm w-full relative">
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#C8A84B] to-[#9E7F1E] mx-auto flex items-center justify-center shadow-md text-white">
-                    <Church className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-xl font-black text-[#2C1D07] font-geez">መንበረ ተክለ ሃይማኖት</h3>
-                    <p className="text-xs text-[#855B09] font-bold uppercase tracking-wider">See of Saint Tekle Haymanot</p>
-                    <p className="text-xs text-[#6B7280] pt-1">Autocephalous Oriental Orthodox Patriarchate</p>
-                  </div>
-                  <div className="border-t border-[#E6DFD1] pt-3 text-xs text-[#4A3B22] italic font-serif">
-                    "አሐቲ ቅድስት ቤተ ክርስቲያን" — One Holy Catholic and Apostolic Church
-                  </div>
+              </div>
+            </div>
+
+            {/* Bottom Swoop Curve with Gold Border & Center Cross Motif */}
+            <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none z-20 pointer-events-none">
+              <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="relative block w-full h-12 md:h-16 text-[#FAF8F3]">
+                <path d="M0,0 C300,90 900,90 1200,0 L1200,120 L0,120 Z" fill="currentColor" />
+                <path d="M0,0 C300,90 900,90 1200,0" fill="none" stroke="#C8A84B" strokeWidth="3" />
+              </svg>
+              {/* Centered Cross Emblem Node on the curve */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-[#0E0803] border-2 border-[#D4AF37] flex items-center justify-center shadow-lg pointer-events-auto">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#D4AF37]">
+                  <path d="M12 3V21M3 12H21M7 7L17 17M7 17L17 7" stroke="#D4AF37" strokeWidth="2.5" strokeLinecap="round"/>
+                </svg>
+              </div>
+            </div>
+
+          </div>
+
+          <div className="max-w-[1480px] mx-auto px-6 sm:px-12 md:px-16 lg:px-[72px] space-y-16" id="explore-church">
+
+            {/* ═══════════════════════════════════════════
+                2. EXPLORE THE CHURCH (7 PILLARS)
+            ═══════════════════════════════════════════ */}
+            <section className="space-y-8 text-center">
+              
+              {/* Header Titles */}
+              <div className="space-y-3 max-w-3xl mx-auto">
+                <div className="inline-flex items-center gap-3 text-xs font-extrabold uppercase tracking-widest text-[#855B09]">
+                  <span className="w-8 h-px bg-[#C8A84B]" />
+                  <span>EXPLORE THE CHURCH</span>
+                  <span className="w-8 h-px bg-[#C8A84B]" />
+                </div>
+
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1D07] font-serif">
+                  {language === 'am'
+                    ? 'ቅዱስ ቅርሳችንንና ሕያው ባህላችንን ይወቁ'
+                    : 'Discover Our Sacred Heritage and Living Tradition'}
+                </h2>
+
+                {/* Diamond Line Motif */}
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <div className="w-12 h-px bg-[#E6DFD1]" />
+                  <div className="w-2 h-2 rotate-45 border border-[#C8A84B] bg-[#FFF8E7]" />
+                  <div className="w-12 h-px bg-[#E6DFD1]" />
                 </div>
               </div>
-            </div>
-          </section>
 
-          {/* 2. QUICK STATS SECTION */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold text-[#2C1D07] font-serif flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#C8A84B]" />
-                <span>{language === 'am' ? 'ዋና ዋና ቁጥራዊ መረጃዎች' : 'Church at a Glance: Key Figures'}</span>
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {QUICK_STATS.map((stat, idx) => {
-                const getIcon = (name: string) => {
-                  switch (name) {
-                    case 'Clock': return <Clock className="w-6 h-6 text-[#855B09]" />;
-                    case 'Users': return <Users className="w-6 h-6 text-[#855B09]" />;
-                    case 'Church': return <Church className="w-6 h-6 text-[#855B09]" />;
-                    case 'MapPin': return <MapPin className="w-6 h-6 text-[#855B09]" />;
-                    default: return <Sparkles className="w-6 h-6 text-[#855B09]" />;
-                  }
-                };
-
-                return (
+              {/* 7 Pillar Icons Row */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 md:gap-6 pt-4">
+                {[
+                  {
+                    id: 'patriarch',
+                    title: 'Patriarch',
+                    desc: 'Our spiritual father and shepherd',
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2v4M10 4h4M7 9a5 5 0 0 1 10 0v2a3 3 0 0 1-3 3h-4a3 3 0 0 1-3-3V9z"/>
+                        <path d="M6 19a6 6 0 0 1 12 0v3H6v-3z"/>
+                        <circle cx="12" cy="10" r="1.5"/>
+                      </svg>
+                    ),
+                    action: () => handleTabChange('patriarch'),
+                  },
+                  {
+                    id: 'synod',
+                    title: 'Holy Synod',
+                    desc: 'The supreme spiritual and administrative body',
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="8" r="3"/>
+                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                        <circle cx="5" cy="10" r="2"/>
+                        <path d="M2 21v-1a3 3 0 0 1 3-3"/>
+                        <circle cx="19" cy="10" r="2"/>
+                        <path d="M22 21v-1a3 3 0 0 0-3-3"/>
+                        <path d="M12 2v2M11 3h2"/>
+                      </svg>
+                    ),
+                    action: () => handleTabChange('synod'),
+                  },
+                  {
+                    id: 'dioceses',
+                    title: 'Dioceses',
+                    desc: "Jurisdictions guiding the Church's mission",
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 3v3M10.5 4.5h3M6 9l6-4 6 4v11H6V9z"/>
+                        <path d="M10 20v-5a2 2 0 0 1 4 0v5"/>
+                        <path d="M2 12h4M18 12h4"/>
+                      </svg>
+                    ),
+                    action: () => handleTabChange('dioceses'),
+                  },
+                  {
+                    id: 'churches',
+                    title: 'Churches',
+                    desc: 'Parishes and communities of faith and worship',
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 2v3M10.5 3.5h3M4 11l8-6 8 6v9H4v-9z"/>
+                        <path d="M10 20v-4a2 2 0 0 1 4 0v4"/>
+                        <circle cx="12" cy="11" r="1.5"/>
+                      </svg>
+                    ),
+                    action: () => setActiveView('find-a-church'),
+                  },
+                  {
+                    id: 'monasteries',
+                    title: 'Monasteries',
+                    desc: 'Centers of prayer, asceticism, and holiness',
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M3 21h18M5 21V9l7-5 7 5v12"/>
+                        <path d="M9 13a3 3 0 0 1 6 0v8H9v-8z"/>
+                        <path d="M12 2v2M11 3h2"/>
+                      </svg>
+                    ),
+                    action: () => handleTabChange('history'),
+                  },
+                  {
+                    id: 'history',
+                    title: 'Church History',
+                    desc: 'The journey of faith through the ages',
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M8 2h8a3 3 0 0 1 3 3v13a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3z"/>
+                        <path d="M9 7h6M9 11h6M9 15h4"/>
+                      </svg>
+                    ),
+                    action: () => handleTabChange('history'),
+                  },
+                  {
+                    id: 'saints',
+                    title: 'Saints',
+                    desc: 'Holy men and women, our intercessors',
+                    icon: (
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="8" r="3.5"/>
+                        <path d="M6 21v-2a6 6 0 0 1 12 0v2H6z"/>
+                        <path d="M12 2a6.5 6.5 0 0 0-6.5 6.5"/>
+                        <path d="M12 2a6.5 6.5 0 0 1 6.5 6.5"/>
+                      </svg>
+                    ),
+                    action: () => handleTabChange('saints'),
+                  },
+                ].map((pillar) => (
                   <div
-                    key={idx}
-                    className="bg-white p-6 rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all group flex flex-col justify-between"
+                    key={pillar.id}
+                    onClick={pillar.action}
+                    className="flex flex-col items-center text-center space-y-2.5 p-4 rounded-2xl bg-white border border-[#E6DFD1] hover:border-[#C8A84B] hover:shadow-md transition-all duration-300 cursor-pointer group"
                   >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 rounded-xl bg-[#FFF8E7] border border-[#E6DFD1] group-hover:border-[#C8A84B] flex items-center justify-center transition-colors">
-                        {getIcon(stat.iconName)}
-                      </div>
-                      <span className="text-[11px] font-mono text-[#855B09] font-bold bg-[#FAF8F3] px-2.5 py-1 rounded-md border border-[#E6DFD1]">
-                        {language === 'am' ? stat.labelAm : stat.labelEn}
-                      </span>
+                    {/* Circle Icon Badge */}
+                    <div className="w-14 h-14 rounded-full border border-[#C8A84B]/40 bg-[#FAF8F3] group-hover:bg-[#FFF5DB] group-hover:border-[#C8A84B] flex items-center justify-center text-[#855B09] transition-all transform group-hover:scale-105 shadow-xs">
+                      {pillar.icon}
                     </div>
 
-                    <div className="space-y-1">
-                      <div className="text-2xl md:text-3xl font-black text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors">
-                        {stat.value}
-                      </div>
-                      <p className="text-xs text-[#6B7280] leading-relaxed">
-                        {stat.subtextEn}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                    <h3 className="font-bold text-sm text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors">
+                      {pillar.title}
+                    </h3>
 
-          {/* 3. FIVE CATEGORY CARDS SECTION */}
-          <section className="space-y-6">
-            <div className="text-center max-w-2xl mx-auto space-y-2">
-              <span className="badge-gold text-[10px] uppercase font-bold tracking-wider">
-                {language === 'am' ? 'አምስቱ ዋና ዘርፎች' : 'FIVE CORE PILLARS'}
-              </span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1D07] font-serif">
-                {language === 'am' ? 'የቤተ ክርስቲያናችን አምዶች' : 'Explore Our Church Categories'}
-              </h2>
-              <p className="text-sm text-[#6B7280]">
-                {language === 'am' 
-                  ? 'ስለ ፓትርያርኩ፣ ቅዱስ ሲኖዶስ፣ ታሪክ፣ ቅዱሳንና አህጉረ ስብከት ዝርዝር መረጃዎችን ያግኙ' 
-                  : 'Click any category card below to delve deep into the leadership, history, holy fathers, and worldwide dioceses.'}
-              </p>
-            </div>
+                    <p className="text-[11px] text-[#6B7280] leading-snug line-clamp-2">
+                      {pillar.desc}
+                    </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Card 1: Patriarch */}
-              <div
-                onClick={() => handleTabChange('patriarch')}
-                className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
-              >
-                <div className="h-48 bg-gradient-to-tr from-[#2C1D07] to-[#855B09] relative overflow-hidden flex items-center justify-center p-6 text-white">
-                  <img
-                    src={PATRIARCH_BIO.photoUrl}
-                    alt={PATRIARCH_BIO.nameEnglish}
-                    className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 group-hover:opacity-50 transition-all duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                  <div className="relative z-10 text-center space-y-1">
-                    <span className="inline-block text-[10px] font-bold uppercase tracking-wider bg-[#C8A84B] text-[#1A2C1C] px-2.5 py-0.5 rounded-full mb-1">
-                      CATHOLICOS PATRIARCH
+                    <span className="text-[#C8A84B] group-hover:text-[#855B09] font-bold text-sm transform group-hover:translate-x-1 transition-transform pt-1">
+                      →
                     </span>
-                    <h4 className="text-xl font-bold font-geez drop-shadow-sm">{PATRIARCH_BIO.nameAmharic}</h4>
-                    <p className="text-xs text-stone-200">{PATRIARCH_BIO.nameEnglish}</p>
-                  </div>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#855B09] uppercase">Leadership</span>
-                      <UserCheck className="w-4 h-4 text-[#C8A84B]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#2C1D07] group-hover:text-[#855B09] transition-colors">
-                      {language === 'am' ? 'ብፁዕ ወቅዱስ ፓትርያርክ' : 'His Holiness the Patriarch'}
-                    </h3>
-                    <p className="text-xs text-[#4A3B22] line-clamp-3 leading-relaxed">
-                      {PATRIARCH_BIO.summary}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-[#E6DFD1] text-xs font-bold text-[#855B09]">
-                    <span>{language === 'am' ? 'የፓትርያርኩን ታሪክ ይመልከቱ' : 'View Full Bio & Succession'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2: Holy Synod */}
-              <div
-                onClick={() => handleTabChange('synod')}
-                className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
-              >
-                <div className="h-48 bg-gradient-to-tr from-[#1A3A5C] to-[#0D1F30] relative overflow-hidden flex items-center justify-center p-6 text-white">
-                  <div className="absolute -right-6 -bottom-6 w-36 h-36 bg-[#C8A84B]/20 rounded-full blur-xl" />
-                  <div className="relative z-10 text-center space-y-2">
-                    <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mx-auto flex items-center justify-center">
-                      <ShieldCheck className="w-8 h-8 text-[#C8A84B]" />
-                    </div>
-                    <h4 className="text-xl font-bold font-geez">ቅዱስ ሲኖዶስ</h4>
-                    <p className="text-xs text-stone-300">Supreme Ecclesiastical Council</p>
-                  </div>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#855B09] uppercase">Governance</span>
-                      <ShieldCheck className="w-4 h-4 text-[#C8A84B]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#2C1D07] group-hover:text-[#855B09] transition-colors">
-                      {language === 'am' ? 'ቅዱስ ሲኖዶስ' : 'The Holy Synod'}
-                    </h3>
-                    <p className="text-xs text-[#4A3B22] line-clamp-3 leading-relaxed">
-                      {language === 'am'
-                        ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን የበላይ የውሳኔና የሕግ አውጪ አካል፤ በሊቃነ ጳጳሳትና ኤጲስ ቆጶሳት የሚመራ ከፍተኛ ጉባኤ።'
-                        : 'The supreme ecclesiastical legislative and administrative body governing the Church, composed of consecrated archbishops and bishops under the Patriarch.'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-[#E6DFD1] text-xs font-bold text-[#855B09]">
-                    <span>{language === 'am' ? 'የሲኖዶስ መዋቅርና ውሳኔዎች' : 'Synod Structure & Decisions'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3: Church History */}
-              <div
-                onClick={() => handleTabChange('history')}
-                className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
-              >
-                <div className="h-48 bg-gradient-to-tr from-[#3D2200] to-[#800020] relative overflow-hidden flex items-center justify-center p-6 text-white">
-                  <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:16px_16px]" />
-                  <div className="relative z-10 text-center space-y-2">
-                    <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mx-auto flex items-center justify-center">
-                      <Clock className="w-8 h-8 text-[#C8A84B]" />
-                    </div>
-                    <h4 className="text-xl font-bold font-geez">ታሪከ ቤተ ክርስቲያን</h4>
-                    <p className="text-xs text-stone-300">Apostolic Era to Present</p>
-                  </div>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#855B09] uppercase">Heritage</span>
-                      <Scroll className="w-4 h-4 text-[#C8A84B]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#2C1D07] group-hover:text-[#855B09] transition-colors">
-                      {language === 'am' ? 'የቤተ ክርስቲያን ታሪክ' : 'Church History & Milestones'}
-                    </h3>
-                    <p className="text-xs text-[#4A3B22] line-clamp-3 leading-relaxed">
-                      {language === 'am'
-                        ? 'ከሐዋርያው ፊልጶስ ዘመን፣ ከአክሱም መንግሥት፣ ከዘጠኙ ቅዱሳንና ከቅዱስ ያሬድ እስከ ላሊበላ ፍልፍል አብያተ ክርስቲያናት ድረስ ያለው ባለ ሁለት ሺህ ዓመት ታሪክ።'
-                        : 'Explore 2,000 years of unbroken history: the Eunuch of Acts 8, Ezana’s Aksum, Nine Saints, St. Yared, Lalibela monoliths, and modern autocephaly.'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-[#E6DFD1] text-xs font-bold text-[#855B09]">
-                    <span>{language === 'am' ? 'የታሪክ ዘመናትን ይመልከቱ' : 'Explore Historical Timeline'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 4: Saints */}
-              <div
-                onClick={() => handleTabChange('saints')}
-                className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
-              >
-                <div className="h-48 bg-gradient-to-tr from-[#4A000D] to-[#9E7F1E] relative overflow-hidden flex items-center justify-center p-6 text-white">
-                  <div className="absolute -left-6 -top-6 w-36 h-36 bg-[#D4AF37]/20 rounded-full blur-xl" />
-                  <div className="relative z-10 text-center space-y-2">
-                    <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mx-auto flex items-center justify-center">
-                      <Award className="w-8 h-8 text-[#C8A84B]" />
-                    </div>
-                    <h4 className="text-xl font-bold font-geez">ቅዱሳን ወሰማዕታት</h4>
-                    <p className="text-xs text-stone-300">Synaxarium Saints & Fathers</p>
-                  </div>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#855B09] uppercase">Synaxarium</span>
-                      <Award className="w-4 h-4 text-[#C8A84B]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#2C1D07] group-hover:text-[#855B09] transition-colors">
-                      {language === 'am' ? 'ቅዱሳን አበው' : 'Synaxarium Saints'}
-                    </h3>
-                    <p className="text-xs text-[#4A3B22] line-clamp-3 leading-relaxed">
-                      {language === 'am'
-                        ? 'የቅዱሳን ጻድቃን፣ ሰማዕታት፣ ገዳማውያን አበውና እናቶች መንፈሳዊ ተጋድሎና የቅድስና ታሪክ (መጽሐፈ ስንክሳር)።'
-                        : 'Biographies, feast days, and spiritual triumphs of righteous fathers: St. Frumentius, St. Yared, St. Tekle Haymanot, Abba Aregawi, and more.'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-[#E6DFD1] text-xs font-bold text-[#855B09]">
-                    <span>{language === 'am' ? 'የቅዱሳን ስንክሳርን ይክፈቱ' : 'Browse Saints & Commemorations'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 5: Dioceses */}
-              <div
-                onClick={() => handleTabChange('dioceses')}
-                className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col md:col-span-2 lg:col-span-2"
-              >
-                <div className="h-48 bg-gradient-to-tr from-[#0E1B30] via-[#1A3A5C] to-[#855B09] relative overflow-hidden flex items-center justify-between p-8 text-white">
-                  <div className="relative z-10 space-y-2 max-w-md">
-                    <span className="inline-block text-[10px] font-bold uppercase tracking-wider bg-[#C8A84B] text-[#1A2C1C] px-2.5 py-0.5 rounded-full">
-                      GLOBAL EPISCOPAL SEES
-                    </span>
-                    <h4 className="text-2xl font-bold font-geez">አህጉረ ስብከት</h4>
-                    <p className="text-xs text-stone-200">
-                      14+ Dioceses across Ethiopia, Jerusalem, North America, Europe, Africa, and the Caribbean.
-                    </p>
-                  </div>
-                  <div className="hidden sm:flex w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 items-center justify-center shrink-0">
-                    <Globe className="w-10 h-10 text-[#C8A84B]" />
-                  </div>
-                </div>
-
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#855B09] uppercase">Jurisdictions</span>
-                      <MapPin className="w-4 h-4 text-[#C8A84B]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#2C1D07] group-hover:text-[#855B09] transition-colors">
-                      {language === 'am' ? 'አህጉረ ስብከትና ሊቃነ ጳጳሳት' : 'Dioceses & Archdioceses'}
-                    </h3>
-                    <p className="text-xs text-[#4A3B22] leading-relaxed">
-                      {language === 'am'
-                        ? 'በሀገር ውስጥና በውጭ ሀገራት የሚገኙ አህጉረ ስብከት፣ የሊቃነ ጳጳሳት መንበረ ስብከት፣ አድባራትና ገዳማት ዝርዝር መረጃ።'
-                        : 'Discover dioceses worldwide: episcopal seats, consecrated archbishops, active parishes, historic monasteries, and contact directories.'}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-3 border-t border-[#E6DFD1] text-xs font-bold text-[#855B09]">
-                    <span>{language === 'am' ? 'ሁሉንም አህጉረ ስብከት ይመልከቱ' : 'Explore All 14+ Dioceses'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 4. FAITH OVERVIEW: TEWAHEDO CHRISTOLOGY & PILLARS */}
-          <section className="bg-gradient-to-br from-[#FFF8E7] via-[#FAF8F3] to-[#FFF5DB] p-8 md:p-10 rounded-3xl border-2 border-[#D4AF37] shadow-md space-y-8 relative overflow-hidden">
-            <div className="absolute -right-16 -bottom-16 opacity-10 pointer-events-none">
-              <Sparkles className="w-72 h-72 text-[#855B09]" />
-            </div>
-
-            <div className="space-y-3 relative z-10 max-w-4xl">
-              <div className="flex items-center gap-2 text-[#855B09]">
-                <Sparkles className="w-6 h-6 text-[#C8A84B]" />
-                <span className="text-xs font-bold uppercase tracking-wider">ORTHODOX TEWAHEDO DOCTRINE</span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1D07] font-serif">
-                {language === 'am' ? 'የተዋሕዶ ሃይማኖት ምሥጢር' : 'Faith Overview: Tewahedo Christology'}
-              </h2>
-              <p className="text-sm md:text-base text-[#4A3B22] leading-relaxed">
-                <strong>"Tewahedo" (ተዋሕዶ)</strong> is an ancient Ge'ez term meaning <strong>"Made One" or "Unification"</strong>. It encapsulates the Oriental Orthodox Christological doctrine of the <strong>One Incarnate Nature of God the Word (Miaphysitism — ተዋሕዶ)</strong>, as formulated by Saint Cyril of Alexandria (*Mia Physis tou Theou Logou Sesarkomene*).
-              </p>
-              <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-[#E6DFD1] text-sm text-[#2C1D07] font-medium leading-relaxed italic border-l-4 border-l-[#C8A84B]">
-                "We confess Our Lord and Savior Jesus Christ as perfect God and perfect Man, united without confusion (እምቅብዓት), without change (እምውላጤ), without division (እምፍልጠት), and without separation (እምቱሳሔ)."
-              </div>
-            </div>
-
-            {/* Five Pillars of Mystery (አምስቱ አዕማደ ምሥጢር) */}
-            <div className="space-y-4 relative z-10">
-              <div className="flex items-center justify-between border-b border-[#E6DFD1] pb-2">
-                <h3 className="text-lg font-bold text-[#2C1D07] font-geez flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-[#855B09]" />
-                  <span>{language === 'am' ? 'አምስቱ አዕማደ ምሥጢር' : 'The Five Pillars of Mystery (አምስቱ አዕማደ ምሥጢር)'}</span>
-                </h3>
-                <span className="text-xs text-[#855B09] font-medium">Foundational Dogma</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {PILLARS_OF_MYSTERY.map((pillar) => (
-                  <div
-                    key={pillar.number}
-                    className="bg-white p-5 rounded-xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm space-y-2 transition-all"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="w-7 h-7 rounded-full bg-[#FFF8E7] border border-[#C8A84B] text-xs font-bold text-[#855B09] flex items-center justify-center">
-                        {pillar.number}
-                      </span>
-                      <span className="text-[10px] font-mono text-[#855B09] bg-[#FAF8F3] px-2 py-0.5 rounded border border-[#E6DFD1]">
-                        {pillar.scriptureRef}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-[#2C1D07] text-sm font-geez">{pillar.titleAmharic}</h4>
-                      <p className="text-xs font-semibold text-[#855B09]">{pillar.titleEnglish}</p>
-                    </div>
-
-                    <p className="text-xs text-[#4A3B22] leading-relaxed pt-1">
-                      {pillar.summary}
-                    </p>
                   </div>
                 ))}
+              </div>
 
-                {/* 6th Card: 81 Biblical Canon */}
-                <div className="bg-gradient-to-br from-[#2C1D07] to-[#1A2C1C] p-5 rounded-xl text-white space-y-2 shadow-sm flex flex-col justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="badge-gold text-[9px]">CANON OF 81 BOOKS</span>
-                      <BookOpen className="w-4 h-4 text-[#C8A84B]" />
-                    </div>
-                    <h4 className="font-bold text-white text-sm font-geez">ሰማንያ አሐዱ (81) መጻሕፍት</h4>
-                    <p className="text-xs text-stone-300 leading-relaxed">
-                      The Ethiopian Orthodox Church possesses the fullest biblical canon on earth, preserving Enoch (ሄኖክ), Jubilees (ኩፋሌ), and 4 Books of Sinodos.
-                    </p>
+            </section>
+
+            {/* ═══════════════════════════════════════════
+                3. DEEP NAVY KEY STATISTICS BANNER
+            ═══════════════════════════════════════════ */}
+            <section className="bg-[#0A1C2E] text-white rounded-3xl p-8 md:p-12 border border-[#C8A84B]/40 shadow-xl relative overflow-hidden">
+              {/* Background ambient lighting */}
+              <div className="absolute top-0 right-0 w-80 h-80 bg-[#C8A84B]/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#1A3A5C]/40 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 divide-y sm:divide-y-0 sm:divide-x divide-white/10 relative z-10">
+                
+                {/* Stat 1: 4th Century AD */}
+                <div className="flex flex-col items-center text-center space-y-2 pt-4 sm:pt-0">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-[#C8A84B]/40 flex items-center justify-center mb-1">
+                    <Church className="w-6 h-6 text-[#D4AF37]" />
                   </div>
-                  <button
-                    onClick={() => setActiveView('scripture')}
-                    className="text-xs text-[#C8A84B] font-bold flex items-center gap-1 hover:underline pt-2"
-                  >
-                    <span>Read Scripture</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black font-serif text-white">
+                    4th Century AD
+                  </div>
+                  <p className="text-xs text-[#94A3B8] font-medium uppercase tracking-wider">
+                    Ancient Christian Heritage
+                  </p>
+                </div>
+
+                {/* Stat 2: 700+ */}
+                <div className="flex flex-col items-center text-center space-y-2 pt-4 sm:pt-0">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-[#C8A84B]/40 flex items-center justify-center mb-1">
+                    <Users className="w-6 h-6 text-[#D4AF37]" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black font-serif text-white">
+                    700+
+                  </div>
+                  <p className="text-xs text-[#94A3B8] font-medium uppercase tracking-wider">
+                    Churches & Parishes
+                  </p>
+                </div>
+
+                {/* Stat 3: 50+ */}
+                <div className="flex flex-col items-center text-center space-y-2 pt-4 sm:pt-0">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-[#C8A84B]/40 flex items-center justify-center mb-1">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-[#D4AF37]">
+                      <path d="M12 2V22M4 9H20M8 5L16 13M8 13L16 5" stroke="#D4AF37" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black font-serif text-white">
+                    50+
+                  </div>
+                  <p className="text-xs text-[#94A3B8] font-medium uppercase tracking-wider">
+                    Dioceses & Jurisdictions
+                  </p>
+                </div>
+
+                {/* Stat 4: Worldwide */}
+                <div className="flex flex-col items-center text-center space-y-2 pt-4 sm:pt-0">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-[#C8A84B]/40 flex items-center justify-center mb-1">
+                    <Globe className="w-6 h-6 text-[#D4AF37]" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-black font-serif text-white">
+                    Worldwide
+                  </div>
+                  <p className="text-xs text-[#94A3B8] font-medium uppercase tracking-wider">
+                    Faithful in Every Continent
+                  </p>
+                </div>
+
+              </div>
+            </section>
+
+            {/* ═══════════════════════════════════════════
+                4. FEATURED FROM OUR CHURCH (4-CARD GRID)
+            ═══════════════════════════════════════════ */}
+            <section className="space-y-8">
+              
+              {/* Header Title with Diamond Line */}
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1D07] font-serif">
+                  Featured From Our Church
+                </h2>
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <div className="w-12 h-px bg-[#E6DFD1]" />
+                  <div className="w-2 h-2 rotate-45 border border-[#C8A84B] bg-[#FFF8E7]" />
+                  <div className="w-12 h-px bg-[#E6DFD1]" />
                 </div>
               </div>
-            </div>
-          </section>
+
+              {/* 4 Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                
+                {/* Card 1: Featured Diocese */}
+                <div
+                  onClick={() => handleTabChange('dioceses')}
+                  className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
+                >
+                  <div className="h-44 overflow-hidden relative">
+                    <img
+                      src="/assets/images/our_church_hero_cathedral.jpg"
+                      alt="Addis Ababa Diocese"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                        FEATURED DIOCESE
+                      </span>
+                      <h3 className="text-base font-bold text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors">
+                        Addis Ababa Diocese
+                      </h3>
+                      <p className="text-xs text-[#6B7280] leading-relaxed">
+                        Explore its churches, monasteries, and spiritual activities.
+                      </p>
+                    </div>
+                    <div className="flex justify-end pt-2 text-[#C8A84B] font-bold group-hover:translate-x-1 transition-transform">
+                      →
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 2: Featured Church */}
+                <div
+                  onClick={() => setActiveView('find-a-church')}
+                  className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
+                >
+                  <div className="h-44 overflow-hidden relative">
+                    <img
+                      src="/assets/images/holy_trinity_interior.jpg"
+                      alt="Holy Trinity Cathedral"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                        FEATURED CHURCH
+                      </span>
+                      <h3 className="text-base font-bold text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors">
+                        Holy Trinity Cathedral
+                      </h3>
+                      <p className="text-xs text-[#6B7280] leading-relaxed">
+                        A beacon of faith and liturgical prayer in the heart of Addis Ababa.
+                      </p>
+                    </div>
+                    <div className="flex justify-end pt-2 text-[#C8A84B] font-bold group-hover:translate-x-1 transition-transform">
+                      →
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 3: Featured Saint */}
+                <div
+                  onClick={() => handleTabChange('saints')}
+                  className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
+                >
+                  <div className="h-44 overflow-hidden relative">
+                    <img
+                      src="/assets/images/saint_teklehaymanot_icon.jpg"
+                      alt="Saint Tekle Haymanot"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                        FEATURED SAINT
+                      </span>
+                      <h3 className="text-base font-bold text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors">
+                        Saint Tekle Haymanot
+                      </h3>
+                      <p className="text-xs text-[#6B7280] leading-relaxed">
+                        The enlightener of Ethiopia and our revered heavenly intercessor.
+                      </p>
+                    </div>
+                    <div className="flex justify-end pt-2 text-[#C8A84B] font-bold group-hover:translate-x-1 transition-transform">
+                      →
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card 4: Latest Message */}
+                <div
+                  onClick={() => handleTabChange('patriarch')}
+                  className="bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer group flex flex-col"
+                >
+                  <div className="h-44 overflow-hidden relative">
+                    <img
+                      src="/assets/images/sermon_prayer_candle.jpg"
+                      alt="Message from the Patriarch"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  </div>
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                        LATEST MESSAGE
+                      </span>
+                      <h3 className="text-base font-bold text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors">
+                        Message from the Patriarch
+                      </h3>
+                      <p className="text-xs text-[#6B7280] leading-relaxed">
+                        Spiritual guidance, apostolic blessing, and peace for the faithful worldwide.
+                      </p>
+                    </div>
+                    <div className="flex justify-end pt-2 text-[#C8A84B] font-bold group-hover:translate-x-1 transition-transform">
+                      →
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </section>
+
+            {/* ═══════════════════════════════════════════
+                5. OUR PATRIARCH HERO SPLIT CARD
+            ═══════════════════════════════════════════ */}
+            <section className="bg-[#FFFBF2] rounded-3xl border border-[#E6DFD1] shadow-md p-6 sm:p-10 lg:p-12 relative overflow-hidden">
+              
+              {/* Sacred Ethiopian Cross Watermark on the right */}
+              <CrossWatermark size="lg" opacity={12} position="right" />
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+                
+                {/* Left: Patriarch Photo with Processional Cross */}
+                <div className="lg:col-span-5 flex justify-center">
+                  <div className="relative w-full max-w-sm rounded-2xl overflow-hidden shadow-xl border-2 border-[#C8A84B]/50">
+                    <img
+                      src="/assets/images/patriarch_hero.png"
+                      alt="His Holiness Abune Mathias I"
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                </div>
+
+                {/* Right: Patriarch Info & Message CTA */}
+                <div className="lg:col-span-7 space-y-4 text-center lg:text-left">
+                  <span className="text-xs font-extrabold uppercase tracking-widest text-[#855B09] block">
+                    OUR PATRIARCH
+                  </span>
+
+                  <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#2C1D07] font-serif">
+                    His Holiness Abune Mathias I
+                  </h3>
+
+                  <h4 className="text-sm sm:text-base font-semibold text-[#855B09] font-geez">
+                    Patriarch of the Ethiopian Orthodox Tewahedo Church
+                  </h4>
+
+                  <p className="text-xs sm:text-sm md:text-base text-[#4A3B22] leading-relaxed max-w-xl">
+                    "Guiding the Church with wisdom, humility, and unwavering faithfulness to the Gospel and the sacred traditions of our holy fathers."
+                  </p>
+
+                  <div className="pt-3">
+                    <button
+                      onClick={() => handleTabChange('patriarch')}
+                      className="px-6 py-3 rounded-xl bg-[#C8A84B] hover:bg-[#B8860B] text-[#1A2C1C] font-extrabold text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-2 cursor-pointer"
+                    >
+                      <span>Read His Holiness's Message</span>
+                      <span>→</span>
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+
+            </section>
+
+            {/* ═══════════════════════════════════════════
+                6. FIND A CHURCH NEAR YOU BOTTOM CTA BANNER
+            ═══════════════════════════════════════════ */}
+            <section className="bg-[#0A1C2E] text-white rounded-3xl p-8 md:p-10 border border-[#C8A84B]/40 shadow-xl relative overflow-hidden">
+              
+              {/* Subtle Cathedral Skyline Silhouettes in Background */}
+              <div className="absolute inset-0 opacity-10 flex items-center justify-between pointer-events-none px-6">
+                <Church className="w-32 h-32 text-white" />
+                <Church className="w-40 h-40 text-white hidden sm:block" />
+                <Church className="w-32 h-32 text-white" />
+              </div>
+
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                
+                <div className="flex flex-col sm:flex-row items-center gap-5">
+                  {/* Yellow/Gold Circular Map Pin Node */}
+                  <div className="w-16 h-16 rounded-full bg-[#E5C158] text-[#1A2C1C] flex items-center justify-center shrink-0 shadow-lg border-2 border-white/40">
+                    <MapPin className="w-8 h-8 fill-current" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h3 className="text-xl sm:text-2xl font-bold font-serif text-white">
+                      Find a Church Near You
+                    </h3>
+                    <p className="text-xs sm:text-sm text-[#94A3B8] max-w-md">
+                      Join us in prayer and experience the beauty of the Orthodox faith in your local community.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setActiveView('find-a-church')}
+                  className="px-6 py-3 rounded-xl bg-[#E5C158] hover:bg-[#D4AF37] text-[#1A2C1C] font-extrabold text-xs uppercase tracking-wider shadow-lg hover:shadow-xl transition-all shrink-0 inline-flex items-center gap-2 cursor-pointer"
+                >
+                  <span>Find a Church</span>
+                  <span>→</span>
+                </button>
+
+              </div>
+
+            </section>
+
+          </div>
+
         </div>
       )}
 
@@ -600,90 +671,178 @@ export const OurChurchView: React.FC = () => {
           VIEW 2: Patriarch Page (Hero, Biography, Pastoral Letter, Lineage, Teachings)
           ========================================================================= */}
       {subSection === 'patriarch' && (
-        <div className="space-y-12 animate-fadeIn">
-          {/* 1. HERO SECTION: Full-width Photo, Name & Titles in English + Amharic */}
-          <section className="bg-gradient-to-br from-[#1C1205] via-[#2C1D07] to-[#3D2200] rounded-3xl border-2 border-[#C8A84B] shadow-2xl overflow-hidden text-white relative">
-            {/* Background Texture & Ambient Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#C8A84B]/20 rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-12 items-center p-6 sm:p-10 lg:p-12">
-              {/* Patriarch Portrait */}
-              <div className="lg:col-span-5 flex justify-center">
-                <div className="relative group max-w-sm w-full">
-                  <div className="absolute -inset-1.5 bg-gradient-to-r from-[#C8A84B] via-[#D4AF37] to-[#9E7F1E] rounded-3xl blur-md opacity-75 group-hover:opacity-100 transition duration-500"></div>
-                  <div className="relative bg-[#0E1B30] rounded-2xl overflow-hidden border-2 border-[#C8A84B] shadow-2xl">
-                    <img
-                      src={PATRIARCH_BIO.photoUrl}
-                      alt={PATRIARCH_BIO.nameEnglish}
-                      className="w-full h-[420px] object-cover object-top group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex flex-col justify-end p-5">
-                      <span className="badge-gold text-[10px] uppercase font-bold self-start mb-1">
-                        6th Catholicos Patriarch
-                      </span>
-                      <p className="text-xs text-[#FFF5DB] font-medium">111th Successor to Saint Frumentius (Abba Salama)</p>
+        <div className="space-y-16 animate-fadeIn -mt-8 -mx-4 sm:-mx-8 lg:-mx-12">
+          
+          {/* ═══════════════════════════════════════════
+              1. REAL PATRIARCH HERO SECTION (SPLIT LUXURY SACRED EDITORIAL)
+          ═══════════════════════════════════════════ */}
+          <div className="relative bg-[#040D07] text-white overflow-hidden min-h-[560px] md:min-h-[640px] flex items-center">
+            {/* Background Full-width Image: Clear on Right, Blurring to Left */}
+            <div 
+              className="absolute inset-0 bg-cover bg-right md:bg-[center_right] scale-100 transition-transform duration-1000"
+              style={{ backgroundImage: "url('/assets/images/patriarch_hero_blend.jpg')" }}
+            />
+
+            {/* Dark Emerald & Black Gradient Overlay (Solid on Left, Dissolving to Right) */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#030A06] via-[#040E08]/95 via-45% to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#030A06] via-transparent to-transparent opacity-90" />
+
+            {/* Sacred Ethiopian Cross Watermark behind text */}
+            <CrossWatermark size="xl" opacity={12} position="left" className="hidden lg:block -translate-x-1/6" />
+
+            {/* Main Content Grid */}
+            <div className="relative z-10 max-w-[1480px] mx-auto w-full px-6 sm:px-12 md:px-16 lg:px-[72px] pt-[130px] pb-[100px]">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                
+                {/* ── LEFT COLUMN: ELEGANT SACRED TYPOGRAPHY & CTA ── */}
+                <div className="lg:col-span-6 space-y-5 text-center lg:text-left">
+                  
+                  {/* Top Golden Ethiopian Cross Symbol with Divine Glow */}
+                  <div className="flex items-center justify-center lg:justify-start">
+                    <div className="w-10 h-10 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/40 flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.35)]">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#E5C158]">
+                        <path d="M12 2V22M4 9H20M7 6L17 16M7 16L17 6" stroke="#E5C158" strokeWidth="2.2" strokeLinecap="round"/>
+                      </svg>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Patriarch Title & Identity */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="bg-[#C8A84B] text-[#1A2C1C] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                      {language === 'am' ? 'ፓትርያርክ ርእሰ ሊቃነ ጳጳሳት' : 'SUPREME PATRIARCH OF ETHIOPIA'}
-                    </span>
-                    <span className="bg-white/10 text-stone-300 text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
-                      {language === 'am' ? 'መንበረ ተክለ ሃይማኖት' : 'See of Saint Tekle Haymanot'}
-                    </span>
+                  {/* Subtitle Badge */}
+                  <div className="text-[11px] md:text-xs font-extrabold uppercase tracking-[0.25em] text-[#C8A84B]">
+                    SUPREME PATRIARCH OF ETHIOPIA
                   </div>
 
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-geez leading-tight drop-shadow-md">
-                    {PATRIARCH_BIO.nameAmharic}
-                  </h1>
-                  <h2 className="text-xl sm:text-2xl font-bold text-[#D4AF37] font-serif">
-                    {PATRIARCH_BIO.nameEnglish}
-                  </h2>
-                </div>
+                  {/* Main Serif Heading: "His Holiness" (White) + "Abune Mathias I" (Gold) */}
+                  <div className="space-y-1">
+                    <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-serif tracking-tight leading-tight drop-shadow-md">
+                      <span className="text-white block">His Holiness</span>
+                      <span className="text-[#E5C158] block">Abune Mathias I</span>
+                    </h1>
 
-                <div className="bg-white/10 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/15 space-y-2 text-xs sm:text-sm text-stone-200">
-                  <div className="text-[#C8A84B] font-bold uppercase text-[11px] tracking-wider">
-                    {language === 'am' ? 'ሙሉ ማዕርግ' : 'Full Canonical Title'}
+                    {/* Amharic Heading */}
+                    <div className="text-xl sm:text-2xl font-geez font-bold text-[#E5C158] pt-1">
+                      ብፁዕ ወቅዱስ አቡነ ማትያስ ቀዳማዊ
+                    </div>
                   </div>
-                  <p className="font-geez leading-relaxed font-semibold text-white">
-                    {PATRIARCH_BIO.titleAmharic}
+
+                  {/* Canonical Ecclesiastical Title */}
+                  <p className="text-xs sm:text-sm md:text-base text-[#D1D5DB] leading-relaxed font-body max-w-xl">
+                    Catholicos Patriarch of Ethiopia, Archbishop of Axum, and Ichege of the See of Saint Tekle Haymanot.
                   </p>
-                  <p className="text-stone-300 italic pt-1 text-xs">
-                    "{PATRIARCH_BIO.titleEnglish}"
-                  </p>
+
+                  {/* Ornamental Diamond / Cross Knot Divider */}
+                  <div className="flex items-center justify-center lg:justify-start gap-3 py-1">
+                    <div className="w-14 h-px bg-[#C8A84B]/60" />
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-[#E5C158]">
+                      <path d="M12 2L22 12L12 22L2 12Z" stroke="#E5C158" strokeWidth="2" fill="#E5C158" fillOpacity="0.3"/>
+                    </svg>
+                    <div className="w-14 h-px bg-[#C8A84B]/60" />
+                  </div>
+
+                  {/* Dual Spiritual Motto Quotes */}
+                  <div className="space-y-1 font-serif italic text-xs sm:text-sm">
+                    <p className="text-[#E5C158]">“Faith, Unity, and Love in Christ.”</p>
+                    <p className="text-[#C8A84B] font-geez not-italic text-xs sm:text-sm">“በክርስቶስ የእምነት ፣ አንድነትና ፍቅር”</p>
+                  </div>
+
+                  {/* Dual Action Buttons */}
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-3">
+                    {/* Primary Button */}
+                    <button
+                      onClick={() => {
+                        document.getElementById('patriarch-bio')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="px-6 py-3 rounded-full bg-[#E5C158] hover:bg-[#D4AF37] text-[#0C1A10] font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center gap-2.5 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                    >
+                      <BookOpen className="w-4 h-4 text-[#0C1A10]" />
+                      <span>Learn More About Our Patriarch</span>
+                      <span>→</span>
+                    </button>
+
+                    {/* Secondary Watch Message Button */}
+                    <button
+                      onClick={() => {
+                        if (PATRIARCH_TEACHINGS.length > 0) {
+                          setSelectedTeaching(PATRIARCH_TEACHINGS[0]);
+                        }
+                      }}
+                      className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/25 text-white font-bold text-xs sm:text-sm flex items-center gap-2.5 backdrop-blur-md transition-all cursor-pointer"
+                    >
+                      <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                        ▶
+                      </span>
+                      <span>Watch Message</span>
+                    </button>
+                  </div>
+
                 </div>
 
-                {/* Quick Info Badges */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
-                  <div className="bg-white/5 border border-white/10 p-3 rounded-xl">
-                    <span className="block text-[10px] text-[#C8A84B] font-bold uppercase">Enthroned</span>
-                    <span className="font-bold text-xs sm:text-sm text-white">March 3, 2013</span>
-                    <span className="block text-[10px] text-stone-400">Megabit 24, 2005 E.C.</span>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 p-3 rounded-xl">
-                    <span className="block text-[10px] text-[#C8A84B] font-bold uppercase">Birthplace</span>
-                    <span className="font-bold text-xs sm:text-sm text-white">{PATRIARCH_BIO.birthPlace}</span>
-                    <span className="block text-[10px] text-stone-400">1941 E.C. (1948 GC)</span>
-                  </div>
-                  <div className="bg-white/5 border border-white/10 p-3 rounded-xl col-span-2 sm:col-span-1">
-                    <span className="block text-[10px] text-[#C8A84B] font-bold uppercase">Enthronement Seat</span>
-                    <span className="font-bold text-xs sm:text-sm text-white">Holy Trinity Cathedral</span>
-                    <span className="block text-[10px] text-stone-400">Addis Ababa</span>
-                  </div>
-                </div>
+                {/* ── RIGHT COLUMN: SPACER SO BACKGROUND PORTRAIT IS VISIBLE ── */}
+                <div className="lg:col-span-6 hidden lg:block min-h-[420px]" />
+
               </div>
             </div>
-          </section>
 
-          {/* 2. BIOGRAPHY & MINISTRY SECTION */}
-          <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-10">
+            {/* ═══════════════════════════════════════════
+                BOTTOM 4-PILLAR STAT / FEATURE STRIP
+            ═══════════════════════════════════════════ */}
+            <div className="absolute bottom-0 left-0 right-0 bg-[#030905]/95 backdrop-blur-md border-t border-[#C8A84B]/30 py-4 px-6 md:px-14 z-20">
+              <div className="container mx-auto max-w-7xl grid grid-cols-2 md:grid-cols-4 gap-6 divide-y sm:divide-y-0 sm:divide-x divide-[#C8A84B]/20 text-center sm:text-left">
+                
+                {/* Pillar 1: Spiritual Leader */}
+                <div className="flex items-center gap-3.5 pt-3 sm:pt-0 sm:px-4 first:pl-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#E5C158]/10 border border-[#E5C158]/30 flex items-center justify-center shrink-0">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-[#E5C158]">
+                      <path d="M12 2V22M4 9H20M7 6L17 16M7 16L17 6" stroke="#E5C158" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-white font-serif">Spiritual Leader</h4>
+                    <p className="text-[11px] text-[#94A3B8]">of 60+ Million Faithful</p>
+                  </div>
+                </div>
+
+                {/* Pillar 2: Guardian of 1,700+ Years */}
+                <div className="flex items-center gap-3.5 pt-3 sm:pt-0 sm:px-4">
+                  <div className="w-9 h-9 rounded-xl bg-[#E5C158]/10 border border-[#E5C158]/30 flex items-center justify-center shrink-0">
+                    <Church className="w-4 h-4 text-[#E5C158]" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-white font-serif">Guardian of 1,700+ Years</h4>
+                    <p className="text-[11px] text-[#94A3B8]">of Apostolic Faith</p>
+                  </div>
+                </div>
+
+                {/* Pillar 3: Defender of the True Faith */}
+                <div className="flex items-center gap-3.5 pt-3 sm:pt-0 sm:px-4">
+                  <div className="w-9 h-9 rounded-xl bg-[#E5C158]/10 border border-[#E5C158]/30 flex items-center justify-center shrink-0">
+                    <BookOpen className="w-4 h-4 text-[#E5C158]" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-white font-serif">Defender of the True Faith</h4>
+                    <p className="text-[11px] text-[#94A3B8]">Ethiopian Orthodox Tewahedo Church</p>
+                  </div>
+                </div>
+
+                {/* Pillar 4: Shepherd of Unity */}
+                <div className="flex items-center gap-3.5 pt-3 sm:pt-0 sm:px-4 last:pr-0">
+                  <div className="w-9 h-9 rounded-xl bg-[#E5C158]/10 border border-[#E5C158]/30 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4 text-[#E5C158]" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-white font-serif">Shepherd of Unity, Peace & Love</h4>
+                    <p className="text-[11px] text-[#94A3B8]">in Christ</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <div className="max-w-[1480px] mx-auto px-6 sm:px-12 md:px-16 lg:px-[72px] space-y-16" id="patriarch-bio">
+
+            {/* 2. BIOGRAPHY & MINISTRY SECTION */}
+            <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-xs space-y-10">
             <div className="border-b border-[#E6DFD1] pb-6 space-y-2">
               <span className="badge-gold text-[10px] uppercase font-bold">LIFE & SERVICE</span>
               <h2 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-geez">
@@ -1031,6 +1190,7 @@ export const OurChurchView: React.FC = () => {
               </div>
             )}
           </section>
+          </div>
         </div>
       )}
 
@@ -1038,195 +1198,266 @@ export const OurChurchView: React.FC = () => {
           VIEW 3: Holy Synod (Overview, Members Directory, Decisions, Schedule, Historical Docs)
           ========================================================================= */}
       {subSection === 'synod' && (
-        <div className="space-y-12 animate-fadeIn">
-          {/* 1. SYNOD OVERVIEW: Role, Governance & Functions */}
-          <section className="bg-gradient-to-br from-[#0B1728] via-[#0E1F36] to-[#1A3A5C] rounded-3xl border-2 border-[#C8A84B] shadow-2xl p-8 md:p-12 text-white relative overflow-hidden space-y-8">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#C8A84B]/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
+        <div className="space-y-16 animate-fadeIn -mt-12 -mx-4 sm:-mx-8 lg:-mx-12">
+          {/* ═══════════════════════════════════════════════════════════════
+              1. SACRED HOLY SYNOD HERO SECTION (FULL-WIDTH EDGE-TO-EDGE SECTION)
+              ═══════════════════════════════════════════════════════════════ */}
+          <section className="relative w-full bg-[#030C12] text-white overflow-hidden min-h-[580px] md:min-h-[640px] flex flex-col justify-between border-b-2 border-[#C8A84B]/60 shadow-2xl">
+            
+            {/* Synod Archbishops & Bishops Background Assembly Photo */}
+            <div 
+              className="absolute inset-0 bg-cover bg-[center_top] sm:bg-[center_top_15%] opacity-85 mix-blend-luminosity"
+              style={{ backgroundImage: `url('/assets/images/holy_synod_assembly.jpg')` }}
+            />
+            
+            {/* Left Warm & Dark Vignette Gradient for Text Legibility (Matching Home Hero) */}
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to right, rgba(3,12,18,0.98) 0%, rgba(3,12,18,0.92) 42%, rgba(3,12,18,0.45) 75%, rgba(3,12,18,0.15) 100%)'
+              }}
+            />
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: 'linear-gradient(to top, rgba(3,12,18,0.90) 0%, rgba(3,12,18,0.20) 50%, rgba(3,12,18,0.60) 100%)'
+              }}
+            />
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center border-b border-white/15 pb-8">
-              <div className="lg:col-span-8 space-y-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="bg-[#C8A84B] text-[#1A2C1C] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                    {language === 'am' ? 'የበላይ የውሳኔና የሕግ አውጪ አካል' : 'SUPREME ECCLESIASTICAL AUTHORITY'}
-                  </span>
-                  <span className="bg-white/10 text-stone-300 text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
-                    Apostolic Canons & Fetha Negest
-                  </span>
+            {/* Main Content Area with Generous Padding (Matching Home Hero) */}
+            <div className="relative z-10 max-w-[1480px] mx-auto w-full px-6 sm:px-12 md:px-16 lg:px-[72px] pt-[130px] pb-[70px] flex-1 flex flex-col justify-center">
+              
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                
+                {/* Hero Left: Supreme Authority Typography */}
+                <div className="lg:col-span-8 space-y-5 max-w-2xl">
+                  
+                  {/* Overline Badge */}
+                  <div className="inline-flex items-center gap-2.5 text-xs font-mono font-bold uppercase tracking-[0.25em] text-[#E5C158]">
+                    <span className="w-6 h-0.5 bg-[#E5C158] rounded-full" />
+                    <span>SUPREME ECCLESIASTICAL AUTHORITY</span>
+                  </div>
+
+                  {/* Dual Geez & English Main Titles in Signature Gold */}
+                  <div className="space-y-1.5">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black font-geez text-[#FAF7F2] tracking-tight leading-[1.1] drop-shadow-md">
+                      ቅዱስ ሲኖዶስ
+                    </h1>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold font-serif text-[#E5C158] tracking-tight drop-shadow-md">
+                      (The Holy Synod)
+                    </h2>
+                  </div>
+
+                  {/* Gold Filigree Orthodox Cross Ornament */}
+                  <div className="flex items-center gap-3 py-1 text-[#E5C158]">
+                    <div className="w-16 h-px bg-gradient-to-r from-transparent to-[#E5C158]" />
+                    <span className="text-lg font-geez">✞</span>
+                    <div className="w-16 h-px bg-gradient-to-l from-transparent to-[#E5C158]" />
+                  </div>
+
+                  {/* Description with Generous Line-Height & Padding */}
+                  <p className="text-xs sm:text-sm md:text-base text-[#F0E6D2] font-sans font-normal leading-relaxed max-w-xl">
+                    The Holy Synod is the supreme legislative, judicial, and pastoral authority of the Ethiopian Orthodox Tewahedo Church. Presided over by His Holiness the Catholicos Patriarch, it unites all consecrated archbishops and bishops worldwide to safeguard orthodox dogma, legislate church canons, appoint hierarchs, and guide over 60 million faithful.
+                  </p>
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-geez leading-tight">
-                  ቅዱስ ሲኖዶስ (The Holy Synod)
-                </h1>
-                <p className="text-sm md:text-base text-stone-200 leading-relaxed max-w-3xl">
-                  {language === 'am'
-                    ? 'ቅዱስ ሲኖዶስ የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ከፍተኛው መንፈሳዊና ሕጋዊ አስተዳዳሪ አካል ነው። በብፁዕ ወቅዱስ ፓትርያርኩ ፕሬዚዳንትነት በሀገር ውስጥና በመላው ዓለም የሚገኙ ሊቃነ ጳጳሳትና ኤጲስ ቆጶሳትን በሙሉ ያቀፈ ሲሆን፣ በዓመት ሁለት ጊዜ በዋና ምልዓተ ጉባኤ (በጥቅምትና በግንቦት) ይሰበሰባል።'
-                    : 'The Holy Synod is the supreme legislative, judicial, and pastoral authority of the Ethiopian Orthodox Tewahedo Church. Presided over by His Holiness the Catholicos Patriarch, it unites all consecrated archbishops and bishops worldwide to safeguard orthodox dogma, legislate church canons, appoint hierarchs, and guide over 60 million faithful.'}
-                </p>
+                {/* Hero Right: Glassmorphic Assembly Chamber Badge Card */}
+                <div className="lg:col-span-4 flex justify-start lg:justify-end">
+                  <div className="bg-[#030C12]/85 backdrop-blur-md p-6 sm:p-8 rounded-3xl border-2 border-[#C8A84B]/50 text-center space-y-3.5 max-w-xs w-full shadow-2xl">
+                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#C8A84B] to-[#E5C158] mx-auto flex items-center justify-center text-[#030C12] shadow-lg">
+                      <ShieldCheck className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="font-bold text-[#E5C158] font-geez text-xl">ቅዱስ ሲኖዶስ</h3>
+                      <p className="text-xs text-[#E5C158] font-bold font-serif">Holy Synod Assembly Chamber</p>
+                      <p className="text-xs text-[#D1D5DB] pt-1 font-sans">Patriarchate Headquarters, Addis Ababa</p>
+                    </div>
+                  </div>
+                </div>
+
               </div>
 
-              <div className="lg:col-span-4 flex justify-center">
-                <div className="bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 text-center space-y-3 max-w-xs w-full shadow-xl">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#C8A84B] to-[#9E7F1E] mx-auto flex items-center justify-center text-white shadow-md">
-                    <ShieldCheck className="w-9 h-9" />
+            </div>
+
+            {/* ── ATTACHED 4-PILLAR AUTHORITY NAVIGATION BAR ── */}
+            <div className="relative z-10 w-full max-w-[1480px] mx-auto px-6 sm:px-12 md:px-16 lg:px-[72px] pb-8 sm:pb-12">
+              <div className="bg-[#030C12]/95 backdrop-blur-md rounded-2xl border border-[#C8A84B]/40 p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-[#C8A84B]/30 shadow-2xl">
+
+                {/* Pillar 1 */}
+                <div className="flex items-center gap-3.5 px-3 pt-2 sm:pt-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#0B2319] border border-[#E5C158]/50 flex items-center justify-center text-[#E5C158] shrink-0">
+                    <span className="text-xl font-geez">†</span>
                   </div>
                   <div>
-                    <h3 className="font-bold text-white font-geez text-base">መንበረ ሲኖዶስ</h3>
-                    <p className="text-xs text-[#D4AF37] font-semibold">Holy Synod Assembly Chamber</p>
-                    <p className="text-[11px] text-stone-300 pt-1">Patriarchate Headquarters, Addis Ababa</p>
+                    <h4 className="font-bold text-xs sm:text-sm text-[#FAF7F2] font-geez">ፓትርያርክ ፕሬዚዳንት</h4>
+                    <p className="text-xs text-[#E5C158] font-sans font-semibold">Patriarchal Presidency</p>
                   </div>
                 </div>
+
+                {/* Pillar 2 */}
+                <div className="flex items-center gap-3.5 px-3 pt-2 sm:pt-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#0B2319] border border-[#E5C158]/50 flex items-center justify-center text-[#E5C158] shrink-0">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-[#FAF7F2] font-geez">በየዓመቱ ጠቅላላ ጉባኤ</h4>
+                    <p className="text-xs text-[#E5C158] font-sans font-semibold">Biannual Plenary Assembly</p>
+                  </div>
+                </div>
+
+                {/* Pillar 3 */}
+                <div className="flex items-center gap-3.5 px-3 pt-2 sm:pt-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#0B2319] border border-[#E5C158]/50 flex items-center justify-center text-[#E5C158] shrink-0">
+                    <ShieldCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-[#FAF7F2] font-geez">ቋሚ ኤጲስቆጶሳት ሲኖዶስ</h4>
+                    <p className="text-xs text-[#E5C158] font-sans font-semibold">Standing Executive Synod</p>
+                  </div>
+                </div>
+
+                {/* Pillar 4 */}
+                <div className="flex items-center gap-3.5 px-3 pt-2 sm:pt-0">
+                  <div className="w-11 h-11 rounded-xl bg-[#0B2319] border border-[#E5C158]/50 flex items-center justify-center text-[#E5C158] shrink-0">
+                    <Scale className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm text-[#FAF7F2] font-geez">መንፈሳዊ ፍርድ ቤት</h4>
+                    <p className="text-xs text-[#E5C158] font-sans font-semibold">Chancellery &amp; Spiritual Court</p>
+                  </div>
+                </div>
+
               </div>
             </div>
 
-            {/* How the Synod Functions - 4 Structural Pillars */}
-            <div className="relative z-10 space-y-4">
-              <h3 className="text-base font-bold text-[#D4AF37] uppercase tracking-wider flex items-center gap-2">
-                <Layers className="w-4 h-4" />
-                <span>Ecclesiastical Structure & Functional Organs</span>
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white/5 border border-white/10 hover:border-[#C8A84B]/60 p-5 rounded-2xl transition-all space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#C8A84B]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xs">
-                    ፩
-                  </div>
-                  <h4 className="font-bold text-white font-geez text-sm">የፓትርያርኩ ፕሬዚዳንትነት</h4>
-                  <p className="text-xs font-semibold text-[#D4AF37]">Patriarchal Presidency</p>
-                  <p className="text-xs text-stone-300 leading-relaxed pt-1">
-                    His Holiness the Catholicos Patriarch convenes, moderates, and ratifies all synodal sessions and official pastoral decrees.
-                  </p>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 hover:border-[#C8A84B]/60 p-5 rounded-2xl transition-all space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#C8A84B]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xs">
-                    ፪
-                  </div>
-                  <h4 className="font-bold text-white font-geez text-sm">ምልዓተ ጉባኤ (ጥቅምትና ግንቦት)</h4>
-                  <p className="text-xs font-semibold text-[#D4AF37]">Biannual Plenary Assembly</p>
-                  <p className="text-xs text-stone-300 leading-relaxed pt-1">
-                    Full assembly of all global bishops in Autumn (Tikimt) and Spring (Ginbot) for major canonical and administrative legislation.
-                  </p>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 hover:border-[#C8A84B]/60 p-5 rounded-2xl transition-all space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#C8A84B]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xs">
-                    ፫
-                  </div>
-                  <h4 className="font-bold text-white font-geez text-sm">ቋሚ ቅዱስ ሲኖዶስ</h4>
-                  <p className="text-xs font-semibold text-[#D4AF37]">Standing Executive Synod</p>
-                  <p className="text-xs text-stone-300 leading-relaxed pt-1">
-                    Chaired weekly by the Patriarch, General Manager, and selected Metropolitans for immediate episcopal and diocesan oversight.
-                  </p>
-                </div>
-
-                <div className="bg-white/5 border border-white/10 hover:border-[#C8A84B]/60 p-5 rounded-2xl transition-all space-y-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#C8A84B]/20 text-[#D4AF37] flex items-center justify-center font-bold text-xs">
-                    ፬
-                  </div>
-                  <h4 className="font-bold text-white font-geez text-sm">ጠቅላይ ቤተ ክህነትና ፍርድ ቤት</h4>
-                  <p className="text-xs font-semibold text-[#D4AF37]">Chancellery & Spiritual Court</p>
-                  <p className="text-xs text-stone-300 leading-relaxed pt-1">
-                    Directs departments of evangelism, monastic preservation, youth ministries, and canonical discipline via Fetha Negest.
-                  </p>
-                </div>
-              </div>
-            </div>
           </section>
 
-          {/* 2. SYNOD MEMBERS DIRECTORY: Grid/List with Region & Search */}
-          <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-6">
-              <div className="space-y-1">
-                <span className="badge-gold text-[10px] uppercase font-bold">HIERARCHS DIRECTORY</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-geez flex items-center gap-3">
-                  <Users className="w-6 h-6 text-[#855B09]" />
-                  <span>{language === 'am' ? 'የቅዱስ ሲኖዶስ አባላት ሊቃነ ጳጳሳት' : 'Holy Synod Members Directory'}</span>
-                </h2>
-                <p className="text-sm text-[#6B7280]">
-                  Consecrated archbishops, metropolitans, and diocesan bishops across Ethiopia and the diaspora.
-                </p>
-              </div>
+          {/* Inner Content Container for Remaining Synod Sections */}
+          <div className="max-w-[1480px] mx-auto px-6 sm:px-12 md:px-16 lg:px-[72px] space-y-12">
 
-              {/* Region Filter Buttons */}
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+          {/* 2. SYNOD MEMBERS DIRECTORY: Horizontal List Rows */}
+          <section className="bg-white p-6 sm:p-10 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
+            {/* Top Toolbar: Filter Tabs on Left, Search on Right */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-6">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none py-1">
                 {(['All', 'Patriarchate Administration', 'Ethiopia', 'Diaspora', 'Holy Land & Foreign'] as const).map((r) => (
                   <button
                     key={r}
                     onClick={() => setSelectedSynodRegion(r)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                    className={`px-4 py-2 rounded-xl text-xs font-sans font-bold transition-all whitespace-nowrap ${
                       selectedSynodRegion === r
-                        ? 'bg-[#C8A84B] text-[#1A2C1C]'
-                        : 'text-[#6B7280] hover:bg-[#FAF8F3]'
+                        ? 'bg-[#0B3B2B] text-white shadow-sm'
+                        : 'text-[#5A462A] hover:bg-[#FAF8F3] hover:text-[#0B3B2B]'
                     }`}
                   >
                     {r}
                   </button>
                 ))}
               </div>
+              <div className="relative w-full lg:w-80">
+                <input
+                  type="text"
+                  placeholder="Search bishop by name, title, or diocese..."
+                  value={synodSearchQuery}
+                  onChange={(e) => setSynodSearchQuery(e.target.value)}
+                  className="w-full pl-4 pr-10 py-2.5 rounded-xl border border-[#D5C9B3] text-xs focus:outline-none focus:border-[#0B3B2B] bg-[#FAF8F3] text-[#2C1D07]"
+                />
+                <Search className="w-4 h-4 text-[#855B09] absolute right-3.5 top-1/2 -translate-y-1/2" />
+              </div>
             </div>
 
-            {/* Search Box */}
-            <div className="relative max-w-md">
-              <Search className="w-4 h-4 text-[#855B09] absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search bishop by name, title, or diocese..."
-                value={synodSearchQuery}
-                onChange={(e) => setSynodSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E6DFD1] text-xs focus:outline-none focus:border-[#C8A84B] bg-[#FAF8F3]"
-              />
-            </div>
-
-            {/* Synod Members Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Synod Members Horizontal List Rows */}
+            <div className="divide-y divide-[#EFE8D8]">
               {MOCK_SYNOD_MEMBERS
                 .filter((member) => {
                   const matchesRegion = selectedSynodRegion === 'All' || member.region === selectedSynodRegion;
-                  const matchesQuery = 
+                  const matchesQuery =
                     member.nameEnglish.toLowerCase().includes(synodSearchQuery.toLowerCase()) ||
                     member.nameAmharic.includes(synodSearchQuery) ||
                     member.dioceseEnglish.toLowerCase().includes(synodSearchQuery.toLowerCase()) ||
                     member.roleEnglish.toLowerCase().includes(synodSearchQuery.toLowerCase());
                   return matchesRegion && matchesQuery;
                 })
-                .map((member) => (
-                  <div
-                    key={member.id}
-                    onClick={() => setSelectedSynodMember(member)}
-                    className="bg-[#FAF8F3] hover:bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer flex flex-col justify-between group"
-                  >
-                    <div className="h-44 bg-gradient-to-tr from-[#1A3A5C] to-[#0E1F36] relative overflow-hidden">
-                      <img
-                        src={member.photoUrl}
-                        alt={member.nameEnglish}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-95"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
-                        <span className="badge-gold text-[9px] uppercase font-bold">
-                          {member.region}
-                        </span>
+                .map((member) => {
+                  const locationStr =
+                    member.id === 'sm-mathias'  ? 'Addis Ababa, Ethiopia' :
+                    member.id === 'sm-abraham'  ? 'Bahir Dar, Ethiopia' :
+                    member.id === 'sm-petros'   ? 'New York, USA' :
+                    member.id === 'sm-fanuel'   ? 'Washington D.C., USA' :
+                    member.id === 'sm-samuel'   ? 'Addis Ababa, Ethiopia' :
+                    member.id === 'sm-antonios' ? 'London, UK' :
+                    member.id === 'sm-enbakom'  ? 'Jerusalem, Holy Land' :
+                    member.id === 'sm-markos'   ? 'Sydney, Australia' :
+                    member.region === 'Ethiopia' ? 'Ethiopia' :
+                    member.region === 'Diaspora' ? 'Diaspora Jurisdiction' :
+                    'Patriarchate Headquarters';
+
+                  const displayRole =
+                    member.id === 'sm-mathias'  ? 'Patriarch of Ethiopia' :
+                    member.id === 'sm-abraham'  ? 'Chief Executive Administrator' :
+                    member.id === 'sm-petros'   ? 'General Secretary of the Holy Synod' :
+                    member.id === 'sm-fanuel'   ? 'Standing Commission on Foreign Relations' :
+                    member.id === 'sm-samuel'   ? 'Metropolitan' :
+                    member.id === 'sm-markos'   ? 'Archbishop' :
+                    member.roleEnglish;
+
+                  return (
+                    <div
+                      key={member.id}
+                      onClick={() => setSelectedSynodMember(member)}
+                      className="py-4 sm:py-5 px-3 rounded-2xl hover:bg-[#FAF8F3] transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+                    >
+                      {/* Left: Circular avatar + Name / Diocese */}
+                      <div className="flex items-center gap-4 md:w-5/12 min-w-0">
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border-2 border-[#C8A84B] shadow shrink-0 bg-[#FAF8F3]">
+                          <img
+                            src={member.photoUrl}
+                            alt={member.nameEnglish}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <h3 className="font-bold text-sm sm:text-base text-[#2C1D07] font-serif group-hover:text-[#855B09] transition-colors truncate">
+                            {member.nameEnglish}
+                          </h3>
+                          <div className="text-xs font-semibold text-[#855B09] font-serif truncate">
+                            {displayRole}
+                          </div>
+                          <div className="text-[11px] text-[#6B5A40] font-sans truncate">
+                            <span className="font-semibold text-[#4A3B22]">Diocese:</span> {member.dioceseEnglish}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Middle: Jurisdiction icon + Region / Location */}
+                      <div className="flex items-center gap-3 md:w-3/12 pl-[4.5rem] md:pl-0">
+                        <div className="w-9 h-9 rounded-xl bg-[#F4F0E8] border border-[#E2D8C7] flex items-center justify-center shrink-0">
+                          {(member.region === 'Diaspora' || member.region === 'Holy Land & Foreign') ? (
+                            <Globe className="w-4 h-4 text-[#0B3B2B]" />
+                          ) : (
+                            <Landmark className="w-4 h-4 text-[#0B3B2B]" />
+                          )}
+                        </div>
+                        <div className="min-w-0 space-y-0.5">
+                          <div className="text-xs font-bold text-[#2C1D07] font-sans truncate">{member.region}</div>
+                          <div className="text-[11px] text-[#6B5A40] font-sans truncate">{locationStr}</div>
+                        </div>
+                      </div>
+
+                      {/* Right: Synod role text + arrow button */}
+                      <div className="flex items-center justify-between md:justify-end gap-4 md:w-4/12 pl-[4.5rem] md:pl-0 border-t md:border-t-0 pt-2 md:pt-0 border-[#EFE8D8]">
+                        <div className="hidden lg:block border-l border-[#E2D8C7] pl-5">
+                          <div className="text-xs font-semibold text-[#855B09] font-serif leading-tight">
+                            {member.roleEnglish}
+                          </div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-white group-hover:bg-[#0B3B2B] border border-[#D5C9B3] group-hover:border-[#0B3B2B] flex items-center justify-center text-[#855B09] group-hover:text-white transition-all shrink-0 ml-auto md:ml-4 shadow-sm">
+                          <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                        </div>
                       </div>
                     </div>
-
-                    <div className="p-4 space-y-2 flex-1 flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-bold text-[#2C1D07] font-geez text-base group-hover:text-[#855B09] transition-colors">
-                          {member.nameAmharic}
-                        </h3>
-                        <h4 className="text-xs font-semibold text-[#855B09]">{member.nameEnglish}</h4>
-                        <p className="text-[11px] text-[#6B7280] line-clamp-2 pt-1">
-                          <strong>Diocese:</strong> {member.dioceseEnglish}
-                        </p>
-                      </div>
-
-                      <div className="pt-2 border-t border-[#E6DFD1] flex items-center justify-between text-[10px] text-[#855B09] font-bold">
-                        <span>{member.roleEnglish}</span>
-                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
 
             {/* Member Detail Modal */}
@@ -1582,6 +1813,7 @@ export const OurChurchView: React.FC = () => {
               </div>
             )}
           </section>
+          </div>
         </div>
       )}
 
@@ -1589,13 +1821,13 @@ export const OurChurchView: React.FC = () => {
           VIEW 4: Church History (Timeline, Key Figures, Independence, Doctrine, Fetha Negest)
           ========================================================================= */}
       {subSection === 'history' && (
-        <div className="space-y-14 animate-fadeIn">
+        <div className="space-y-14 animate-fadeIn -mt-8 -mx-4 sm:-mx-8 lg:-mx-12">
           {/* History Hero */}
-          <section className="bg-gradient-to-br from-[#2C1D07] via-[#3D2200] to-[#1C1205] rounded-3xl border-2 border-[#C8A84B] shadow-2xl p-8 md:p-12 text-white relative overflow-hidden space-y-6">
+          <section className="relative w-full bg-gradient-to-br from-[#2C1D07] via-[#3D2200] to-[#1C1205] border-b-2 border-[#C8A84B]/60 shadow-2xl text-white overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-[#C8A84B]/20 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute inset-0 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
 
-            <div className="relative z-10 max-w-4xl space-y-4">
+            <div className="relative z-10 max-w-[1480px] mx-auto w-full px-6 sm:px-12 md:px-16 lg:px-[72px] pt-[130px] pb-[70px] space-y-4">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="bg-[#C8A84B] text-[#1A2C1C] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
                   {language === 'am' ? 'ባለ ሁለት ሺህ ዓመት ታሪክ' : 'TWO MILLENNIA OF UNBROKEN FAITH'}
@@ -1605,16 +1837,19 @@ export const OurChurchView: React.FC = () => {
                 </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-geez leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-white font-geez leading-tight">
                 ታሪከ ቤተ ክርስቲያን (Church History)
               </h1>
-              <p className="text-sm md:text-base text-stone-200 leading-relaxed">
+              <p className="text-sm md:text-base text-stone-200 leading-relaxed max-w-3xl">
                 {language === 'am'
                   ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን ታሪክ ከአፍሪካ ጥንታዊው ክርስቲያናዊ ቅርስ ጋር የተሳሰረ ነው። በሐዋርያው ቅዱስ ፊልጶስ የተጠመቀው የንግሥት ህንደኬ ጃንደረባ፣ የንጉሥ ኢዛና እና የቅዱስ ፍሬምናጦስ ዘመነ አክሱም፣ የዘጠኙ ቅዱሳን ገዳማዊ ተጋድሎ፣ የቅዱስ ያሬድ ዜማ፣ የላሊበላ ፍልፍል አብያተ ክርስቲያናት እና የ፲፱፻፶፩ ዓ.ም. ራስ ገዝነት ታላላቅ ምዕራፎች ናቸው።'
                   : 'From the baptism of the royal treasurer by Saint Philip in 34 AD (Acts 8) to King Ezana’s Aksum, Saint Yared’s sacred melodies, Lalibela’s rock-hewn wonders, the 17th-century defense of Cyrillian faith in Gondar, 1959 autocephaly, and today’s worldwide digital ministry.'}
               </p>
             </div>
           </section>
+
+          {/* Inner Content Container for History Subsections */}
+          <div className="max-w-[1480px] mx-auto px-6 sm:px-12 md:px-16 lg:px-[72px] space-y-12">
 
           {/* 1. INTERACTIVE TIMELINE: 4th Century to Present */}
           <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-8">
@@ -1951,804 +2186,26 @@ export const OurChurchView: React.FC = () => {
               </div>
             </div>
           </section>
+
+          </div>
         </div>
       )}
 
       {/* =========================================================================
-          VIEW 5: Synaxarium Saints & Commemorations
+          VIEW 5: Synaxarium Saints & Commemorations (Holy Saints & Righteous Fathers)
           ========================================================================= */}
       {subSection === 'saints' && (
-        <div className="space-y-12 animate-fadeIn">
-          {/* 1. SAINTS HERO */}
-          <section className="bg-gradient-to-br from-[#2C1D07] via-[#3D2200] to-[#1C1205] rounded-3xl border-2 border-[#C8A84B] shadow-2xl p-8 md:p-12 text-white relative overflow-hidden space-y-6">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#C8A84B]/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
-
-            <div className="relative z-10 max-w-4xl space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-[#C8A84B] text-[#1A2C1C] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                  {language === 'am' ? 'መጽሐፈ ስንክሳር' : 'THE SYNAXARIUM OF THE SAINTS'}
-                </span>
-                <span className="bg-white/10 text-stone-300 text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
-                  Liturgical Calendar of Saints & Martyrs
-                </span>
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-geez leading-tight">
-                ቅዱሳን ወሰማዕታት (Holy Saints & Fathers)
-              </h1>
-              <p className="text-sm md:text-base text-stone-200 leading-relaxed">
-                {language === 'am'
-                  ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በየዕለቱ የቅዱሳንን፣ የሰማዕታትን፣ የሐዋርያትን እና የአበውን በዓላት በስንክሳር ታስባለች። እመቤታችን ቅድስት ድንግል ማርያም፣ ሊቀ ሰማዕታት ቅዱስ ጊዮርጊስ፣ አቡነ ተክለ ሃይማኖት፣ ቅዱስ ያሬድ እና ሌሎችም ቅዱሳን በጸሎታቸውና በቃል ኪዳናቸው ይታሰባሉ።'
-                  : 'Commemorating the righteous ascetics, holy martyrs, apostles, and monastic luminaries whose prayers, miracles, and covenants preserve the faith of the Ethiopian Orthodox Tewahedo Church.'}
-              </p>
-            </div>
-          </section>
-
-          {/* 2. DAILY SAINT ("Saint of the Day" / የዕለቱ ቅዱስ) */}
-          <section className="bg-gradient-to-br from-[#FFF8E7] via-white to-[#FFF5DB] p-8 rounded-3xl border-2 border-[#D4AF37] shadow-lg relative overflow-hidden space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#C8A84B] text-[#1A2C1C] flex items-center justify-center shadow-md">
-                  <Sun className="w-6 h-6 animate-spin-slow" />
-                </div>
-                <div>
-                  <span className="badge-gold text-[10px] uppercase font-bold">TODAY'S COMMEMORATION</span>
-                  <h2 className="text-xl sm:text-2xl font-black text-[#2C1D07] font-geez">
-                    የዕለቱ ቅዱስ (Saint of the Day)
-                  </h2>
-                </div>
-              </div>
-
-              <div className="text-xs font-mono font-bold text-[#855B09] bg-white px-3 py-1.5 rounded-xl border border-[#E6DFD1] shadow-sm">
-                Today: {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • ወርሃ ነሐሴ (Nehase)
-              </div>
-            </div>
-
-            {/* Featured Daily Saint Card (Filseta / Nehase Fast commemoration) */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-4 relative group">
-                <div className="w-full h-72 rounded-2xl overflow-hidden border-2 border-[#C8A84B] shadow-md relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=800"
-                    alt="Holy Virgin Mary Assumption"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <span className="badge-gold text-[9px] mb-1 inline-block">THEOTOKOS • ጾመ ፍልሰታ</span>
-                    <h3 className="text-lg font-bold font-geez">እመቤታችን ቅድስት ድንግል ማርያም</h3>
-                    <p className="text-xs text-stone-200">The Glorious Assumption (Filseta)</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-8 space-y-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#855B09] font-geez bg-white px-2.5 py-0.5 rounded border border-[#E6DFD1]">
-                      ነሐሴ ፲፮ (Nehase 16)
-                    </span>
-                    <span className="text-xs text-[#6B7280]">Annual Feast Day</span>
-                  </div>
-                  <h3 className="text-2xl font-black text-[#2C1D07] font-serif">
-                    Dormition, Resurrection & Bodily Assumption of the Theotokos
-                  </h3>
-                </div>
-
-                <p className="text-xs sm:text-sm text-[#4A3B22] leading-relaxed">
-                  During the holy 16-day Fast of Filseta (ጾመ ፍልሰታ), the faithful across all Ethiopian churches gather at dawn for daily Eucharistic Liturgies celebrating the resurrection and heavenly translation of the Holy Virgin Mary's body to Paradise.
-                </p>
-
-                {/* Daily Synaxarium Excerpt & Hymn */}
-                <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E6DFD1] space-y-2">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#855B09]">
-                    <span className="flex items-center gap-1.5">
-                      <Music className="w-3.5 h-3.5" />
-                      Daily Ge'ez Hymn (የዕለቱ ማኅሌት)
-                    </span>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText('ተፈሥሒ ማርያም ድንግልተ ሥጋ ወሕሊና፡ ዘተወከፍኪ ቃልነ እምኀበ መልአክ በድንግልና።');
-                        setCopiedHymnId('daily-filseta');
-                        setTimeout(() => setCopiedHymnId(null), 2500);
-                      }}
-                      className="text-[11px] text-[#855B09] hover:text-[#2C1D07] flex items-center gap-1 font-semibold"
-                    >
-                      {copiedHymnId === 'daily-filseta' ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-                      <span>{copiedHymnId === 'daily-filseta' ? 'Copied' : 'Copy Hymn'}</span>
-                    </button>
-                  </div>
-                  <p className="font-geez text-xs sm:text-sm text-[#2C1D07] font-semibold leading-relaxed">
-                    "ተፈሥሒ ማርያም ድንግልተ ሥጋ ወሕሊና፡ ዘተወከፍኪ ቃልነ እምኀበ መልአክ በድንግልና።"
-                  </p>
-                  <p className="text-xs text-[#6B7280] italic">
-                    "Rejoice, O Virgin Mary, pure in flesh and mind, who received the archangel’s greeting in immaculate virginity."
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* 3. SYNAXARIUM (SENKESAR) SEARCH & CATEGORIES */}
-          <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-8">
-            <div className="space-y-6 border-b border-[#E6DFD1] pb-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="badge-gold text-[10px] uppercase font-bold">LITURGICAL CALENDAR ARCHIVE</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-serif flex items-center gap-3">
-                    <BookOpen className="w-6 h-6 text-[#855B09]" />
-                    <span>{language === 'am' ? 'መጽሐፈ ስንክሳር (የቅዱሳን ማውጫ)' : 'Synaxarium (Senkesar Archive)'}</span>
-                  </h2>
-                  <p className="text-sm text-[#6B7280]">
-                    Search and explore saint commemorations by category, month, and feast day.
-                  </p>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative w-full md:w-72">
-                  <Search className="w-4 h-4 text-[#855B09] absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={saintSearchQuery}
-                    onChange={(e) => setSaintSearchQuery(e.target.value)}
-                    placeholder={language === 'am' ? 'በስም ወይም በበዓል ፈልግ...' : 'Search saint name, feast...'}
-                    className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-[#C8A84B]"
-                  />
-                </div>
-              </div>
-
-              {/* Month Selector */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-[#855B09] uppercase tracking-wider">Filter by Ethiopian Month (የግዕዝ ወራት):</div>
-                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-                  {['All', 'Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir', 'Yekatit', 'Megabit', 'Miyazya', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m) => (
-                    <button
-                      key={m}
-                      onClick={() => setSynaxariumMonth(m)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                        synaxariumMonth === m
-                          ? 'bg-[#855B09] text-white shadow-sm'
-                          : 'bg-[#FAF8F3] text-[#4A3B22] hover:bg-[#FFF8E7] border border-[#E6DFD1]'
-                      }`}
-                    >
-                      {m}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Category Pills */}
-              <div className="space-y-2">
-                <div className="text-xs font-bold text-[#855B09] uppercase tracking-wider">Filter by Category:</div>
-                <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-                  {['All', 'Theotokos (St. Mary)', 'Apostles', 'Martyrs', 'Monks & Ascetics', 'Church Fathers', 'Ethiopian Saints'].map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => setSelectedSaintCategory(cat as any)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                        selectedSaintCategory === cat
-                          ? 'bg-[#C8A84B] text-[#1A2C1C]'
-                          : 'text-[#6B7280] hover:bg-[#FAF8F3]'
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 4. SAINT PROFILES & ICON GALLERY GRID */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {MOCK_SAINTS
-                .filter((saint) => {
-                  const matchesCategory = selectedSaintCategory === 'All' || saint.category === selectedSaintCategory;
-                  const matchesMonth = synaxariumMonth === 'All' || saint.ethiopianMonth === synaxariumMonth;
-                  const matchesSearch = !saintSearchQuery || 
-                    saint.nameEnglish.toLowerCase().includes(saintSearchQuery.toLowerCase()) ||
-                    saint.nameAmharic.includes(saintSearchQuery) ||
-                    saint.title.toLowerCase().includes(saintSearchQuery.toLowerCase()) ||
-                    saint.feastDay.toLowerCase().includes(saintSearchQuery.toLowerCase());
-                  return matchesCategory && matchesMonth && matchesSearch;
-                })
-                .map((saint) => (
-                  <div
-                    key={saint.id}
-                    onClick={() => setSelectedSaint(saint)}
-                    className="bg-[#FAF8F3] hover:bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all overflow-hidden cursor-pointer flex flex-col justify-between group space-y-4"
-                  >
-                    {/* Authentic Icon Top Image */}
-                    <div className="h-44 w-full relative overflow-hidden bg-stone-900">
-                      <img
-                        src={saint.iconUrl}
-                        alt={saint.nameEnglish}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute top-3 left-3">
-                        <span className="badge-gold text-[9px] shadow-sm">{saint.category}</span>
-                      </div>
-                      <div className="absolute bottom-3 left-3 right-3 text-white">
-                        <h3 className="text-lg font-bold font-geez group-hover:text-[#C8A84B] transition-colors line-clamp-1">
-                          {saint.nameAmharic}
-                        </h3>
-                        <p className="text-xs text-stone-300 font-semibold line-clamp-1">{saint.nameEnglish}</p>
-                      </div>
-                    </div>
-
-                    {/* Content Details */}
-                    <div className="px-5 space-y-3">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-xs font-mono font-bold text-[#855B09] bg-white px-2.5 py-0.5 rounded border border-[#E6DFD1]">
-                          {saint.feastDay}
-                        </span>
-                        <span className="text-[11px] text-[#6B7280]">{saint.century}</span>
-                      </div>
-
-                      <p className="text-xs text-[#4A3B22] line-clamp-3 leading-relaxed">
-                        {saint.shortBio}
-                      </p>
-
-                      <div className="text-[11px] text-[#855B09] bg-white p-2.5 rounded-lg border border-[#E6DFD1]">
-                        <strong>Origin / See:</strong> {saint.monasteryOrOrigin}
-                      </div>
-                    </div>
-
-                    {/* Card Footer */}
-                    <div className="p-4 bg-white border-t border-[#E6DFD1] flex items-center justify-between text-xs font-bold text-[#855B09]">
-                      <span className="flex items-center gap-1.5">
-                        <Music className="w-3.5 h-3.5" />
-                        Hymns & Miracles
-                      </span>
-                      <span className="group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                        View Profile <ChevronRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            {/* 5. SAINT DETAIL MODAL (Biography, Miracles, Prayers & Hymns) */}
-            {selectedSaint && (
-              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl max-w-2xl w-full border-2 border-[#C8A84B] shadow-2xl p-6 sm:p-8 space-y-6 animate-scaleUp max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-start justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="badge-gold text-[10px]">{selectedSaint.category}</span>
-                        <span className="text-xs font-mono text-[#855B09] font-bold">{selectedSaint.century}</span>
-                      </div>
-                      <h3 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-geez">{selectedSaint.nameAmharic}</h3>
-                      <p className="text-sm font-bold text-[#855B09]">{selectedSaint.nameEnglish}</p>
-                      <p className="text-xs text-[#6B7280] italic">{selectedSaint.title}</p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedSaint(null)}
-                      className="text-[#6B7280] hover:text-[#2C1D07] text-lg font-bold p-2"
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  <div className="space-y-5 text-xs sm:text-sm text-[#4A3B22]">
-                    {/* Feast & Origin Info */}
-                    <div className="bg-[#FAF8F3] p-4 rounded-xl border border-[#E6DFD1] grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-[10px] font-bold text-[#855B09] uppercase">FEAST DAY (የበዓል ቀን)</div>
-                        <div className="font-bold text-[#2C1D07] text-sm">{selectedSaint.feastDay} ({selectedSaint.gregorianDate})</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] font-bold text-[#855B09] uppercase">MONASTERY / ORIGIN</div>
-                        <div className="font-bold text-[#2C1D07] text-sm">{selectedSaint.monasteryOrOrigin}</div>
-                      </div>
-                    </div>
-
-                    {/* Biography */}
-                    <div>
-                      <h4 className="font-bold text-[#2C1D07] text-sm mb-1.5">Spiritual Life & Synaxarium Account</h4>
-                      <p className="leading-relaxed">{selectedSaint.shortBio}</p>
-                    </div>
-
-                    {/* Miracles */}
-                    {selectedSaint.miracles && selectedSaint.miracles.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-bold text-[#2C1D07] text-sm flex items-center gap-2">
-                          <Flame className="w-4 h-4 text-[#C8A84B]" />
-                          <span>Notable Miracles & Acts (ተአምራት)</span>
-                        </h4>
-                        <ul className="space-y-1.5 bg-[#FFF8E7] p-3.5 rounded-xl border border-[#E6DFD1]">
-                          {selectedSaint.miracles.map((m, idx) => (
-                            <li key={idx} className="flex items-start gap-2 text-xs text-[#4A3B22]">
-                              <span className="text-[#855B09] font-bold">•</span>
-                              <span>{m}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Associated Prayer / Hymn */}
-                    {selectedSaint.prayersAndHymns && (
-                      <div className="space-y-2 bg-[#FAF8F3] p-4 rounded-xl border border-[#D4AF37]">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-bold text-[#855B09] text-xs uppercase tracking-wider flex items-center gap-1.5">
-                            <Music className="w-3.5 h-3.5" />
-                            <span>{selectedSaint.prayersAndHymns.title}</span>
-                          </h4>
-                          <button
-                            onClick={() => {
-                              navigator.clipboard.writeText(`${selectedSaint.prayersAndHymns.geezText}\n${selectedSaint.prayersAndHymns.amharicText}`);
-                              setCopiedHymnId(selectedSaint.id);
-                              setTimeout(() => setCopiedHymnId(null), 2500);
-                            }}
-                            className="text-[11px] text-[#855B09] hover:text-[#2C1D07] flex items-center gap-1 font-semibold"
-                          >
-                            {copiedHymnId === selectedSaint.id ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copiedHymnId === selectedSaint.id ? 'Copied' : 'Copy Prayer'}</span>
-                          </button>
-                        </div>
-                        <p className="font-geez text-sm text-[#2C1D07] font-semibold leading-relaxed pt-1">
-                          {selectedSaint.prayersAndHymns.geezText}
-                        </p>
-                        <p className="text-xs text-[#4A3B22] font-geez">
-                          {selectedSaint.prayersAndHymns.amharicText}
-                        </p>
-                        <p className="text-[11px] text-[#6B7280] italic">
-                          {selectedSaint.prayersAndHymns.englishTranslation}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Contributions */}
-                    <div>
-                      <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider mb-1">Legacy & Contributions</h4>
-                      <p className="leading-relaxed bg-white p-3 rounded-lg border border-[#E6DFD1] text-xs">
-                        {selectedSaint.contributions}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedSaint(null)}
-                    className="w-full btn-gold py-2.5 text-xs font-bold"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
+        <div className="animate-fadeIn -mt-8 -mx-4 sm:-mx-8 lg:-mx-12">
+          <SaintsDirectory />
         </div>
       )}
 
       {/* =========================================================================
-          VIEW 6: Dioceses & Global Administrations
+          VIEW 6: Dioceses & Global Administrations (All 40 Domestic Dioceses Directory)
           ========================================================================= */}
       {subSection === 'dioceses' && (
-        <div className="space-y-12 animate-fadeIn">
-          {/* 1. DIOCESES HERO */}
-          <section className="bg-gradient-to-br from-[#2C1D07] via-[#3D2200] to-[#1C1205] rounded-3xl border-2 border-[#C8A84B] shadow-2xl p-8 md:p-12 text-white relative overflow-hidden space-y-6">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#C8A84B]/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
-
-            <div className="relative z-10 max-w-4xl space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="bg-[#C8A84B] text-[#1A2C1C] text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
-                  {language === 'am' ? 'አህጉረ ስብከት' : 'GLOBAL METROPOLITAN SEES'}
-                </span>
-                <span className="bg-white/10 text-stone-300 text-[10px] font-semibold px-3 py-1 rounded-full border border-white/20">
-                  14+ Dioceses Across 5 Continents
-                </span>
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white font-geez leading-tight">
-                አህጉረ ስብከት (Dioceses & Archdioceses)
-              </h1>
-              <p className="text-sm md:text-base text-stone-200 leading-relaxed">
-                {language === 'am'
-                  ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በኢትዮጵያ፣ በቅድስት ሀገር ኢየሩሳሌም፣ በሰሜን አሜሪካ፣ በአውሮፓ፣ በአውስትራሊያና በካሪቢያን የሚገኙ ከ፲፬ በላይ ዓበይት አህጉረ ስብከቶችንና በሺዎች የሚቆጠሩ አብያተ ክርስቲያናትን በቅዱስ ሲኖዶስ አመራር ታስተዳድራለች።'
-                  : 'The Ethiopian Orthodox Tewahedo Church administers more than 14 primary domestic and international archdioceses spanning Ethiopia, the Holy Land (Jerusalem), North America, Western Europe, the Caribbean, and Australia.'}
-              </p>
-            </div>
-          </section>
-
-          {/* 2. DIASPORA DIOCESES SPOTLIGHT */}
-          <section className="bg-gradient-to-br from-[#FAF8F3] via-white to-[#FFF8E7] p-8 rounded-3xl border-2 border-[#C8A84B] shadow-md space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-              <div>
-                <span className="badge-gold text-[10px] uppercase font-bold">INTERNATIONAL PRESENCE</span>
-                <h2 className="text-xl sm:text-2xl font-black text-[#2C1D07] font-serif flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-[#855B09]" />
-                  <span>{language === 'am' ? 'የዲያስፖራ አህጉረ ስብከት' : 'Diaspora Archdioceses & Global Ministries'}</span>
-                </h2>
-              </div>
-              <button
-                onClick={() => {
-                  setSelectedDioceseRegion('Diaspora');
-                  setSelectedDiasporaSubRegion('All');
-                }}
-                className="text-xs font-bold text-[#855B09] hover:underline flex items-center gap-1 self-start sm:self-auto"
-              >
-                <span>View All Diaspora Sees</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[
-                { name: 'North America (East & Canada)', see: 'Washington, D.C. / Toronto', sub: 'North America', parishes: '95+ Parishes', icon: '🏛️' },
-                { name: 'Western United States', see: 'Los Angeles / Oakland', sub: 'North America', parishes: '65+ Parishes', icon: '☀️' },
-                { name: 'UK & Western Europe', see: 'London / Paris / Frankfurt', sub: 'Europe', parishes: '45+ Parishes', icon: '🏰' },
-                { name: 'Australia & New Zealand', see: 'Melbourne / Sydney / Auckland', sub: 'Australia & Oceania', parishes: '28+ Parishes', icon: '🌏' },
-              ].map((diaspora, idx) => (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    setSelectedDioceseRegion('Diaspora');
-                    setSelectedDiasporaSubRegion(diaspora.sub);
-                  }}
-                  className="bg-white p-4 rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2 group"
-                >
-                  <div className="text-2xl">{diaspora.icon}</div>
-                  <h3 className="font-bold text-xs sm:text-sm text-[#2C1D07] group-hover:text-[#855B09] transition-colors">
-                    {diaspora.name}
-                  </h3>
-                  <div className="text-[11px] text-[#6B7280]">{diaspora.see}</div>
-                  <div className="text-[10px] font-bold text-[#855B09] pt-1 border-t border-[#E6DFD1]">
-                    {diaspora.parishes}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 3. DIOCESE DIRECTORY: List, Search, and Region Filters */}
-          <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-8">
-            <div className="space-y-6 border-b border-[#E6DFD1] pb-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="badge-gold text-[10px] uppercase font-bold">DIRECTORY & SEES</span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-serif flex items-center gap-3">
-                    <Church className="w-6 h-6 text-[#855B09]" />
-                    <span>{language === 'am' ? 'የአህጉረ ስብከት ማውጫ' : 'Diocese Directory'}</span>
-                  </h2>
-                  <p className="text-sm text-[#6B7280]">
-                    Browse all domestic and diaspora archdioceses by geographical jurisdiction.
-                  </p>
-                </div>
-
-                {/* Search Bar */}
-                <div className="relative w-full md:w-80">
-                  <Search className="w-4 h-4 text-[#855B09] absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder={language === 'am' ? 'ሀገረ ስብከት፣ ከተማ ወይም ጳጳስ ፈልግ...' : 'Search diocese, city, bishop, cathedral...'}
-                    value={dioceseSearchQuery}
-                    onChange={(e) => setDioceseSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E6DFD1] text-xs focus:outline-none focus:border-[#C8A84B] bg-[#FAF8F3]"
-                  />
-                </div>
-              </div>
-
-              {/* Primary Region Tabs */}
-              <div className="flex flex-wrap items-center gap-2">
-                {(['All', 'Ethiopia', 'Diaspora', 'Historical See'] as const).map((region) => (
-                  <button
-                    key={region}
-                    onClick={() => {
-                      setSelectedDioceseRegion(region);
-                      setSelectedDiasporaSubRegion('All');
-                    }}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                      selectedDioceseRegion === region
-                        ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-sm'
-                        : 'text-[#6B7280] hover:bg-[#FAF8F3] border border-[#E6DFD1]'
-                    }`}
-                  >
-                    {region === 'Ethiopia' ? 'Ethiopian Sees (ሀገር ውስጥ)' : region === 'Diaspora' ? 'Diaspora Sees (ውጭ ሀገር)' : region === 'Historical See' ? 'Historical See (ኢየሩሳሌም)' : 'All Jurisdictions'}
-                  </button>
-                ))}
-              </div>
-
-              {/* Diaspora Sub-region filter when Diaspora selected */}
-              {(selectedDioceseRegion === 'Diaspora' || selectedDioceseRegion === 'All') && (
-                <div className="space-y-1.5 pt-1">
-                  <div className="text-[11px] font-bold text-[#855B09] uppercase tracking-wider">Filter by World Region:</div>
-                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
-                    {['All', 'North America', 'Europe', 'Australia & Oceania', 'Middle East', 'Caribbean & Latin America'].map((sub) => (
-                      <button
-                        key={sub}
-                        onClick={() => setSelectedDiasporaSubRegion(sub)}
-                        className={`px-3 py-1.5 rounded-xl text-[11px] font-semibold transition-all whitespace-nowrap ${
-                          selectedDiasporaSubRegion === sub
-                            ? 'bg-[#855B09] text-white shadow-sm'
-                            : 'bg-[#FAF8F3] text-[#4A3B22] hover:bg-[#FFF8E7] border border-[#E6DFD1]'
-                        }`}
-                      >
-                        {sub}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Diocese Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDioceses.map((diocese) => (
-                <div
-                  key={diocese.id}
-                  onClick={() => setSelectedDiocese(diocese)}
-                  className="bg-[#FAF8F3] hover:bg-white rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all p-6 space-y-4 cursor-pointer flex flex-col justify-between group"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="badge-gold text-[9px]">{diocese.region}</span>
-                      <span className="text-xs text-[#6B7280] flex items-center gap-1 font-mono">
-                        <MapPin className="w-3.5 h-3.5 text-[#C8A84B]" />
-                        {diocese.seeCity}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h3 className="text-lg font-bold text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors">
-                        {diocese.nameAmharic}
-                      </h3>
-                      <p className="text-xs font-semibold text-[#855B09]">{diocese.nameEnglish}</p>
-                    </div>
-
-                    <div className="bg-white p-3 rounded-xl border border-[#E6DFD1] space-y-1 text-xs">
-                      <div className="text-[#855B09] font-bold">Archbishop (ሊቀ ጳጳስ):</div>
-                      <div className="text-[#2C1D07] font-semibold font-geez">{diocese.archbishopAmharic}</div>
-                      <div className="text-[#6B7280] text-[11px]">{diocese.archbishopEnglish}</div>
-                    </div>
-
-                    <div className="text-xs text-[#6B7280]">
-                      <strong className="text-[#2C1D07]">Cathedral:</strong> {diocese.cathedral}
-                    </div>
-
-                    <p className="text-xs text-[#4A3B22] line-clamp-2 leading-relaxed">
-                      {diocese.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#E6DFD1] flex items-center justify-between text-xs text-[#6B7280]">
-                    <span className="font-semibold text-[#2C1D07]">{diocese.parishesCount} Parishes • {diocese.monasteriesCount} Monasteries</span>
-                    <span className="text-[#855B09] font-bold group-hover:translate-x-1 transition-transform flex items-center gap-1">
-                      Profile <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 4. DIOCESAN NEWS & ANNOUNCEMENTS */}
-          <section className="bg-white p-8 md:p-12 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-8">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-6">
-              <div className="space-y-1">
-                <span className="badge-gold text-[10px] uppercase font-bold">ECCLESIASTICAL DISPATCHES</span>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-serif flex items-center gap-3">
-                  <Newspaper className="w-6 h-6 text-[#855B09]" />
-                  <span>{language === 'am' ? 'የአህጉረ ስብከት ዜናዎችና ሁነቶች' : 'Diocesan News & Announcements'}</span>
-                </h2>
-                <p className="text-sm text-[#6B7280]">
-                  Recent pastoral visits, clergy ordinations, youth conferences, and sanctuary consecrations across all dioceses.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {MOCK_DIOCESAN_NEWS.map((news) => (
-                <div
-                  key={news.id}
-                  onClick={() => setSelectedDiocesanNews(news)}
-                  className="bg-[#FAF8F3] hover:bg-white p-6 rounded-2xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group space-y-4"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="badge-gold text-[9px]">{news.category}</span>
-                      <span className="text-xs font-mono text-[#855B09] bg-white px-2 py-0.5 rounded border border-[#E6DFD1]">
-                        {news.date}
-                      </span>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-[#855B09] uppercase">{news.dioceseName}</span>
-                      <h3 className="text-base sm:text-lg font-bold text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors pt-0.5">
-                        {news.titleAmharic}
-                      </h3>
-                      <h4 className="text-xs font-semibold text-[#4A3B22]">{news.title}</h4>
-                    </div>
-
-                    <p className="text-xs text-[#4A3B22] leading-relaxed">
-                      {news.summary}
-                    </p>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#E6DFD1] flex items-center justify-between text-xs font-bold text-[#855B09]">
-                    <span>Read Full Dispatch</span>
-                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Diocesan News Detail Modal */}
-            {selectedDiocesanNews && (
-              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl max-w-xl w-full border-2 border-[#C8A84B] shadow-2xl p-6 sm:p-8 space-y-6 animate-scaleUp">
-                  <div className="flex items-start justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-                    <div className="space-y-1">
-                      <span className="badge-gold text-[10px]">{selectedDiocesanNews.category} • {selectedDiocesanNews.dioceseName}</span>
-                      <h3 className="text-xl sm:text-2xl font-black text-[#2C1D07] font-geez">{selectedDiocesanNews.titleAmharic}</h3>
-                      <p className="text-xs font-bold text-[#855B09]">{selectedDiocesanNews.title}</p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedDiocesanNews(null)}
-                      className="text-[#6B7280] hover:text-[#2C1D07] text-lg font-bold p-2"
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  <div className="text-xs font-mono text-[#855B09] bg-[#FAF8F3] p-2.5 rounded-lg border border-[#E6DFD1]">
-                    Published: {selectedDiocesanNews.date}
-                  </div>
-
-                  <div className="space-y-3 text-xs sm:text-sm text-[#4A3B22]">
-                    <h4 className="font-bold text-[#2C1D07]">Executive Summary</h4>
-                    <p className="leading-relaxed bg-[#FFF8E7] p-3 rounded-lg border border-[#E6DFD1]">
-                      {selectedDiocesanNews.summary}
-                    </p>
-
-                    <h4 className="font-bold text-[#2C1D07]">Full Story</h4>
-                    <p className="leading-relaxed">{selectedDiocesanNews.fullStory}</p>
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedDiocesanNews(null)}
-                    className="w-full btn-gold py-2.5 text-xs font-bold"
-                  >
-                    Close Dispatch
-                  </button>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* 5. DIOCESE DETAIL PROFILE MODAL (/our-church/dioceses/[slug]) */}
-          {selectedDiocese && (
-            <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl max-w-2xl w-full border-2 border-[#C8A84B] shadow-2xl p-6 sm:p-8 space-y-6 animate-scaleUp max-h-[90vh] overflow-y-auto">
-                <div className="flex items-start justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="badge-gold text-[10px]">{selectedDiocese.region}</span>
-                      <span className="text-xs font-mono text-[#855B09] font-bold">See: {selectedDiocese.seeCity}</span>
-                    </div>
-                    <h3 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-geez">{selectedDiocese.nameAmharic}</h3>
-                    <p className="text-sm font-bold text-[#855B09]">{selectedDiocese.nameEnglish}</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedDiocese(null)}
-                    className="text-[#6B7280] hover:text-[#2C1D07] text-lg font-bold p-2"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div className="space-y-5 text-xs sm:text-sm text-[#4A3B22]">
-                  {/* Key Stats Bar */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    <div className="bg-[#FAF8F3] p-3 rounded-xl border border-[#E6DFD1]">
-                      <div className="text-[10px] font-bold text-[#855B09] uppercase">Parishes</div>
-                      <div className="font-bold text-[#2C1D07] text-base">{selectedDiocese.parishesCount}+ Parishes</div>
-                    </div>
-                    <div className="bg-[#FAF8F3] p-3 rounded-xl border border-[#E6DFD1]">
-                      <div className="text-[10px] font-bold text-[#855B09] uppercase">Monasteries</div>
-                      <div className="font-bold text-[#2C1D07] text-base">{selectedDiocese.monasteriesCount} Monasteries</div>
-                    </div>
-                    <div className="bg-[#FAF8F3] p-3 rounded-xl border border-[#E6DFD1] col-span-2 sm:col-span-1">
-                      <div className="text-[10px] font-bold text-[#855B09] uppercase">Consecration</div>
-                      <div className="font-bold text-[#2C1D07] text-xs sm:text-sm">{selectedDiocese.consecrationYear}</div>
-                    </div>
-                  </div>
-
-                  {/* Archbishop Card */}
-                  <div className="bg-gradient-to-br from-[#FFF8E7] to-[#FAF8F3] p-4 rounded-xl border border-[#D4AF37] space-y-1">
-                    <div className="text-[10px] font-bold text-[#855B09] uppercase tracking-wider">Metropolitan Archbishop (ሊቀ ጳጳስ)</div>
-                    <div className="font-bold text-[#2C1D07] text-base font-geez">{selectedDiocese.archbishopAmharic}</div>
-                    <div className="text-xs text-[#6B7280]">{selectedDiocese.archbishopEnglish}</div>
-                  </div>
-
-                  {/* Cathedral & History */}
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                        <Building className="w-3.5 h-3.5 text-[#855B09]" />
-                        Principal Cathedral & Chancellery
-                      </h4>
-                      <p className="bg-[#FAF8F3] p-3 rounded-lg border border-[#E6DFD1] font-semibold text-[#2C1D07]">
-                        {selectedDiocese.cathedral}
-                      </p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider mb-1">History & Jurisdiction Background</h4>
-                      <p className="leading-relaxed">{selectedDiocese.historySummary}</p>
-                    </div>
-                  </div>
-
-                  {/* Featured Parishes List */}
-                  {selectedDiocese.featuredParishes && selectedDiocese.featuredParishes.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider flex items-center gap-1.5">
-                        <Church className="w-3.5 h-3.5 text-[#855B09]" />
-                        Notable Parishes in This Diocese
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {selectedDiocese.featuredParishes.map((p, idx) => (
-                          <div key={idx} className="bg-[#FAF8F3] p-2.5 rounded-xl border border-[#E6DFD1] text-xs space-y-0.5">
-                            <div className="font-bold text-[#2C1D07]">{p.name}</div>
-                            <div className="text-[11px] text-[#855B09] font-geez">{p.nameAmharic}</div>
-                            <div className="text-[10px] text-[#6B7280]">{p.city} • Est. {p.established}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Contact Info */}
-                  <div className="bg-[#FAF8F3] p-4 rounded-xl border border-[#E6DFD1] space-y-2">
-                    <h4 className="font-bold text-[#855B09] text-xs uppercase tracking-wider">Chancellery Contact Information</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-3.5 h-3.5 text-[#855B09]" />
-                        <span>{selectedDiocese.contactInfo.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-3.5 h-3.5 text-[#855B09]" />
-                        <span>{selectedDiocese.contactInfo.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2 sm:col-span-2">
-                        <MapPin className="w-3.5 h-3.5 text-[#855B09]" />
-                        <span>{selectedDiocese.contactInfo.address}</span>
-                      </div>
-                      {selectedDiocese.contactInfo.website && (
-                        <div className="flex items-center gap-2 sm:col-span-2">
-                          <ExternalLink className="w-3.5 h-3.5 text-[#855B09]" />
-                          <a href={selectedDiocese.contactInfo.website} target="_blank" rel="noopener noreferrer" className="text-[#855B09] hover:underline font-semibold">
-                            {selectedDiocese.contactInfo.website}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3 pt-2 border-t border-[#E6DFD1]">
-                  <button
-                    onClick={() => {
-                      setSelectedDiocese(null);
-                      setActiveView('find-a-church');
-                    }}
-                    className="flex-1 btn-gold py-2.5 text-xs flex items-center justify-center gap-2 font-bold"
-                  >
-                    <Church className="w-4 h-4" />
-                    <span>Find Parishes in This Diocese</span>
-                  </button>
-                  <button
-                    onClick={() => setSelectedDiocese(null)}
-                    className="px-6 py-2.5 text-xs font-bold border border-[#E6DFD1] rounded-xl hover:bg-[#FAF8F3]"
-                  >
-                    Close Profile
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+        <div className="animate-fadeIn -mt-8 -mx-4 sm:-mx-8 lg:-mx-12">
+          <DiocesesDirectory />
         </div>
       )}
     </div>

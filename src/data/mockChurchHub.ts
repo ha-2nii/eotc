@@ -1,4 +1,4 @@
-export interface FeaturedParish {
+﻿export interface FeaturedParish {
   name: string;
   nameAmharic: string;
   city: string;
@@ -937,7 +937,7 @@ export const MOCK_SAINTS: SaintProfile[] = [
     century: '6th Century (505 – 571 AD)',
     iconUrl: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&q=80&w=600',
     monasteryOrOrigin: 'Aksum & Semien Mountains',
-    shortBio: 'Enlightened by the Holy Spirit through the songs of three heavenly birds, St. Yared created the 3 musical modes (Ge’ez, Ezel, Araray), the Diggwa hymnody, and sacred musical notations (Seraye), transforming church worship forever.',
+    shortBio: 'Enlightened by the Holy Spirit through the songs of three heavenly birds, St. Yared created the 3 musical modes (Ge’ez, Ezel, Araray), the Diggwa hymnody, and sacred musical notations (Seraye), transforming church sacred hymnody forever.',
     contributions: 'Composed the Diggwa, Tsome Diggwa, Me’eraf, Zimare, and Mewasiet liturgical books.',
     miracles: [
       'Chanted in heavenly ecstasy before King Gebre Meskel so profoundly that the king pierced Yared’s foot with his royal spear unnoticed.',
@@ -1399,5 +1399,6 @@ export const MOCK_HISTORICAL_FIGURES: HistoricalFigure[] = [
     iconUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&q=80&w=600',
   },
 ];
+
 
 
