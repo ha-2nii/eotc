@@ -34,7 +34,6 @@ import {
   BookOpen, 
   Globe, 
   Scroll, 
-  Layers, 
   Search, 
   Quote, 
   Copy, 

@@ -9,11 +9,11 @@ import { MOCK_CHURCHES } from '../data/mockChurches';
 import type { Church } from '../data/mockChurches';
 import { ServicesScheduleView } from '../components/find/ServicesScheduleView';
 import { EventsNearYouView } from '../components/find/EventsNearYouView';
+import { ChurchDetailView } from '../components/find/ChurchDetailView';
 import {
-  MapPin, Search, Navigation, Tv, Heart,
-  Phone, Mail, Globe, ChevronRight, X,
-  Loader2, Locate, Clock, Users,
-  ArrowRight, AlertCircle, Church as ChurchIcon,
+  MapPin, Search, ChevronRight, X,
+  Loader2, Locate, Clock,
+  AlertCircle,
   Compass, Calendar, CheckSquare, Square
 } from 'lucide-react';
 
@@ -43,7 +43,6 @@ const makePinIcon = (bgColor: string, crossColor: string, size = 32) =>
   });
 
 const greenChurchPin = makePinIcon('#0B3B2B', '#FFFFFF', 32);
-const goldSelectedPin = makePinIcon('#C8A84B', '#1A1208', 38);
 
 const userIcon = new L.DivIcon({
   className: '',
@@ -108,7 +107,7 @@ const POPULAR_LOCATIONS = [
 ];
 
 export const FindChurchView: React.FC = () => {
-  const { language, activeView, setActiveView } = useLanguage();
+  const { activeView, setActiveView } = useLanguage();
   const [activeSection, setActiveSection] = useState<'map' | 'services' | 'events'>(() => {
     if (activeView === 'find-a-church/services') return 'services';
     if (activeView === 'find-a-church/events') return 'events';
@@ -231,15 +230,20 @@ export const FindChurchView: React.FC = () => {
     setSingleFly({ pos: [church.lat, church.lng], zoom: 14 });
   };
 
-  const selectChurchFromList = (church: Church) => {
-    setSelectedChurch(church);
-    setSingleFly({ pos: [church.lat, church.lng], zoom: 14 });
-  };
-
   const routeLine: [[number, number], [number, number]] | null =
     userPos && nearestChurch ? [userPos, [nearestChurch.lat, nearestChurch.lng]] : null;
 
   const DEFAULT_CENTER: [number, number] = [9.0305, 38.7628]; // Addis Ababa coordinates
+
+  /* ── If a church is selected, show the 1:1 ChurchDetailView full page ── */
+  if (selectedChurch) {
+    return (
+      <ChurchDetailView
+        church={selectedChurch}
+        onBack={() => setSelectedChurch(null)}
+      />
+    );
+  }
 
   return (
     <div className="bg-[#FAF7F2] text-[#2C1D07] min-h-screen font-serif antialiased pb-20">
@@ -437,51 +441,31 @@ export const FindChurchView: React.FC = () => {
               <div className="flex items-center overflow-x-auto border-t border-white/10 text-xs font-sans whitespace-nowrap">
                 <button
                   onClick={() => navigateTo('map')}
-                  className={`flex items-center gap-2 py-4 px-6 font-bold transition-all relative cursor-pointer ${
-                    activeSection === 'map'
-                      ? 'text-[#E5C158]'
-                      : 'text-stone-300 hover:text-white'
-                  }`}
+                  className="flex items-center gap-2 py-4 px-6 font-bold transition-all relative cursor-pointer text-[#E5C158]"
                 >
                   <MapPin className="w-4 h-4" />
                   <span>Church Map</span>
-                  {activeSection === 'map' && (
-                    <span className="absolute bottom-0 left-6 right-6 h-[2.5px] bg-[#E5C158]" />
-                  )}
+                  <span className="absolute bottom-0 left-6 right-6 h-[2.5px] bg-[#E5C158]" />
                 </button>
 
                 <span className="h-4 w-[1px] bg-white/15" />
 
                 <button
                   onClick={() => navigateTo('services')}
-                  className={`flex items-center gap-2 py-4 px-6 font-bold transition-all relative cursor-pointer ${
-                    activeSection === 'services'
-                      ? 'text-[#E5C158]'
-                      : 'text-stone-300 hover:text-white'
-                  }`}
+                  className="flex items-center gap-2 py-4 px-6 font-bold transition-all relative cursor-pointer text-stone-300 hover:text-white"
                 >
                   <Clock className="w-4 h-4" />
                   <span>Services</span>
-                  {activeSection === 'services' && (
-                    <span className="absolute bottom-0 left-6 right-6 h-[2.5px] bg-[#E5C158]" />
-                  )}
                 </button>
 
                 <span className="h-4 w-[1px] bg-white/15" />
 
                 <button
                   onClick={() => navigateTo('events')}
-                  className={`flex items-center gap-2 py-4 px-6 font-bold transition-all relative cursor-pointer ${
-                    activeSection === 'events'
-                      ? 'text-[#E5C158]'
-                      : 'text-stone-300 hover:text-white'
-                  }`}
+                  className="flex items-center gap-2 py-4 px-6 font-bold transition-all relative cursor-pointer text-stone-300 hover:text-white"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Events</span>
-                  {activeSection === 'events' && (
-                    <span className="absolute bottom-0 left-6 right-6 h-[2.5px] bg-[#E5C158]" />
-                  )}
                 </button>
               </div>
 
@@ -509,216 +493,84 @@ export const FindChurchView: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fadeIn">
             
             {/* ─────────────────────────────────────────────────────────
-                LEFT COLUMN: Either Church List OR Inline Detail Panel
+                LEFT COLUMN: Church List
                 ───────────────────────────────────────────────────────── */}
             <div className="lg:col-span-5 space-y-4">
+              {/* Header row: Title + Sort Dropdown */}
+              <div className="flex items-center justify-between pb-3 border-b border-[#E7DFD1]">
+                <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#1C1814]">
+                  Nearby Churches <span className="text-sm font-sans font-normal text-[#855B09]">({filteredChurches.length})</span>
+                </h2>
 
-              {/* ── INLINE CHURCH DETAIL VIEW (replaces list when selected) ── */}
-              {selectedChurch ? (
-                <div className="space-y-0 animate-fadeIn">
-
-                  {/* Back Button */}
-                  <button
-                    onClick={() => setSelectedChurch(null)}
-                    className="flex items-center gap-1.5 text-xs font-sans font-bold text-[#855B09] hover:text-[#5B3E06] pb-4 cursor-pointer group transition-colors"
+                <div className="flex items-center gap-1.5 text-xs font-sans text-[#7A6B56]">
+                  <span>Sort by:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-transparent font-semibold text-[#1C1814] focus:outline-none cursor-pointer pr-1"
                   >
-                    <ChevronRight className="w-3.5 h-3.5 rotate-180 group-hover:-translate-x-0.5 transition-transform" />
-                    <span>Back to Church List</span>
-                  </button>
-
-                  {/* Church Header */}
-                  <div className="bg-[#0B3B2B] rounded-2xl p-5 text-white space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="bg-[#C8A84B] text-[#031510] text-[9px] uppercase font-bold px-2 py-0.5 rounded font-mono">
-                        {selectedChurch.churchType}
-                      </span>
-                      <span className="text-[10px] text-stone-300 font-sans">{selectedChurch.diocese}</span>
-                    </div>
-                    <h2 className="text-xl font-bold font-geez leading-tight">{selectedChurch.nameAmharic}</h2>
-                    <p className="text-xs text-[#C8A84B] font-sans">{selectedChurch.nameEnglish}</p>
-                  </div>
-
-                  {/* Church Photo */}
-                  <div className="relative rounded-2xl overflow-hidden border border-[#E2D8C7] mt-3">
-                    <img
-                      src={selectedChurch.photoUrl}
-                      alt={selectedChurch.nameEnglish}
-                      className="w-full h-40 object-cover"
-                    />
-                    <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-xs px-3 py-1 rounded-full text-white text-[11px] font-bold flex items-center gap-1.5">
-                      <span className="text-[#C8A84B] font-serif">†</span>
-                      <span>Patron: {selectedChurch.tabotPatron}</span>
-                    </div>
-                  </div>
-
-                  {/* Distance Banner */}
-                  {userPos && (
-                    <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 text-green-800 font-bold text-xs flex items-center gap-2 font-sans">
-                      <Locate className="w-4 h-4 text-green-600 shrink-0" />
-                      <span>{selectedChurch.distanceKm} km from your current GPS position</span>
-                    </div>
-                  )}
-
-                  {/* Scrollable detail body */}
-                  <div className="space-y-4 mt-3 max-h-[480px] overflow-y-auto pr-1">
-
-                    {/* Parish Clergy */}
-                    {selectedChurch.clergyList && selectedChurch.clergyList.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-bold text-[#1C1814] text-xs uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                          <Users className="w-3.5 h-3.5 text-[#855B09]" />
-                          <span>Parish Clergy</span>
-                        </h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {selectedChurch.clergyList.map((c, idx) => (
-                            <div key={idx} className="bg-[#FAF7F2] p-2.5 rounded-xl border border-[#E2D8C7] text-xs font-sans">
-                              <div className="font-bold text-[#1C1814] font-geez">{c.nameAmharic || c.name}</div>
-                              <div className="text-[11px] text-[#855B09] font-medium">{c.role}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Liturgical Timetable */}
-                    {selectedChurch.fullServiceSchedule && selectedChurch.fullServiceSchedule.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-bold text-[#1C1814] text-xs uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                          <Clock className="w-3.5 h-3.5 text-[#855B09]" />
-                          <span>Liturgical Timetable</span>
-                        </h4>
-                        <div className="bg-[#FAF7F2] rounded-xl border border-[#E2D8C7] divide-y divide-[#E2D8C7]">
-                          {selectedChurch.fullServiceSchedule.map((s, idx) => (
-                            <div key={idx} className="p-3 flex items-center justify-between gap-3 text-xs font-sans">
-                              <div>
-                                <div className="font-bold text-[#1C1814]">{s.title} <span className="font-geez text-[#855B09]">({s.dayAmharic || s.day})</span></div>
-                                <div className="text-[11px] text-[#6B7280]">Language: {s.language}</div>
-                              </div>
-                              <div className="font-mono font-bold text-[#855B09] bg-white px-2.5 py-1 rounded-lg border border-[#E2D8C7] shrink-0">{s.time}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Contact Information */}
-                    <div className="space-y-2">
-                      <h4 className="font-bold text-[#1C1814] text-xs uppercase tracking-wider flex items-center gap-1.5 font-sans">
-                        <Phone className="w-3.5 h-3.5 text-[#855B09]" />
-                        <span>Contact Information</span>
-                      </h4>
-                      <div className="bg-[#FAF7F2] p-4 rounded-xl border border-[#E2D8C7] space-y-2 text-xs font-sans">
-                        <div className="flex items-center gap-2"><MapPin className="w-3.5 h-3.5 text-[#855B09] shrink-0" /><span>{selectedChurch.address}, {selectedChurch.city}, {selectedChurch.country}</span></div>
-                        <div className="flex items-center gap-2"><Phone className="w-3.5 h-3.5 text-[#855B09] shrink-0" /><span>{selectedChurch.phone}</span></div>
-                        <div className="flex items-center gap-2"><Mail className="w-3.5 h-3.5 text-[#855B09] shrink-0" /><a href={`mailto:${selectedChurch.email}`} className="text-[#855B09] hover:underline font-semibold">{selectedChurch.email}</a></div>
-                        <div className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-[#855B09] shrink-0" /><a href={selectedChurch.website} target="_blank" rel="noreferrer" className="text-[#855B09] hover:underline font-semibold">{selectedChurch.website}</a></div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="grid grid-cols-2 gap-3 pb-2">
-                      {selectedChurch.streamingUrl ? (
-                        <a href={selectedChurch.streamingUrl} target="_blank" rel="noreferrer" className="py-2.5 px-4 rounded-xl bg-red-600 text-white font-bold text-xs flex items-center justify-center gap-2 hover:bg-red-700 transition-colors font-sans">
-                          <Tv className="w-4 h-4" /><span>Watch Live</span>
-                        </a>
-                      ) : (
-                        <button onClick={() => setActiveView('resources')} className="py-2.5 px-4 rounded-xl bg-[#0B3B2B] text-white font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#07241B] transition-colors font-sans cursor-pointer">
-                          <Tv className="w-4 h-4" /><span>Resources</span>
-                        </button>
-                      )}
-                      <button onClick={() => setActiveView('give')} className="bg-[#C8A84B] hover:bg-[#B3933A] text-[#1A1208] rounded-xl py-2.5 px-4 text-xs font-bold flex items-center justify-center gap-2 font-sans cursor-pointer">
-                        <Heart className="w-4 h-4" /><span>Donate</span>
-                      </button>
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1${userPos ? `&origin=${userPos[0]},${userPos[1]}` : ''}&destination=${selectedChurch.lat},${selectedChurch.lng}&travelmode=driving`}
-                        target="_blank" rel="noreferrer"
-                        className="col-span-2 py-2.5 px-4 rounded-xl bg-white border border-[#E2D8C7] hover:bg-[#FAF7F2] font-bold text-xs flex items-center justify-center gap-2 text-[#2C1D07] transition-all font-sans"
-                      >
-                        <Navigation className="w-4 h-4 text-[#855B09]" />
-                        <span>{userPos ? 'Get Turn-by-Turn Directions' : 'Open in Google Maps'}</span>
-                      </a>
-                    </div>
-
-                  </div>
+                    <option value="nearest">Nearest</option>
+                    <option value="name">Name (A–Z)</option>
+                  </select>
                 </div>
+              </div>
 
-              ) : (
-                /* ── CHURCH LIST (shown when no church is selected) ── */
-                <>
-                  {/* Header row: Title + Sort Dropdown */}
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E7DFD1]">
-                    <h2 className="text-xl sm:text-2xl font-bold font-serif text-[#1C1814]">
-                      Nearby Churches <span className="text-sm font-sans font-normal text-[#855B09]">({filteredChurches.length})</span>
-                    </h2>
+              {/* Churches Rows List */}
+              <div className="divide-y divide-[#EFE7DA] text-xs font-sans">
+                {filteredChurches.slice(0, 7).map((church) => {
+                  return (
+                    <div
+                      key={church.id}
+                      onClick={() => openChurch(church)}
+                      className="py-3.5 flex items-center justify-between group cursor-pointer transition-colors hover:bg-white/50 -mx-2 px-2 rounded-lg"
+                    >
+                      {/* Left icon & church name/city */}
+                      <div className="flex items-start gap-3 min-w-0 pr-3">
+                        <div className="w-8 h-8 rounded-full bg-[#FAF7F2] border border-[#C8A84B]/60 flex items-center justify-center text-[#855B09] font-geez text-xs font-bold shadow-2xs shrink-0 group-hover:bg-[#0B3B2B] group-hover:text-[#E5C158] transition-colors mt-0.5">
+                          †
+                        </div>
 
-                    <div className="flex items-center gap-1.5 text-xs font-sans text-[#7A6B56]">
-                      <span>Sort by:</span>
-                      <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value as any)}
-                        className="bg-transparent font-semibold text-[#1C1814] focus:outline-none cursor-pointer pr-1"
-                      >
-                        <option value="nearest">Nearest</option>
-                        <option value="name">Name (A–Z)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Churches Rows List */}
-                  <div className="divide-y divide-[#EFE7DA] text-xs font-sans">
-                    {filteredChurches.slice(0, 7).map((church) => {
-                      const isSelected = selectedChurch?.id === church.id;
-                      return (
-                        <div
-                          key={church.id}
-                          onClick={() => openChurch(church)}
-                          className={`py-3.5 flex items-center justify-between group cursor-pointer transition-colors ${
-                            isSelected ? 'bg-[#FAF7F2] -mx-2 px-2 rounded-lg' : ''
-                          }`}
-                        >
-                          {/* Left icon & church name/city */}
-                          <div className="flex items-start gap-3 min-w-0 pr-3">
-                            <ChurchIcon className="w-5 h-5 text-[#855B09] shrink-0 mt-0.5" strokeWidth={1.5} />
-                            <div className="min-w-0 space-y-0.5">
-                              <h3 className="font-bold text-sm text-[#1C1814] group-hover:text-[#855B09] transition-colors truncate">
-                                {church.nameEnglish}
-                              </h3>
-                              <div className="text-[11px] text-[#7A6B56] truncate">
-                                {church.city}, {church.country}
-                              </div>
-                            </div>
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-sm text-[#1C1814] group-hover:text-[#855B09] transition-colors truncate font-serif">
+                            {church.nameEnglish}
+                          </h3>
+                          <div className="text-xs font-geez text-[#855B09] font-medium truncate">
+                            {church.nameAmharic}
                           </div>
-
-                          {/* Right metadata (Distance, Liturgy Time & Arrow) */}
-                          <div className="flex items-center gap-3 shrink-0 text-right">
-                            <div>
-                              <div className="font-bold text-xs text-[#1C1814]">
-                                {church.distanceKm} km
-                              </div>
-                              <div className="text-[11px] text-[#855B09]">
-                                {church.serviceTime ? `Sun. Liturgy ${church.serviceTime.split(',')[0].replace('Sun ', '').trim()}` : 'Sun. Liturgy 7:00 AM'}
-                              </div>
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-[#855B09] group-hover:translate-x-1 transition-transform" />
+                          <div className="text-[11px] text-[#7A6B56] flex items-center gap-1 mt-0.5 truncate font-mono">
+                            <MapPin className="w-3 h-3 text-[#855B09] shrink-0" />
+                            <span>{church.address}, {church.city}</span>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
 
-                  {/* View All Churches Link */}
-                  <div className="pt-2">
-                    <button
-                      onClick={() => setShowAllChurchesModal(true)}
-                      className="text-xs text-[#855B09] hover:text-[#5B3E06] font-medium font-sans flex items-center gap-1 group transition-colors cursor-pointer"
-                    >
-                      <span>View All Churches</span>
-                      <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-                    </button>
-                  </div>
-                </>
-              )}
+                      {/* Right metadata badge: Tabot / Distance */}
+                      <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                        <span className="text-[10px] font-mono font-semibold text-[#855B09] bg-[#FAF7F2] px-2 py-0.5 rounded border border-[#E2D8C7]">
+                          {church.tabotPatron.split('(')[0].trim()}
+                        </span>
+                        {userPos && (
+                          <span className="text-[10px] text-[#7A6B56] font-mono">
+                            {church.distanceKm} km
+                          </span>
+                        )}
+                        <ChevronRight className="w-3.5 h-3.5 text-[#855B09] opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
+              {/* View All Churches Link */}
+              <div className="pt-2">
+                <button
+                  onClick={() => setShowAllChurchesModal(true)}
+                  className="text-xs text-[#855B09] hover:text-[#5B3E06] font-medium font-sans flex items-center gap-1 group transition-colors cursor-pointer"
+                >
+                  <span>View All Churches</span>
+                  <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              </div>
             </div>
 
             {/* ─────────────────────────────────────────────────────────
@@ -769,14 +621,11 @@ export const FindChurchView: React.FC = () => {
 
                   {/* Church Markers */}
                   {showAllChurchesFilter && filteredChurches.map((church) => {
-                    const isSelected = selectedChurch?.id === church.id;
-                    const icon = isSelected ? goldSelectedPin : greenChurchPin;
-
                     return (
                       <Marker
                         key={church.id}
                         position={[church.lat, church.lng]}
-                        icon={icon}
+                        icon={greenChurchPin}
                         eventHandlers={{
                           click: () => {
                             setSelectedChurch(church);

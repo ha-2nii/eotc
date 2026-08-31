@@ -10,7 +10,8 @@ import {
   X,
   Search,
   ShieldCheck,
-  Award
+  Award,
+  Clock
 } from 'lucide-react';
 import type { DioceseListing } from '../../data/allDioceses';
 import { useLanguage } from '../layout/LanguageContext';

@@ -18,7 +18,7 @@ import {
   Search, Target,
   Clock, Copy, Check,
   TrendingUp, BarChart3,
-  RotateCcw, User,
+  RotateCcw,
   Building, BookOpen
 } from 'lucide-react';
 

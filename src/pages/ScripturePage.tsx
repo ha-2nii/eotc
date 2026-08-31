@@ -5,18 +5,10 @@ import { EOTC_81_BOOKS, MOCK_PARALLEL_VERSES } from '../data/mockScripture';
 import type { Verse } from '../data/mockScripture';
 import { PRAYER_BOOKS } from '../data/mockChants';
 import type { PrayerBook } from '../data/mockChants';
-import { LITURGICAL_CATEGORIES, EOTC_14_ANAPHORAS } from '../data/mockLiturgy';
+import { LITURGICAL_CATEGORIES } from '../data/mockLiturgy';
 import type { LiturgicalCategory, LiturgicalItem } from '../data/mockLiturgy';
 import { LiturgicalTextsView } from '../components/scripture/LiturgicalTextsView';
 import { GeezLearningView } from '../components/scripture/GeezLearningView';
-import {
-  GEEZ_TRACKS,
-  FIDEL_ALPHABET_DATA,
-  SACRED_VOCABULARY,
-  GRAMMAR_LESSONS,
-  PRACTICE_QUIZZES,
-} from '../data/mockGeezLearning';
-import type { FidelOrder } from '../data/mockGeezLearning';
 import {
   BookOpen,
   Heart,
@@ -30,22 +22,14 @@ import {
   Search,
   ArrowRight,
   BookMarked,
-  Calendar,
   Layers,
   CheckCircle,
   Shield,
   Sun,
   Moon,
   Sparkles,
-  FileText,
   Download,
   Printer,
-  Music,
-  Award,
-  Check,
-  RotateCcw,
-  HelpCircle,
-  Trophy,
   Highlighter,
   Edit3,
   Clock,
@@ -297,14 +281,6 @@ export const ScriptureView: React.FC = () => {
   const [liturgyLangMode, setLiturgyLangMode] = useState<'geez-only' | 'parallel' | 'single'>('parallel');
   const [liturgyFontSize, setLiturgyFontSize] = useState<'normal' | 'large' | 'cantor'>('normal');
   const [downloadToast, setDownloadToast] = useState<boolean>(false);
-
-  // Ge'ez Learning States
-  const [activeGeezTrack, setActiveGeezTrack] = useState<'fidel' | 'basic' | 'liturgical' | 'grammar'>('fidel');
-  const [selectedFidelFamilyIndex, setSelectedFidelFamilyIndex] = useState<number>(0);
-  const [selectedFidelOrder, setSelectedFidelOrder] = useState<FidelOrder | null>(null);
-  const [completedLessonIds, setCompletedLessonIds] = useState<string[]>(['lesson-fidel-1', 'lesson-vocab-1']);
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({});
-  const [quizFeedback, setQuizFeedback] = useState<Record<string, boolean>>({});
   const [userXp, setUserXp] = useState<number>(450);
 
   // Synchronize route if clicked from header dropdown or internal links

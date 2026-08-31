@@ -20,7 +20,6 @@ import {
 import { useLanguage } from '../layout/LanguageContext';
 import {
   FIDEL_ALPHABET_DATA,
-  SACRED_VOCABULARY,
   PRACTICE_QUIZZES,
 } from '../../data/mockGeezLearning';
 import type { FidelOrder } from '../../data/mockGeezLearning';
@@ -439,7 +438,6 @@ export const GeezLearningView: React.FC<GeezLearningViewProps> = ({
             {LEARNING_PATH.map((step) => {
               const isCompleted = step.status === 'completed';
               const isInProgress = step.status === 'in-progress';
-              const isLocked = step.status === 'locked';
 
               return (
                 <div key={step.num} className="relative flex items-start gap-3 text-left">

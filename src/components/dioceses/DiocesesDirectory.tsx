@@ -64,14 +64,6 @@ export const DiocesesDirectory: React.FC = () => {
     return list.sort((a, b) => a.shortName.localeCompare(b.shortName));
   }, [allDiocesesWithRegion]);
 
-  const uniqueLanguages = useMemo(() => {
-    const set = new Set<string>();
-    allDiocesesWithRegion.forEach(({ diocese }) => {
-      diocese.languages?.forEach(lang => set.add(lang));
-    });
-    return Array.from(set);
-  }, [allDiocesesWithRegion]);
-
   // Handle Clear All
   const handleClearAll = () => {
     setFilterTerritory('all');

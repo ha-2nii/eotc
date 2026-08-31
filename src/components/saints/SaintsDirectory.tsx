@@ -16,15 +16,11 @@ import {
   Music,
   Hourglass,
   Globe,
-  Award,
-  Crown,
-  BookMarked
+  Crown
 } from 'lucide-react';
 import { MOCK_SAINTS, type SaintProfile } from '../../data/mockChurchHub';
-import { useLanguage } from '../layout/LanguageContext';
 
 export const SaintsDirectory: React.FC = () => {
-  const { setActiveView } = useLanguage();
   const [activeTab, setActiveTab] = useState<'daily' | 'calendar' | 'all' | 'martyrs' | 'apostles' | 'monastics' | 'fathers' | 'teachers'>('daily');
   const [selectedSaint, setSelectedSaint] = useState<SaintProfile | null>(null);
   const [copiedHymn, setCopiedHymn] = useState<boolean>(false);
@@ -663,21 +659,34 @@ export const SaintsDirectory: React.FC = () => {
                 </h3>
               </div>
 
-              {/* Search Bar */}
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-[#855B09] absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search saint by name, feast day..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2.5 bg-[#FAF7F2] border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B]"
-                />
-                {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black cursor-pointer">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
+              {/* Month filter & Search Bar */}
+              <div className="flex flex-wrap items-center gap-3">
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="px-3 py-2.5 bg-[#FAF7F2] border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] cursor-pointer"
+                >
+                  <option value="All">All Months (ሁሉንም)</option>
+                  {['Meskerem', 'Tikimt', 'Hidar', 'Tahsas', 'Tir', 'Yakatit', 'Megabit', 'Miyazya', 'Ginbot', 'Sene', 'Hamle', 'Nehase', 'Pagume'].map((m) => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="w-4 h-4 text-[#855B09] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search saint by name, feast day..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-8 py-2.5 bg-[#FAF7F2] border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B]"
+                  />
+                  {searchQuery && (
+                    <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black cursor-pointer">
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -752,16 +761,16 @@ export const SaintsDirectory: React.FC = () => {
                 </div>
                 <div className="space-y-2 flex-1">
                   <h4 className="font-bold text-sm text-[#0B3B2B] font-serif">{selectedSaint.title}</h4>
-                  <p>{selectedSaint.biography}</p>
+                  <p>{selectedSaint.shortBio || selectedSaint.contributions}</p>
                 </div>
               </div>
 
-              {selectedSaint.hymnInGeez && (
+              {selectedSaint.prayersAndHymns && (
                 <div className="p-4 bg-[#FAF7F2] border border-[#E2D8C7] rounded-xl space-y-1.5">
                   <div className="flex items-center justify-between text-[11px] font-bold text-[#855B09]">
-                    <span>Sacred Geez Hymn (ማሕሌት)</span>
+                    <span>Sacred Geez Hymn (ማሕሌት) - {selectedSaint.prayersAndHymns.title}</span>
                     <button 
-                      onClick={() => handleCopyHymn(selectedSaint.hymnInGeez || '')}
+                      onClick={() => handleCopyHymn(selectedSaint.prayersAndHymns?.geezText || '')}
                       className="text-[10px] flex items-center gap-1 hover:text-[#0B3B2B]"
                     >
                       {copiedHymn ? <Check className="w-3 h-3 text-green-600" /> : <Copy className="w-3 h-3" />}
@@ -769,7 +778,7 @@ export const SaintsDirectory: React.FC = () => {
                     </button>
                   </div>
                   <div className="text-xs font-geez text-[#0B3B2B] leading-relaxed">
-                    {selectedSaint.hymnInGeez}
+                    {selectedSaint.prayersAndHymns.geezText}
                   </div>
                 </div>
               )}
