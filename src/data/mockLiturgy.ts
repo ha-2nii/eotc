@@ -1,4 +1,4 @@
-export interface LiturgicalTextLine {
+﻿export interface LiturgicalTextLine {
   speaker?: 'priest' | 'deacon' | 'people' | 'cantors';
   speakerAm?: string;
   speakerEn?: string;
@@ -57,7 +57,7 @@ export const LITURGICAL_CATEGORIES: LiturgicalCategory[] = [
     titleAmharic: 'ሥርዓተ ቅዳሴ (The Divine Liturgy & 14 Anaphoras)',
     titleEnglish: 'Qidase (Divine Liturgy — 14 Anaphoras)',
     subtitle: 'The Eucharistic Mystery & Complete Apostolic Anaphoras',
-    descriptionEn: 'The Eucharistic core of Ethiopian worship featuring the standard pre-anaphora liturgy and all 14 canonical Anaphoras.',
+    descriptionEn: 'The Eucharistic core of Ethiopian Orthodox liturgical tradition featuring the standard pre-anaphora liturgy and all 14 canonical Anaphoras.',
     descriptionAm: 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን የቅዳሴ ሥርዓትና አሥራ አራቱ ቅዳሴያት።',
     iconName: 'BookMarked',
     itemCount: 14,
@@ -386,3 +386,4 @@ export const LITURGICAL_CATEGORIES: LiturgicalCategory[] = [
     ],
   },
 ];
+

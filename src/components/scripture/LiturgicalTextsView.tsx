@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Search,
   BookOpen,
-  Volume2,
   Calendar,
   Music,
   ArrowRight,
@@ -13,11 +12,6 @@ import {
   Heart,
   Award,
   FileText,
-  Languages,
-  Sparkles,
-  LayoutGrid,
-  Cross,
-  Church,
 } from 'lucide-react';
 import { useLanguage } from '../layout/LanguageContext';
 
@@ -205,8 +199,8 @@ const TODAY_RESOURCES = [
 
 export const LiturgicalTextsView: React.FC<LiturgicalTextsViewProps> = ({
   onOpenItem,
-  onOpenPrayerBook,
-  onOpenBible,
+  onOpenPrayerBook: _onOpenPrayerBook,
+  onOpenBible: _onOpenBible,
 }) => {
   const { language, setActiveTrackId, activeTrackId } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
@@ -288,7 +282,7 @@ export const LiturgicalTextsView: React.FC<LiturgicalTextsViewProps> = ({
               }}
             >
               {language === 'en'
-                ? "Explore the complete treasury of Ethiopian Orthodox worship: all 14 Eucharistic Anaphoras, festal Mahelet chants, Saint Yared's three-mode Deggwa system, and the sacred Zema school neume curriculum."
+                ? "Explore the complete treasury of Ethiopian Orthodox liturgical texts: all 14 Eucharistic Anaphoras, festal Mahelet chants, Saint Yared's three-mode Deggwa system, and the sacred Zema school neume curriculum."
                 : 'አሥራ አራቱ ቅዳሴያት፣ የበዓላት ማሕሌት፣ የቅዱስ ያሬድ ፫ቱ የዜማ ስልቶች (ግዕዝ፣ ዕዝል፣ አራራይ) እና የዜማ ትምህርት ቤት ምልክቶች።'}
             </p>
 
@@ -930,3 +924,4 @@ export const LiturgicalTextsView: React.FC<LiturgicalTextsViewProps> = ({
     </div>
   );
 };
+

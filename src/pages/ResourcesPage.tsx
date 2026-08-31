@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '../components/layout/LanguageContext';
-import { MOCK_ZEMA_TRACKS } from '../data/mockZema';
 import { MOCK_CALENDAR_EVENTS, UPCOMING_FEASTS } from '../data/mockCalendar';
 import { DIGITAL_CHANT_SERVICES } from '../data/mockChants';
 import type { ChantSection, ChantVerse } from '../data/mockChants';
-import { TODAY_LITURGY, CANONICAL_FASTS, MOCK_SERMONS } from '../data/mockWorship';
-import { MezmurView } from '../components/worship/MezmurView';
-import type { SermonItem } from '../data/mockWorship';
+import { TODAY_LITURGY, CANONICAL_FASTS, MOCK_SERMONS } from '../data/mockResources';
+import { MezmurView } from '../components/resources/MezmurView';
+import type { SermonItem } from '../data/mockResources';
 import {
   Calendar as CalendarIcon,
   Book,
@@ -15,12 +14,10 @@ import {
   Download,
   Play,
   Pause,
-  Sparkles,
   Volume2,
   Moon,
   BookOpen,
   ArrowRight,
-  Sun,
   Clock,
   BookMarked,
   Mic2,
@@ -30,33 +27,30 @@ import {
   Star,
   Shield,
   Bell,
-  SkipForward,
-  SkipBack,
-  Gauge,
-  Info,
-  Filter,
   Printer,
   Type,
   Eye,
   Search,
-  Video,
   FileText,
   Headphones,
   User,
   Share2,
+  Check,
+  Award,
+  Music,
+  SlidersHorizontal,
+  ListMusic,
+  Bookmark,
+  MoreVertical,
+  ChevronDown,
 } from 'lucide-react';
 
-type WorshipSubTab = 'hub' | 'calendar' | 'fasting' | 'sermons' | 'mezmur';
+type ResourceSubTab = 'hub' | 'calendar' | 'fasting' | 'sermons' | 'mezmur' | 'chant-stand';
 
-export const WorshipView: React.FC = () => {
-  const { activeView, activeTrackId, setActiveTrackId, language } = useLanguage();
+export const ResourcesView: React.FC = () => {
+  const { activeView, setActiveTrackId, language } = useLanguage();
 
-  const [subTab, setSubTab] = useState<WorshipSubTab>('hub');
-  const [zemaMode, setZemaMode] = useState<string>('ALL');
-  const [zemaCategory, setZemaCategory] = useState<string>('ALL');
-  const [audioProgress, setAudioProgress] = useState<number>(0);
-  const [audioSpeed, setAudioSpeed] = useState<number>(1);
-  const audioIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [subTab, setSubTab] = useState<ResourceSubTab>('hub');
   const [selectedChantId, setSelectedChantId] = useState<string>('sunday-qidase');
   const [selectedSectionIndex, setSelectedSectionIndex] = useState<number>(0);
   const [fontSizePx, setFontSizePx] = useState<number>(28);
@@ -71,20 +65,21 @@ export const WorshipView: React.FC = () => {
   const [selectedCalDate, setSelectedCalDate] = useState<string>('2026-08-12');
   const [showDayModal, setShowDayModal] = useState<boolean>(false);
   const [selectedFastId, setSelectedFastId] = useState<string>('abiy-tsom');
-  const [selectedSermonId, setSelectedSermonId] = useState<string | null>(null);
   const [activeSermonModal, setActiveSermonModal] = useState<SermonItem | null>(null);
+  const [activeVideoModal, setActiveVideoModal] = useState<SermonItem | null>(null);
   const [sermonSearchQuery, setSermonSearchQuery] = useState<string>('');
-  const [sermonFilterTab, setSermonFilterTab] = useState<'all' | 'feast' | 'preacher' | 'topic'>('all');
-  const [selectedPreacherFilter, setSelectedPreacherFilter] = useState<string>('ALL');
-  const [selectedTopicFilter, setSelectedTopicFilter] = useState<string>('ALL');
-  const [selectedFeastFilter, setSelectedFeastFilter] = useState<string>('ALL');
+  const [sermonCategoryPill, setSermonCategoryPill] = useState<string>('All');
+  const [sermonSortBy, setSermonSortBy] = useState<'Newest' | 'Most Popular' | 'Oldest'>('Newest');
+  const [savedSermons, setSavedSermons] = useState<string[]>([]);
   const [sermonTranscriptLang, setSermonTranscriptLang] = useState<'am' | 'en'>('am');
   const [sermonShareToast, setSermonShareToast] = useState<boolean>(false);
+  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
   const [remindedFeasts, setRemindedFeasts] = useState<number[]>([]);
 
   const activeService = DIGITAL_CHANT_SERVICES[selectedChantId] || DIGITAL_CHANT_SERVICES['sunday-qidase'];
   const activeSection = activeService.sections[selectedSectionIndex] || activeService.sections[0];
   const activeDayDetail = MOCK_CALENDAR_EVENTS[selectedCalDate] || MOCK_CALENDAR_EVENTS['2026-08-12'];
+  const currentFast = CANONICAL_FASTS.find((f) => f.id === selectedFastId) || CANONICAL_FASTS[0];
 
   // Handle service audio playback
   useEffect(() => {
@@ -108,37 +103,6 @@ export const WorshipView: React.FC = () => {
       if (chantAudioIntervalRef.current) clearInterval(chantAudioIntervalRef.current);
     };
   }, [isChantAudioPlaying]);
-  const filteredZema = MOCK_ZEMA_TRACKS.filter(
-    (t) => (zemaMode === 'ALL' || t.mode === zemaMode) && (zemaCategory === 'ALL' || t.category === zemaCategory)
-  );
-  const activeZemaTrack = MOCK_ZEMA_TRACKS.find((t) => t.id === activeTrackId) || null;
-  const currentFast = CANONICAL_FASTS.find((f) => f.id === selectedFastId) || CANONICAL_FASTS[0];
-
-  // Simulate audio progress when a track is playing
-  useEffect(() => {
-    if (activeTrackId) {
-      setAudioProgress(0);
-      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
-      audioIntervalRef.current = setInterval(() => {
-        setAudioProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(audioIntervalRef.current!);
-            return 100;
-          }
-          return prev + (100 / ((activeZemaTrack?.durationSecs || 240) / audioSpeed));
-        });
-      }, 1000);
-    } else {
-      if (audioIntervalRef.current) clearInterval(audioIntervalRef.current);
-      setAudioProgress(0);
-    }
-    return () => { if (audioIntervalRef.current) clearInterval(audioIntervalRef.current); };
-  }, [activeTrackId, audioSpeed]);
-
-  const formatTime = (pct: number, totalSecs: number) => {
-    const elapsed = Math.floor((pct / 100) * totalSecs);
-    return `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
-  };
 
   // Calendar month data
   const MONTHS = [
@@ -149,11 +113,12 @@ export const WorshipView: React.FC = () => {
 
   // Sync route with activeView
   useEffect(() => {
-    if (activeView === 'worship/calendar') setSubTab('calendar');
-    else if (activeView === 'worship/fasting') setSubTab('fasting');
-    else if (activeView === 'worship/sermons') setSubTab('sermons');
-    else if (activeView === 'worship/mezmur') setSubTab('mezmur');
-    else if (activeView === 'worship') {
+    if (activeView === 'resources/calendar') setSubTab('calendar');
+    else if (activeView === 'resources/fasting') setSubTab('fasting');
+    else if (activeView === 'resources/sermons') setSubTab('sermons');
+    else if (activeView === 'resources/mezmur') setSubTab('mezmur');
+    else if (activeView === 'resources/chant-stand') setSubTab('chant-stand');
+    else if (activeView === 'resources' || activeView === 'orthodox-resources') {
       setSubTab('hub');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -169,51 +134,13 @@ export const WorshipView: React.FC = () => {
     a.click();
   };
 
-  const NAV_TABS: { id: WorshipSubTab; labelEn: string; labelAm: string; icon: React.ElementType }[] = [
-    { id: 'hub',         labelEn: 'Resources Hub',        labelAm: 'የሀብታት ማዕከል',       icon: Sparkles },
-    { id: 'calendar',    labelEn: 'Liturgical Calendar', labelAm: 'የቤተ ክርስቲያን ቀን',   icon: CalendarIcon },
-    { id: 'fasting',     labelEn: 'Fasting Guide',       labelAm: 'የጾም መመሪያ',         icon: Moon },
-    { id: 'sermons',     labelEn: 'Sermons',             labelAm: 'ስብከቶች',             icon: Mic2 },
-    { id: 'mezmur',      labelEn: 'Mezmur & Hymns',      labelAm: 'መዝሙራት',             icon: Volume2 },
-  ];
-
   return (
     <div className="container mx-auto px-4 py-8 space-y-8 animate-fadeIn">
 
-      {/* Sub-Navigation Header */}
-      <div className="bg-white p-2 rounded-2xl border border-[#E6DFD1] flex flex-wrap items-center justify-between gap-3 shadow-sm">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {NAV_TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = subTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setSubTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-[#C8A84B] text-[#1A2C1C] shadow-sm'
-                    : 'text-[#6B7280] hover:text-[#2C1D07] hover:bg-[#FAF8F3] border border-transparent'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{language === 'en' ? tab.labelEn : tab.labelAm}</span>
-              </button>
-            );
-          })}
-        </div>
 
-        <button
-          onClick={exportICSCalendar}
-          className="btn-outline text-xs py-2 px-4 bg-white shadow-sm flex items-center gap-2"
-        >
-          <Download className="w-4 h-4" />
-          <span>Export .ICS</span>
-        </button>
-      </div>
 
       {/* ═══════════════════════════════════════════
-          VIEW 1: WORSHIP MAIN HUB
+          VIEW 1: ORTHODOX RESOURCES MAIN HUB
       ═══════════════════════════════════════════ */}
       {subTab === 'hub' && (
         <div className="animate-fadeIn bg-[#FAF8F3] -mx-4 md:-mx-8 -mt-8 pb-12">
@@ -263,7 +190,7 @@ export const WorshipView: React.FC = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
               {[
                 {
-                  id: 'calendar' as WorshipSubTab,
+                  id: 'calendar' as ResourceSubTab,
                   icon: CalendarIcon,
                   titleEn: 'Liturgical Calendar',
                   titleAm: 'የቤተ ክርስቲያን ዘመን',
@@ -272,7 +199,7 @@ export const WorshipView: React.FC = () => {
                   iconColor: '#1A2C1C',
                 },
                 {
-                  id: 'fasting' as WorshipSubTab,
+                  id: 'fasting' as ResourceSubTab,
                   icon: Moon,
                   titleEn: 'Fasting Guide',
                   titleAm: 'ፆምና ጸሎት',
@@ -281,7 +208,7 @@ export const WorshipView: React.FC = () => {
                   iconColor: '#1D4ED8',
                 },
                 {
-                  id: 'sermons' as WorshipSubTab,
+                  id: 'sermons' as ResourceSubTab,
                   icon: Mic2,
                   titleEn: 'Sermons',
                   titleAm: 'ስብከቶች',
@@ -290,7 +217,7 @@ export const WorshipView: React.FC = () => {
                   iconColor: '#7C3AED',
                 },
                 {
-                  id: 'mezmur' as WorshipSubTab,
+                  id: 'mezmur' as ResourceSubTab,
                   icon: Volume2,
                   titleEn: 'Mezmur & Hymns',
                   titleAm: 'መዝሙራት',
@@ -517,7 +444,7 @@ export const WorshipView: React.FC = () => {
               <div className="space-y-1">
                 <button onClick={() => setSubTab('hub')} className="inline-flex items-center gap-1 text-xs text-[#C8A84B] font-bold hover:text-white mb-1 transition-colors">
                   <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>{language === 'en' ? 'Back to Worship Hub' : 'ወደ ማዕከሉ ተመለስ'}</span>
+                  <span>{language === 'en' ? 'Back to Resources Hub' : 'ወደ ማዕከሉ ተመለስ'}</span>
                 </button>
                 <div className="inline-flex items-center gap-2 bg-[#C8A84B]/20 border border-[#C8A84B]/50 text-[#C8A84B] px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
                   <CalendarIcon className="w-3 h-3" />
@@ -868,7 +795,7 @@ export const WorshipView: React.FC = () => {
                 {!isFullscreen && (
                   <button onClick={() => setSubTab('hub')} className="inline-flex items-center gap-1 text-xs text-[#855B09] font-bold hover:text-[#2C1D07] mb-2 transition-colors">
                     <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>{language === 'en' ? 'Back to Worship Hub' : 'ወደ ማዕከሉ ተመለስ'}</span>
+                    <span>{language === 'en' ? 'Back to Resources Hub' : 'ወደ ማዕከሉ ተመለስ'}</span>
                   </button>
                 )}
                 <div className="inline-flex items-center gap-2 bg-[#FFF5DB] border border-[#C8A84B] px-3 py-1 rounded-full text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider mb-2">
@@ -1229,351 +1156,457 @@ export const WorshipView: React.FC = () => {
       )}
 
       {/* ═══════════════════════════════════════════
-          VIEW 5: FASTING GUIDE (FULL)
+          VIEW 5: FASTING GUIDE (FULL) - CLEAN & CARDLESS
       ═══════════════════════════════════════════ */}
-      {subTab === 'fasting' && (
-        <div className="space-y-8 animate-fadeIn pb-12">
-          
-          {/* Hero Section */}
-          <div className="bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0A1120] p-8 md:p-12 rounded-3xl text-white space-y-4 relative overflow-hidden shadow-xl border border-[#3B82F6]/20">
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-tr from-[#3B82F6]/20 via-[#60A5FA]/10 to-transparent rounded-full blur-3xl pointer-events-none" />
-            
-            <div className="relative z-10 max-w-3xl space-y-3">
-              <div className="inline-flex items-center gap-2 bg-[#3B82F6]/20 border border-[#3B82F6]/40 px-3.5 py-1.5 rounded-full text-xs text-[#93C5FD] font-bold uppercase tracking-wider">
-                <Moon className="w-3.5 h-3.5" />
-                <span>ሰባቱ አቅደ ጾሞች • The 7 Canonical Fasts</span>
-              </div>
-              <h1 className="text-3xl md:text-5xl font-black font-geez leading-tight">
-                {language === 'en' ? 'EOTC Fasting Guide — ፆምና ጸሎት' : 'ሥርዓተ ጾም ወጸሎት — ሰባቱ ጾሞች'}
-              </h1>
-              <p className="text-sm md:text-base text-[#94A3B8] leading-relaxed">
-                {language === 'en'
-                  ? 'The Ethiopian Orthodox Tewahedo Church observes over 220 fasting days every year — the most extensive canonical fasting tradition in Christendom. Fasting is a sacred union of prayer, physical abstinence, repentance, and almsgiving.'
-                  : 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በዓመት ከ220 የሚበልጡ የጾም ቀናት አሏት። ጾም ከጸሎት፣ ከምጽዋትና ከስግደት ጋር ተጣምሮ ለእግዚአብሔር የሚቀርብ ቅዱስ መሥዋዕት ነው።'}
-              </p>
-            </div>
-          </div>
+      {subTab === 'fasting' && (() => {
+        const FAST_AVATARS: Record<string, string> = {
+          'abiy-tsom': '/assets/images/crosses_sunset.jpg',
+          'filseta': '/assets/images/st_mary_icon.png',
+          'tsome-nebiyat': '/assets/images/liturgical_manuscript_featured.jpg',
+          'tsome-hawaryat': '/assets/images/news_synod_bishops.jpg',
+          'tsome-dihnet': '/assets/images/eotc_cross_watermark.png',
+          'tsome-nineveh': '/assets/images/debre_damo.jpg',
+          'tsome-gahad': '/assets/images/eotc_vigil_background.jpg',
+        };
 
-          {/* Today's Fast Status & Live Active Countdown */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            
-            {/* Left: Today's Status Banner (5 cols) */}
-            <div className="lg:col-span-5 bg-gradient-to-br from-[#1A2C1C] to-[#0D1A0F] p-6 md:p-8 rounded-3xl border border-[#C8A84B]/30 text-white space-y-5 shadow-lg flex flex-col justify-between">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#006B3C] text-[#A3E6C2] border border-[#A3E6C2]/30 animate-pulse">
-                    <CheckCircle className="w-3 h-3" />
-                    Today is a Fasting Day
-                  </span>
-                  <span className="text-[10px] text-[#94A3B8] font-mono">{TODAY_LITURGY.gregorianDate.split(',')[1]}</span>
-                </div>
+        const FAST_SHORT_SEASONS: Record<string, string> = {
+          'abiy-tsom': 'Spring',
+          'filseta': 'Nehase 1 - Nehase 16',
+          'tsome-nebiyat': 'Hidar 15 - Tahsas 28',
+          'tsome-hawaryat': 'Following Pentecost until Sene 5',
+          'tsome-dihnet': 'Year-round',
+          'tsome-nineveh': 'Two weeks before the Great Lent',
+          'tsome-gahad': 'Eve of Genna & Timkat',
+        };
 
-                <div>
-                  <span className="text-xs text-[#C8A84B] font-bold font-geez">{TODAY_LITURGY.ethiopianDate}</span>
-                  <h2 className="text-2xl font-black font-geez text-white mt-1">
-                    {TODAY_LITURGY.fastNameAmharic}
+        return (
+          <div className="space-y-16 animate-fadeIn pb-16">
+            
+            {/* ── 1. HERO SECTION (DARK WARM ATMOSPHERE WITH SACRED MANUSCRIPT) ── */}
+            <div className="relative -mx-4 md:-mx-8 -mt-8 bg-[#0D140E] text-white overflow-hidden rounded-b-3xl">
+              <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[380px] items-center">
+                
+                {/* Left Column: Title and Sacred Introduction */}
+                <div className="lg:col-span-7 px-8 md:px-14 py-12 md:py-16 space-y-5 z-10">
+                  <div className="inline-flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-widest text-[#C8A84B]">
+                    ORTHODOX RESOURCES
+                  </div>
+
+                  <h1 className="text-3xl md:text-5xl font-black font-serif text-white tracking-tight leading-tight">
+                    {language === 'en' ? 'EOTC Fasting Guide' : 'የኢ/ኦ/ተ/ቤተ ክርስቲያን የጾም መመሪያ'}
+                  </h1>
+
+                  {/* Diamond / Cross Ornament */}
+                  <div className="flex items-center gap-2 text-[#C8A84B]">
+                    <span className="text-xs">❖</span>
+                  </div>
+
+                  <h2 className="text-xl md:text-2xl font-black font-geez text-[#C8A84B]">
+                    {language === 'en' ? 'የጾም መመሪያ' : 'ሥርዓተ ጾም ወጸሎት — ሰባቱ ጾሞች'}
                   </h2>
-                  <p className="text-xs text-[#94A3B8] mt-0.5">Fast of the Holy Assumption of St. Mary (Filseta)</p>
+
+                  <p className="text-xs sm:text-sm md:text-base text-[#D1D5DB] leading-relaxed max-w-xl">
+                    {language === 'en'
+                      ? 'The Ethiopian Orthodox Tewahedo Church observes over 220 fasting days every year — the most extensive canonical fasting tradition in Christendom. Fasting is a sacred union of prayer, physical abstinence, repentance, and almsgiving.'
+                      : 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቤተ ክርስቲያን በዓመት ከ220 የሚበልጡ የጾም ቀናት አሏት። ጾም ከጸሎት፣ ከምጽዋትና ከስግደት ጋር ተጣምሮ ለእግዚአብሔር የሚቀርብ ቅዱስ መሥዋዕት ነው።'}
+                  </p>
                 </div>
 
-                {/* Abstinence & Dietary Rules quick badges */}
-                <div className="p-4 rounded-2xl bg-white/8 border border-white/10 space-y-2.5">
-                  <div className="flex items-start gap-2.5">
-                    <Clock className="w-4 h-4 text-[#C8A84B] shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-bold text-[#C8A84B]">Abstinence Hours:</p>
-                      <p className="text-[11px] text-[#E2E8F0]">Strict fast (no food or water) until 3:00 PM (9:00 local time) or post-Qidase.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2.5 border-t border-white/10 pt-2">
-                    <Shield className="w-4 h-4 text-[#4ADE80] shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-xs font-bold text-[#4ADE80]">Dietary Rules:</p>
-                      <p className="text-[11px] text-[#E2E8F0]">100% Vegan plant-based diet. Strict prohibition of meat, poultry, fish, eggs, milk, cheese, and butter.</p>
-                    </div>
-                  </div>
+                {/* Right Column: Hero Image with seamless dark fade */}
+                <div className="lg:col-span-5 relative h-full min-h-[280px] lg:min-h-[380px] flex items-center justify-end overflow-hidden">
+                  <img
+                    src="/assets/images/fasting_hero_bg.jpg"
+                    alt="Sacred Bible and Cross by Candlelight"
+                    className="w-full h-full object-cover object-center lg:object-right"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t lg:bg-gradient-to-r from-[#0D140E] via-transparent to-transparent opacity-90 lg:opacity-80" />
                 </div>
-              </div>
 
-              <div className="pt-2">
-                <button
-                  onClick={() => setSubTab('calendar')}
-                  className="w-full bg-[#C8A84B] hover:bg-[#B8973A] text-[#1A2C1C] py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-sm"
-                >
-                  <CalendarIcon className="w-4 h-4" />
-                  <span>{language === 'en' ? 'View in Liturgical Calendar' : 'በቀን መቁጠሪያ ይመልከቱ'}</span>
-                </button>
               </div>
             </div>
 
-            {/* Right: Current Active Fast Progress & Countdown (7 cols) */}
-            <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E6DFD1] pb-4">
+            {/* ── 2. TODAY'S FAST STATUS & ACTIVE FAST SEASON (CARDLESS DUAL COLUMN) ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start pt-2">
+              
+              {/* Left Column: Today's Status Details (Seamless, No Card) */}
+              <div className="lg:col-span-5 space-y-6">
+                
+                {/* 1. Today is a Fasting Day */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] text-[#15803D] flex items-center justify-center shrink-0 mt-0.5">
+                    <CalendarIcon className="w-5 h-5" />
+                  </div>
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09]">
-                      Active Fast Season • የወቅቱ ጾም
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#15803D] block">
+                      TODAY IS A FASTING DAY
                     </span>
-                    <h3 className="text-xl font-black text-[#2C1D07] font-geez mt-0.5">
+                    <h3 className="text-base font-black font-geez text-[#2C1D07]">
+                      {TODAY_LITURGY.fastNameAmharic} (Filseta Fast)
+                    </h3>
+                    <p className="text-xs text-[#6B7280]">
+                      Fast of the Holy Assumption of St. Mary (Filseta)
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Abstinence Hours */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#FFF5DB] border border-[#C8A84B] text-[#855B09] flex items-center justify-center shrink-0 mt-0.5">
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                      ABSTINENCE HOURS
+                    </span>
+                    <p className="text-xs text-[#4A3B22] leading-relaxed">
+                      Strict fast (no food or water) until 3:00 PM (9:00 local time) or post-Qidase.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 3. Dietary Rules */}
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] text-[#15803D] flex items-center justify-center shrink-0 mt-0.5">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                      DIETARY RULES
+                    </span>
+                    <p className="text-xs text-[#4A3B22] leading-relaxed">
+                      100% vegan plant-based diet. Strict prohibition of meat, poultry, fish, eggs, milk, cheese, and butter.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 4. Calendar Link */}
+                <div className="pt-2">
+                  <button
+                    onClick={() => setSubTab('calendar')}
+                    className="inline-flex items-center gap-2 text-xs font-bold text-[#855B09] hover:text-[#2C1D07] transition-colors cursor-pointer"
+                  >
+                    <CalendarIcon className="w-4 h-4" />
+                    <span>View in Liturgical Calendar</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Right Column: Active Fast Season Progress (Seamless, No Outer Card) */}
+              <div className="lg:col-span-7 space-y-6">
+                
+                {/* Header & Days Remaining */}
+                <div className="flex items-start justify-between border-b border-[#E6DFD1] pb-4">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] block">
+                      ACTIVE FAST SEASON
+                    </span>
+                    <h3 className="text-lg md:text-xl font-black font-geez text-[#2C1D07] mt-1">
                       ፆመ ፍልሰታ — Fast of the Dormition (Day 6 of 16)
                     </h3>
                   </div>
-                  <div className="text-right">
-                    <span className="text-2xl font-black text-[#855B09] font-mono">10</span>
-                    <p className="text-[9px] text-[#9CA3AF] font-bold uppercase">Days Remaining</p>
+                  <div className="text-right shrink-0">
+                    <span className="text-3xl font-black text-[#855B09] font-mono leading-none block">10</span>
+                    <span className="text-[9px] text-[#9CA3AF] font-bold uppercase tracking-wider">Days Remaining</span>
                   </div>
                 </div>
 
-                {/* Progress Bar */}
-                <div className="space-y-2 mt-5">
+                {/* Progress Bar and Dates */}
+                <div className="space-y-2.5">
                   <div className="flex justify-between text-xs font-bold">
-                    <span className="text-[#855B09] font-geez">ነሐሴ ፩ (Aug 7) — Start</span>
-                    <span className="text-[#006B3C]">37.5% Completed</span>
-                    <span className="text-[#800020] font-geez">ነሐሴ ፲፮ (Aug 22) — Feast</span>
+                    <div>
+                      <span className="text-[#9CA3AF] text-[10px] block font-normal uppercase">Start</span>
+                      <span className="text-[#855B09] font-geez">ነሐሴ ፩ (Aug 7)</span>
+                    </div>
+                    <div className="text-center self-end">
+                      <span className="text-xs font-bold text-[#2C1D07]">37.5% Completed</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[#9CA3AF] text-[10px] block font-normal uppercase">Feast</span>
+                      <span className="text-[#800020] font-geez">ነሐሴ ፲፮ (Aug 22)</span>
+                    </div>
                   </div>
-                  <div className="h-3 bg-[#FAF8F3] border border-[#E6DFD1] rounded-full overflow-hidden p-0.5">
+
+                  <div className="h-2 bg-[#E6DFD1]/60 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-gradient-to-r from-[#C8A84B] to-[#006B3C] rounded-full transition-all duration-1000 shadow-sm"
+                      className="h-full bg-[#1A2C1C] rounded-full transition-all duration-1000"
                       style={{ width: '37.5%' }}
                     />
                   </div>
-                  <p className="text-[11px] text-[#6B7280] italic text-center pt-1">
+
+                  <p className="text-xs text-[#6B7280] italic text-center pt-2">
                     "And they persevered in the fast of Saint Mary with intense prayers and daily Divine Liturgies..."
                   </p>
                 </div>
 
-                {/* 3 Quick Highlight Stats */}
-                <div className="grid grid-cols-3 gap-3 mt-5">
-                  <div className="p-3 bg-[#FFF5DB] rounded-2xl border border-[#C8A84B]/40 text-center">
-                    <span className="text-[10px] text-[#855B09] font-bold uppercase block">Duration</span>
-                    <span className="text-base font-black text-[#2C1D07] font-mono">16 Days</span>
+                {/* 3 Stats (Clean columns, no boxed containers) */}
+                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-[#E6DFD1] text-center">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider block">
+                      DURATION
+                    </span>
+                    <span className="text-sm md:text-base font-black text-[#2C1D07] font-mono">
+                      16 Days
+                    </span>
                   </div>
-                  <div className="p-3 bg-[#F0FDF4] rounded-2xl border border-[#86EFAC] text-center">
-                    <span className="text-[10px] text-[#15803D] font-bold uppercase block">Liturgies</span>
-                    <span className="text-base font-black text-[#15803D] font-mono">Daily (ዕለታዊ)</span>
+                  <div className="space-y-1 border-x border-[#E6DFD1]">
+                    <span className="text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider block">
+                      LITURGIES
+                    </span>
+                    <span className="text-sm md:text-base font-black text-[#2C1D07] font-mono">
+                      Daily (ዕለታዊ)
+                    </span>
                   </div>
-                  <div className="p-3 bg-[#FAF8F3] rounded-2xl border border-[#E6DFD1] text-center">
-                    <span className="text-[10px] text-[#6B7280] font-bold uppercase block">Feast Culmination</span>
-                    <span className="text-base font-black text-[#800020] font-geez">ዕርገተ ማርያም</span>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider block">
+                      FEAST CULMINATION
+                    </span>
+                    <span className="text-sm md:text-base font-black text-[#800020] font-geez">
+                      ዕርገተ ማርያም
+                    </span>
                   </div>
                 </div>
+
               </div>
 
-              {/* Devotional quote */}
-              <div className="p-4 bg-[#FAF8F3] rounded-2xl border border-[#E6DFD1] flex items-center justify-between text-xs">
-                <span className="font-geez font-bold text-[#2C1D07]">
-                  «ጾምሰ ፡ ትፌውስ ፡ ቁስለ ፡ ነፍስ ፡ ወታበርህ ፡ አዕይንተ ፡ ልብ» — ቅዱስ ያሬድ
-                </span>
-                <span className="text-[10px] text-[#855B09] font-bold shrink-0 ml-3">Saint Yared</span>
+            </div>
+
+            {/* ── 3. THE SEVEN CANONICAL FASTS OF THE CHURCH (TIMELINE WITH CONNECTING LINE) ── */}
+            <div className="space-y-10 pt-6">
+              
+              {/* Section Header (Centered, Clean) */}
+              <div className="text-center space-y-2 max-w-2xl mx-auto">
+                <div className="inline-flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-widest text-[#C8A84B]">
+                  CANONICAL CANON
+                </div>
+                <div className="text-[#C8A84B] text-xs">❖</div>
+                <h2 className="text-2xl md:text-4xl font-black font-serif text-[#2C1D07]">
+                  The Seven Canonical Fasts of the Church
+                </h2>
+                <p className="text-xs sm:text-sm text-[#6B7280]">
+                  Select any fast to explore its biblical foundations, duration, dates, and dietary observance.
+                </p>
               </div>
-            </div>
 
-          </div>
+              {/* Connected Timeline Row */}
+              <div className="relative">
+                
+                {/* Horizontal Connecting Line behind icons */}
+                <div className="hidden lg:block absolute top-[52px] left-12 right-12 h-[1px] bg-[#E6DFD1] z-0" />
 
-          {/* The Seven Fasting Periods Overview & Selector */}
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-            <div className="border-b border-[#E6DFD1] pb-4">
-              <span className="text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider bg-[#FFF5DB] px-3 py-1 rounded-full inline-block mb-2">
-                Canonical Canon • ሰባቱ የቤተ ክርስቲያን ጾሞች
-              </span>
-              <h2 className="text-2xl md:text-3xl font-black font-geez text-[#2C1D07]">
-                {language === 'en' ? 'The Seven Canonical Fasts of the Church' : 'ሰባቱ አጽዋማት (The 7 Canonical Fasts)'}
-              </h2>
-              <p className="text-xs text-[#6B7280] mt-1">
-                Select any fast below to inspect its biblical foundations, duration, dates, and strict dietary observance.
-              </p>
-            </div>
+                {/* 7 Fast Nodes */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-6 relative z-10">
+                  {CANONICAL_FASTS.map((fast) => {
+                    const isSelected = selectedFastId === fast.id;
+                    const avatar = FAST_AVATARS[fast.id] || '/assets/images/crosses_sunset.jpg';
+                    const shortSeason = FAST_SHORT_SEASONS[fast.id] || fast.season;
 
-            {/* 7 Fast Selector Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              {CANONICAL_FASTS.map((fast) => {
-                const isSelected = selectedFastId === fast.id;
-                return (
-                  <button
-                    key={fast.id}
-                    onClick={() => setSelectedFastId(fast.id)}
-                    className={`p-4 rounded-2xl border text-left transition-all space-y-2 flex flex-col justify-between ${
-                      isSelected
-                        ? 'bg-[#1A2C1C] border-[#C8A84B] text-white shadow-lg ring-2 ring-[#C8A84B]/50'
-                        : 'bg-[#FAF8F3] border-[#E6DFD1] hover:border-[#C8A84B] hover:bg-white'
-                    }`}
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
-                          isSelected ? 'bg-[#C8A84B] text-[#1A2C1C]' : 'bg-white text-[#855B09] border border-[#E6DFD1]'
+                    return (
+                      <div
+                        key={fast.id}
+                        onClick={() => setSelectedFastId(fast.id)}
+                        className="flex flex-col items-center text-center cursor-pointer group space-y-2.5 transition-transform"
+                      >
+                        {/* Duration Badge */}
+                        <span className={`text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                          isSelected ? 'text-[#855B09] font-black' : 'text-[#855B09]'
                         }`}>
-                          {fast.durationDays} Days
+                          {fast.durationDays} DAYS
                         </span>
-                        <span className={`text-[10px] font-mono ${isSelected ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`}>
-                          {fast.season.split('(')[0]}
+
+                        {/* Circular Image Node */}
+                        <div
+                          className={`w-16 h-16 rounded-full overflow-hidden border-2 transition-all p-0.5 bg-white shadow-xs ${
+                            isSelected
+                              ? 'border-[#C8A84B] ring-4 ring-[#C8A84B]/20 scale-105'
+                              : 'border-[#E6DFD1] group-hover:border-[#C8A84B]'
+                          }`}
+                        >
+                          <img
+                            src={avatar}
+                            alt={fast.nameEnglish}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        </div>
+
+                        {/* Fast Name */}
+                        <div className="space-y-0.5">
+                          <h4 className="text-xs font-black font-geez text-[#2C1D07] group-hover:text-[#855B09] transition-colors leading-tight">
+                            {fast.nameAmharic.split('(')[0]}
+                          </h4>
+                          <p className="text-[10px] text-[#4A3B22] font-medium leading-tight">
+                            {fast.nameAmharic.includes('(') ? `(${fast.nameAmharic.split('(')[1]}` : `(${fast.nameEnglish})`}
+                          </p>
+                        </div>
+
+                        {/* Season Subtext */}
+                        <span className="text-[10px] text-[#9CA3AF] leading-tight block">
+                          {shortSeason}
                         </span>
                       </div>
-                      <h4 className="text-sm font-black font-geez leading-snug">{fast.nameAmharic}</h4>
-                      <p className={`text-[10px] leading-tight ${isSelected ? 'text-[#94A3B8]' : 'text-[#6B7280]'}`}>
-                        {fast.nameEnglish}
+                    );
+                  })}
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* ── 4. SELECTED FAST DETAIL (SEAMLESS CARDLESS DOSSIER WITH EXTENSIVE EXPLANATIONS) ── */}
+            <div className="pt-8 border-t border-[#E6DFD1] space-y-8">
+              
+              {/* Header Row: Badges, Full Titles, Canonical Origin (No Zema Button) */}
+              <div className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-[#FFF5DB] text-[#855B09] border border-[#C8A84B]/40">
+                    {currentFast.durationDays} TOTAL DAYS
+                  </span>
+                  <span className="text-xs font-bold text-[#855B09] bg-[#FAF8F3] px-3 py-1 rounded-full border border-[#E6DFD1]">
+                    {currentFast.season}
+                  </span>
+                  <span className="text-[10px] font-semibold text-[#15803D] bg-[#F0FDF4] px-3 py-1 rounded-full border border-[#86EFAC]/60">
+                    Canonical Authority: {currentFast.canonicalOrigin}
+                  </span>
+                </div>
+
+                <h3 className="text-2xl md:text-3xl font-black font-geez text-[#2C1D07] pt-1">
+                  {currentFast.nameAmharic} — {currentFast.nameEnglish}
+                </h3>
+              </div>
+
+              {/* Main 2-Column Split: Image on Left + Comprehensive Theological Dossier on Right */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                
+                {/* Left Column: Atmospheric Sacred Image + Quick Summary Card */}
+                <div className="lg:col-span-4 space-y-4">
+                  <div className="h-[280px] lg:h-[360px] rounded-3xl overflow-hidden shadow-lg border border-[#E6DFD1]">
+                    <img
+                      src={FAST_AVATARS[currentFast.id] || '/assets/images/crosses_sunset.jpg'}
+                      alt={currentFast.nameEnglish}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Biblical Foundation Highlight */}
+                  <div className="p-4 rounded-2xl bg-[#FFF5DB] border border-[#C8A84B]/40 space-y-1.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1.5">
+                      <Star className="w-3.5 h-3.5 text-[#855B09]" />
+                      BIBLICAL FOUNDATION • የመጽሐፍ ቅዱስ መሠረት
+                    </span>
+                    <p className="text-sm font-black font-geez text-[#2C1D07]">
+                      {currentFast.scriptureReference}
+                    </p>
+                    <p className="text-[11px] text-[#6B7280] italic">
+                      Derived from the Holy Apostles, Ecumenical Councils, and the Fetha Negest (ሕገ መንግሥት ቀኖና).
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right Column: In-Depth Breakdown Sections */}
+                <div className="lg:col-span-8 space-y-6">
+                  
+                  {/* 1. Spiritual Purpose & Significance */}
+                  <div className="space-y-2.5 pb-5 border-b border-[#E6DFD1]">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1.5">
+                      <BookOpen className="w-4 h-4 text-[#855B09]" />
+                      1. SPIRITUAL PURPOSE & THEOLOGY (መንፈሳዊ ዓላማና ትርጉም)
+                    </span>
+                    <p className="text-xs sm:text-sm text-[#3D3020] leading-relaxed">
+                      {language === 'en' ? currentFast.descriptionEn : currentFast.descriptionAm}
+                    </p>
+
+                    {/* Core Spiritual Themes Checklist */}
+                    <div className="pt-2">
+                      <span className="text-[10px] font-bold uppercase text-[#855B09] block mb-2">
+                        {language === 'en' ? 'Core Spiritual Pillars & Meditations:' : 'የጾሙ ዋና ዋና መንፈሳዊ ምሰሶዎች:'}
+                      </span>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {(language === 'en' ? currentFast.spiritualThemesEn : currentFast.spiritualThemesAm).map((theme, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs text-[#4A3B22]">
+                            <Check className="w-3.5 h-3.5 text-[#006B3C] shrink-0 mt-0.5" />
+                            <span>{theme}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Historical & Patristic Background */}
+                  <div className="space-y-2 pb-5 border-b border-[#E6DFD1]">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1.5">
+                      <Award className="w-4 h-4 text-[#855B09]" />
+                      2. HISTORICAL & PATRISTIC ORIGIN (ታሪካዊና ቀኖናዊ አመጣጥ)
+                    </span>
+                    <p className="text-xs sm:text-sm text-[#3D3020] leading-relaxed">
+                      {language === 'en' ? currentFast.historicalBackgroundEn : currentFast.historicalBackgroundAm}
+                    </p>
+                  </div>
+
+                  {/* 3. Liturgical Practices & Hymnody */}
+                  <div className="space-y-2 pb-5 border-b border-[#E6DFD1]">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1.5">
+                      <Music className="w-4 h-4 text-[#855B09]" />
+                      3. LITURGICAL RITES & HYMNODY (የሥርዓተ አምልኮና የዜማ ሥርዓት)
+                    </span>
+                    <p className="text-xs sm:text-sm text-[#3D3020] leading-relaxed">
+                      {language === 'en' ? currentFast.liturgicalPracticesEn : currentFast.liturgicalPracticesAm}
+                    </p>
+                  </div>
+
+                  {/* 4. Dietary Observance & Abstinence Timing */}
+                  <div className="space-y-2.5">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#15803D] flex items-center gap-1.5">
+                      <Shield className="w-4 h-4 text-[#15803D]" />
+                      4. CANONICAL DIETARY LAWS & ABSTINENCE (የምግብና የሰዓታት ሥርዓት)
+                    </span>
+                    <p className="text-xs sm:text-sm text-[#065F46] leading-relaxed">
+                      {currentFast.dietaryRules}
+                    </p>
+                    <div className="p-3 bg-[#FAF8F3] rounded-xl border border-[#E6DFD1] text-xs text-[#6B7280] space-y-1">
+                      <p className="font-bold text-[#855B09]">
+                        Strict Prohibition: Meat, Poultry, Fish, Eggs, Milk, Butter, Animal Cheese & Animal Fats.
+                      </p>
+                      <p className="text-[11px]">
+                        Permitted: All legumes, vegetables, fruits, cereals, grains, bread, and vegetable oils.
                       </p>
                     </div>
-
-                    <div className="pt-2 flex items-center justify-between text-[10px] font-bold">
-                      <span className={isSelected ? 'text-[#C8A84B]' : 'text-[#855B09]'}>
-                        {fast.scriptureReference.split('(')[0]}
-                      </span>
-                      <ArrowRight className="w-3 h-3" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Selected Fast Deep-Dive Dossier */}
-            <div className="p-6 md:p-8 rounded-3xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-6 shadow-inner">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-5">
-                <div>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#1A2C1C] text-[#C8A84B]">
-                      {currentFast.durationDays} Total Days
-                    </span>
-                    <span className="text-xs font-bold text-[#855B09]">{currentFast.season}</span>
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-black font-geez text-[#2C1D07]">
-                    {currentFast.nameAmharic} — {currentFast.nameEnglish}
-                  </h3>
-                </div>
 
-                <button
-                  onClick={() => setActiveTrackId('zema-1')}
-                  className="flex items-center gap-2 bg-[#C8A84B] hover:bg-[#B8973A] text-[#1A2C1C] px-5 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all shrink-0"
-                >
-                  <Volume2 className="w-4 h-4" />
-                  <span>Listen to Fasting Zema</span>
-                </button>
-              </div>
-
-              {/* 3-Column Breakdown */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                
-                {/* Column 1: Theological & Spiritual Purpose */}
-                <div className="p-5 rounded-2xl bg-white border border-[#E6DFD1] space-y-2.5 shadow-sm">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5" />
-                    Spiritual Purpose (መንፈሳዊ ዓላማ)
-                  </span>
-                  <p className="text-xs text-[#4A3B22] leading-relaxed">
-                    {language === 'en' ? currentFast.descriptionEn : currentFast.descriptionAm}
-                  </p>
-                </div>
-
-                {/* Column 2: Dietary Rules & Permitted Foods */}
-                <div className="p-5 rounded-2xl bg-[#F0FDF4] border border-[#86EFAC] space-y-2.5 shadow-sm">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#15803D] flex items-center gap-1.5">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Dietary Observance (የምግብ ሥርዓት)
-                  </span>
-                  <p className="text-xs text-[#065F46] leading-relaxed">
-                    {currentFast.dietaryRules}
-                  </p>
-                  <div className="text-[10px] text-[#15803D] font-bold pt-1 border-t border-[#86EFAC]/50">
-                    Prohibited: Meat, Poultry, Eggs, Milk, Cheese, Animal Butter.
-                  </div>
-                </div>
-
-                {/* Column 3: Biblical Basis & Scripture Quotes */}
-                <div className="p-5 rounded-2xl bg-[#FFF5DB] border border-[#C8A84B]/40 space-y-2.5 shadow-sm">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5" />
-                    Biblical Foundation (የመጽሐፍ ቅዱስ መሠረት)
-                  </span>
-                  <p className="text-sm font-black font-geez text-[#2C1D07]">
-                    {currentFast.scriptureReference}
-                  </p>
-                  <p className="text-xs text-[#6B7280] italic">
-                    Canonical foundation derived from the Holy Apostles and church councils in Fetha Negest.
-                  </p>
                 </div>
 
               </div>
+
             </div>
 
           </div>
-
-          {/* Fasting Rules Reference Guide (4 Structured Pillars) */}
-          <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-            <div className="border-b border-[#E6DFD1] pb-4">
-              <span className="text-[10px] text-[#855B09] font-extrabold uppercase tracking-wider bg-[#FFF5DB] px-3 py-1 rounded-full inline-block mb-2">
-                Fetha Negest Canon • ሥርዓተ ቤተ ክርስቲያን
-              </span>
-              <h2 className="text-2xl font-black font-geez text-[#2C1D07]">
-                {language === 'en' ? 'Complete EOTC Fasting Rules Reference Guide' : 'አጠቃላይ የጾም ሥርዓትና ቀኖና መመሪያ'}
-              </h2>
-              <p className="text-xs text-[#6B7280] mt-1">
-                Canonical standards on vegan diet, daily abstinence timing, prayer prostrations, and legitimate exemptions.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-              
-              {/* Pillar 1: Plant-Based Vegan Diet */}
-              <div className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#F0FDF4] border border-[#86EFAC] flex items-center justify-center text-[#15803D] font-bold">
-                  🌱
-                </div>
-                <h4 className="text-sm font-black font-geez text-[#2C1D07]">1. 100% Vegan Diet</h4>
-                <p className="text-xs text-[#6B7280] leading-relaxed">
-                  All canonical fasts require complete abstinence from all animal products: meat, poultry, fish, eggs, dairy, cheese, milk, and animal fats. Legumes, grains, vegetables, and oils are blessed.
-                </p>
-              </div>
-
-              {/* Pillar 2: Timing & Abstinence Hours */}
-              <div className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FFF5DB] border border-[#C8A84B] flex items-center justify-center text-[#855B09] font-bold">
-                  ⏰
-                </div>
-                <h4 className="text-sm font-black font-geez text-[#2C1D07]">2. Abstinence Timing</h4>
-                <p className="text-xs text-[#6B7280] leading-relaxed">
-                  Fasting days require total abstinence from all food and liquid from midnight until the 9th hour (3:00 PM local / 9:00 local Ethiopic time) or until the Eucharistic Liturgy concludes.
-                </p>
-              </div>
-
-              {/* Pillar 3: Canonical Exemptions */}
-              <div className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-[#1D4ED8] font-bold">
-                  🛡️
-                </div>
-                <h4 className="text-sm font-black font-geez text-[#2C1D07]">3. Legitimate Exemptions</h4>
-                <p className="text-xs text-[#6B7280] leading-relaxed">
-                  Children under 7 years, the severely ill, the elderly, pregnant or nursing mothers, and soldiers in battle may receive pastoral dispensation from their father confessor (የነፍስ አባት).
-                </p>
-              </div>
-
-              {/* Pillar 4: Prayer & Spiritual Works */}
-              <div className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FDF2F2] border border-[#FECACA] flex items-center justify-center text-[#991B1B] font-bold">
-                  🕊️
-                </div>
-                <h4 className="text-sm font-black font-geez text-[#2C1D07]">4. Prayer & Almsgiving</h4>
-                <p className="text-xs text-[#6B7280] leading-relaxed">
-                  Fasting without prayer and charity is merely dieting. Believers perform prostrations (ስግደት), attend morning Qidase, forgive grievances, and give alms to the needy (ምጽዋት).
-                </p>
-              </div>
-
-            </div>
-          </div>
-
-        </div>
-      )}
+        );
+      })()}
 
       {/* ═══════════════════════════════════════════
-          VIEW 6: SERMONS (FULL)
+      {/* ═══════════════════════════════════════════
+          VIEW 6: SERMONS & TEACHINGS (YOUTUBE DESIGN)
       ═══════════════════════════════════════════ */}
       {subTab === 'sermons' && (() => {
         const featuredSermon = MOCK_SERMONS.find((s) => s.isFeatured) || MOCK_SERMONS[0];
 
-        // Filter sermons by search query and active tab filters
-        const filteredSermons = MOCK_SERMONS.filter((s) => {
-          // Search query matching
+        // Filter sermons by category pill, search query, and sort
+        const categoryFilter = (s: SermonItem) => {
+          if (sermonCategoryPill === 'All') return true;
+          if (sermonCategoryPill === 'Feasts') return s.category === 'Feasts' || s.category === 'Feast of Tabor' || !!s.feastDay;
+          if (sermonCategoryPill === 'Gospel') return s.category === 'Gospel' || s.scriptureTheme.includes('Matthew') || s.scriptureTheme.includes('Luke') || s.scriptureTheme.includes('John');
+          if (sermonCategoryPill === 'Faith') return s.category === 'Faith';
+          if (sermonCategoryPill === 'Prayer') return s.category === 'Prayer';
+          if (sermonCategoryPill === 'Family') return s.category === 'Family' || s.category === 'Youth & Family';
+          if (sermonCategoryPill === 'Youth') return s.category === 'Youth' || s.category === 'Youth & Family';
+          if (sermonCategoryPill === 'Church Life') return s.category === 'Church History' || s.category === 'Spiritual Life' || s.category === 'Theology';
+          return s.category === sermonCategoryPill;
+        };
+
+        const searchFilter = (s: SermonItem) => {
           const q = sermonSearchQuery.toLowerCase().trim();
-          const matchesQuery = !q || (
+          if (!q) return true;
+          return (
             s.titleAmharic.toLowerCase().includes(q) ||
             s.titleEnglish.toLowerCase().includes(q) ||
             s.preacher.toLowerCase().includes(q) ||
@@ -1582,30 +1615,37 @@ export const WorshipView: React.FC = () => {
             s.scriptureTheme.toLowerCase().includes(q) ||
             s.summary.toLowerCase().includes(q)
           );
+        };
 
-          if (!matchesQuery) return false;
-
-          // Tab-specific filters
-          if (sermonFilterTab === 'feast' && selectedFeastFilter !== 'ALL') {
-            return s.feastDay?.includes(selectedFeastFilter);
+        const sortedSermons = [...MOCK_SERMONS].sort((a, b) => {
+          if (sermonSortBy === 'Most Popular') {
+            const viewsA = parseFloat((a.views || '0').replace(/[^0-9.]/g, ''));
+            const viewsB = parseFloat((b.views || '0').replace(/[^0-9.]/g, ''));
+            return viewsB - viewsA;
           }
-          if (sermonFilterTab === 'preacher' && selectedPreacherFilter !== 'ALL') {
-            return s.preacher.includes(selectedPreacherFilter);
-          }
-          if (sermonFilterTab === 'topic' && selectedTopicFilter !== 'ALL') {
-            return s.category === selectedTopicFilter;
-          }
-
-          return true;
+          return 0;
         });
 
-        // Preachers list for filter
-        const uniquePreachers = Array.from(new Set(MOCK_SERMONS.map((s) => s.preacher.split('(')[0].trim())));
-        const uniqueTopics = Array.from(new Set(MOCK_SERMONS.map((s) => s.category)));
-        const uniqueFeasts = Array.from(new Set(MOCK_SERMONS.filter((s) => s.feastDay).map((s) => s.feastDay!)));
+        const latestSermons = sortedSermons
+          .filter((s) => s.id !== featuredSermon.id)
+          .filter(categoryFilter)
+          .filter(searchFilter)
+          .slice(0, 5);
+
+        const popularSermons = sortedSermons
+          .filter((s) => s.id.includes('popular') || (s.views && parseFloat(s.views) > 40))
+          .filter(searchFilter)
+          .slice(0, 5);
+
+        const toggleBookmark = (id: string, e: React.MouseEvent) => {
+          e.stopPropagation();
+          setSavedSermons((prev) =>
+            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+          );
+        };
 
         return (
-          <div className="space-y-8 animate-fadeIn pb-12">
+          <div className="flex flex-col lg:flex-row gap-8 items-start animate-fadeIn pb-16">
 
             {/* Share Toast */}
             {sermonShareToast && (
@@ -1615,548 +1655,639 @@ export const WorshipView: React.FC = () => {
               </div>
             )}
 
-            {/* Top Header & Search Bar */}
-            <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-6">
-                <div>
-                  <button onClick={() => setSubTab('hub')} className="inline-flex items-center gap-1 text-xs text-[#855B09] font-bold hover:text-[#2C1D07] mb-2 transition-colors">
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>{language === 'en' ? 'Back to Worship Hub' : 'ወደ ማዕከሉ ተመለስ'}</span>
+            {/* ═══════════════════════════════════════════
+                LEFT SIDEBAR (PLAYLISTS, SUBSCRIBE)
+            ═══════════════════════════════════════════ */}
+            <aside className="w-full lg:w-64 shrink-0 space-y-6">
+              
+              {/* Category: PLAYLISTS */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#855B09] px-3 block">
+                  PLAYLISTS
+                </span>
+                <nav className="space-y-0.5 text-xs text-[#4A3B22]">
+                  {[
+                    'Feast Day Sermons',
+                    'Sunday Gospel Reflections',
+                    'Lent Teachings',
+                    'Youth Messages',
+                    'Family & Life',
+                  ].map((playlist, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        if (playlist.includes('Feast')) setSermonCategoryPill('Feasts');
+                        else if (playlist.includes('Gospel')) setSermonCategoryPill('Gospel');
+                        else if (playlist.includes('Lent')) setSermonCategoryPill('Faith');
+                        else if (playlist.includes('Youth')) setSermonCategoryPill('Youth');
+                        else if (playlist.includes('Family')) setSermonCategoryPill('Family');
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#FAF8F3] transition-colors text-left group"
+                    >
+                      <ListMusic className="w-4 h-4 text-[#9CA3AF] group-hover:text-[#855B09] transition-colors" />
+                      <span className="truncate">{playlist}</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setSermonCategoryPill('All')}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-[#855B09] hover:text-[#2C1D07] transition-colors pt-2"
+                  >
+                    <span>View all playlists</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
-                  <div className="inline-flex items-center gap-2 bg-[#F5F3FF] border border-[#DDD6FE] px-3.5 py-1 rounded-full text-xs text-[#7C3AED] font-bold uppercase tracking-wider mb-2">
-                    <Mic2 className="w-3.5 h-3.5" />
-                    <span>ቅዱሳን ስብከቶች • Sacred Homilies & Teachings</span>
-                  </div>
-                  <h2 className="text-2xl md:text-3xl font-black text-[#2C1D07] font-geez">
-                    {language === 'en' ? 'Sermons & Spiritual Teachings' : 'ስብከቶችና መንፈሳዊ ትምህርቶች'}
-                  </h2>
-                  <p className="text-xs text-[#6B7280] mt-1">
-                    Authentic Orthodox homilies from His Holiness the Patriarch, esteemed scholars, and ordained clergy.
+                </nav>
+              </div>
+
+              {/* Stay Inspired Subscription Card */}
+              <div className="p-5 rounded-3xl bg-[#FAF8F3] border border-[#E6DFD1] text-center space-y-3 shadow-xs">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-white border border-[#E6DFD1] flex items-center justify-center shadow-xs">
+                  <BookOpen className="w-6 h-6 text-[#C8A84B]" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-black text-[#2C1D07] font-serif">
+                    Stay inspired
+                  </h4>
+                  <p className="text-[11px] text-[#6B7280] leading-relaxed">
+                    Subscribe to receive updates when new sermons are published.
                   </p>
                 </div>
+                <button
+                  onClick={() => setIsSubscribed(!isSubscribed)}
+                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
+                    isSubscribed
+                      ? 'bg-[#15803D] text-white'
+                      : 'bg-[#1A2C1C] hover:bg-[#0D1A0F] text-white'
+                  }`}
+                >
+                  <Bell className="w-3.5 h-3.5 text-[#C8A84B]" />
+                  <span>{isSubscribed ? 'Subscribed ✓' : 'Subscribe Now'}</span>
+                  <ChevronDown className="w-3 h-3 text-[#C8A84B]" />
+                </button>
+              </div>
 
-                {/* Search Input */}
-                <div className="w-full lg:w-96 relative">
+            </aside>
+
+            {/* ═══════════════════════════════════════════
+                MAIN CONTENT AREA (HEADER, FEATURED, VIDEOS)
+            ═══════════════════════════════════════════ */}
+            <main className="flex-1 min-w-0 space-y-8">
+              
+              {/* Breadcrumb & Header Title */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-[11px] text-[#855B09] font-medium">
+                  <button onClick={() => setSubTab('hub')} className="hover:underline">Home</button>
+                  <span>›</span>
+                  <button onClick={() => setSubTab('hub')} className="hover:underline">Orthodox Resources</button>
+                  <span>›</span>
+                  <span className="text-[#2C1D07] font-bold">Sermons & Teachings</span>
+                </div>
+
+                <h1 className="text-3xl md:text-4xl font-black font-serif text-[#2C1D07]">
+                  Sermons & Teachings
+                </h1>
+                <p className="text-xs sm:text-sm text-[#6B7280]">
+                  Listen, watch, and learn from the teachings of our fathers to strengthen our faith and walk with Christ.
+                </p>
+              </div>
+
+              {/* Search Bar & Sort Dropdown */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                
+                {/* Search Input with Filter Icon */}
+                <div className="w-full sm:max-w-xl relative">
                   <Search className="w-4 h-4 text-[#9CA3AF] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={sermonSearchQuery}
                     onChange={(e) => setSermonSearchQuery(e.target.value)}
-                    placeholder={language === 'en' ? 'Search by preacher, feast, scripture...' : 'ስብከት፣ መምህር፣ በዓል ይፈልጉ...'}
-                    className="w-full pl-10 pr-4 py-2.5 bg-[#FAF8F3] border border-[#E6DFD1] focus:border-[#7C3AED] focus:bg-white rounded-xl text-xs text-[#2C1D07] font-medium placeholder-[#9CA3AF] focus:outline-none transition-all shadow-inner"
+                    placeholder="Search sermons, speakers, topics..."
+                    className="w-full pl-10 pr-10 py-2.5 bg-white border border-[#E6DFD1] focus:border-[#C8A84B] rounded-xl text-xs text-[#2C1D07] placeholder-[#9CA3AF] focus:outline-none transition-all shadow-xs"
                   />
-                  {sermonSearchQuery && (
-                    <button
-                      onClick={() => setSermonSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-[#9CA3AF] hover:text-[#2C1D07]"
-                    >
-                      ✕
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setSermonSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#2C1D07]"
+                    title="Filters"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                  </button>
                 </div>
+
+                {/* Sort Dropdown */}
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                  <span className="text-xs text-[#6B7280]">Sort by:</span>
+                  <select
+                    value={sermonSortBy}
+                    onChange={(e) => setSermonSortBy(e.target.value as any)}
+                    className="bg-white border border-[#E6DFD1] text-xs font-semibold text-[#2C1D07] py-2 px-3 rounded-xl focus:outline-none focus:border-[#C8A84B] shadow-xs cursor-pointer"
+                  >
+                    <option value="Newest">Newest</option>
+                    <option value="Most Popular">Most Popular</option>
+                    <option value="Oldest">Oldest</option>
+                  </select>
+                </div>
+
               </div>
 
-              {/* Filter Tabs (Latest / By Feast / By Preacher / By Topic) */}
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09] mr-2">Filter Tabs:</span>
-                  {[
-                    { id: 'all', label: 'Latest (ሁሉም)' },
-                    { id: 'feast', label: 'By Feast (በበዓላት)' },
-                    { id: 'preacher', label: 'By Preacher (በመምህራን)' },
-                    { id: 'topic', label: 'By Topic (በርዕሰ ጉዳይ)' },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setSermonFilterTab(tab.id as any)}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                        sermonFilterTab === tab.id
-                          ? 'bg-[#7C3AED] text-white shadow-md'
-                          : 'bg-[#FAF8F3] text-[#6B7280] hover:text-[#2C1D07] border border-[#E6DFD1] hover:bg-white'
-                      }`}
+              {/* ── FEATURED SERMON (YOUTUBE-STYLE SPLIT HERO) ── */}
+              {!sermonSearchQuery && (
+                <div className="bg-white rounded-3xl border border-[#E6DFD1] p-6 md:p-8 shadow-xs grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
+                  
+                  {/* Left Column: 16:9 Video Thumbnail with Play Button */}
+                  <div
+                    onClick={() => setActiveVideoModal(featuredSermon)}
+                    className="lg:col-span-7 aspect-video relative rounded-2xl overflow-hidden shadow-md cursor-pointer group bg-black"
+                  >
+                    <img
+                      src={featuredSermon.thumbnailUrl || '/assets/images/sermon_hero_priest.jpg'}
+                      alt={featuredSermon.titleEnglish}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+
+                    {/* Dark gradient overlay on thumbnail */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
+
+                    {/* Center Circular Play Button */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-white/90 group-hover:bg-white text-[#1A2C1C] flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <Play className="w-6 h-6 fill-current ml-1" />
+                      </div>
+                    </div>
+
+                    {/* Duration Badge Bottom Right */}
+                    <div className="absolute bottom-3 right-3 bg-black/80 text-white text-[11px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
+                      {featuredSermon.duration}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Featured Sermon Details */}
+                  <div className="lg:col-span-5 space-y-4">
+                    
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#855B09] block">
+                      FEATURED SERMON
+                    </span>
+
+                    <div className="space-y-1">
+                      <h2 className="text-2xl md:text-3xl font-black font-serif text-[#2C1D07] leading-tight">
+                        {featuredSermon.titleEnglish}
+                      </h2>
+                      <p className="text-base font-black font-geez text-[#855B09]">
+                        {featuredSermon.titleAmharic}
+                      </p>
+                    </div>
+
+                    {/* Preacher & Scripture Details */}
+                    <div className="space-y-1 text-xs text-[#6B7280]">
+                      <div className="flex items-center gap-1.5 text-[#2C1D07] font-semibold">
+                        <User className="w-3.5 h-3.5 text-[#855B09]" />
+                        <span>By {featuredSermon.preacher}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px]">
+                        <span>📅 {featuredSermon.ethiopianDate}</span>
+                        <span>•</span>
+                        <span>{featuredSermon.gregorianDate}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-[#855B09] font-medium pt-0.5">
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>{featuredSermon.scriptureTheme}</span>
+                      </div>
+                    </div>
+
+                    {/* Summary */}
+                    <p className="text-xs text-[#4A3B22] leading-relaxed">
+                      {featuredSermon.summary}
+                    </p>
+
+                    {/* Action Buttons Row */}
+                    <div className="flex flex-wrap items-center gap-2.5 pt-2">
+                      <button
+                        onClick={() => {
+                          if (featuredSermon.audioTrackId) setActiveTrackId(featuredSermon.audioTrackId);
+                        }}
+                        className="inline-flex items-center gap-2 bg-[#1A2C1C] hover:bg-[#0D1A0F] text-[#FAF8F3] px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
+                      >
+                        <Headphones className="w-3.5 h-3.5 text-[#C8A84B]" />
+                        <span>Listen</span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveVideoModal(featuredSermon)}
+                        className="inline-flex items-center gap-2 bg-white hover:bg-[#FAF8F3] text-[#2C1D07] border border-[#E6DFD1] px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      >
+                        <Play className="w-3.5 h-3.5 text-[#855B09] fill-current" />
+                        <span>Watch</span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveSermonModal(featuredSermon)}
+                        className="inline-flex items-center gap-2 bg-white hover:bg-[#FAF8F3] text-[#2C1D07] border border-[#E6DFD1] px-4 py-2.5 rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      >
+                        <FileText className="w-3.5 h-3.5 text-[#855B09]" />
+                        <span>Read</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => toggleBookmark(featuredSermon.id, e)}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          savedSermons.includes(featuredSermon.id)
+                            ? 'bg-[#FFF5DB] border-[#C8A84B] text-[#855B09]'
+                            : 'bg-white border-[#E6DFD1] text-[#6B7280] hover:text-[#2C1D07]'
+                        }`}
+                        title="Bookmark"
+                      >
+                        <Bookmark className={`w-3.5 h-3.5 ${savedSermons.includes(featuredSermon.id) ? 'fill-current' : ''}`} />
+                      </button>
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
+
+              {/* ── LATEST SERMONS SECTION (HORIZONTAL FILTER PILLS & 5-COLUMN VIDEO GRID) ── */}
+              <div className="space-y-4">
+                
+                {/* Section Header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black font-serif text-[#2C1D07]">
+                    Latest Sermons
+                  </h3>
+                  <button
+                    onClick={() => setSermonCategoryPill('All')}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#855B09] hover:text-[#2C1D07] transition-colors"
+                  >
+                    <span>View all sermons</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
+
+                {/* Category Filter Pills (Scrollable Row) */}
+                <div className="flex items-center justify-between gap-3 overflow-x-auto pb-1 scrollbar-none">
+                  <div className="flex items-center gap-2 shrink-0">
+                    {[
+                      'All',
+                      'Feasts',
+                      'Gospel',
+                      'Faith',
+                      'Prayer',
+                      'Family',
+                      'Youth',
+                      'Church Life',
+                    ].map((cat) => {
+                      const isSelected = sermonCategoryPill === cat;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setSermonCategoryPill(cat)}
+                          className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#1A2C1C] text-white shadow-xs'
+                              : 'bg-white hover:bg-[#FAF8F3] text-[#4A3B22] border border-[#E6DFD1]'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setSermonCategoryPill('All')}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E6DFD1] hover:bg-[#FAF8F3] text-xs font-bold text-[#4A3B22] shrink-0 cursor-pointer shadow-xs"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-[#855B09]" />
+                    <span>Filters</span>
+                  </button>
+                </div>
+
+                {/* 5-Column Video Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {latestSermons.map((sermon) => (
+                    <div
+                      key={sermon.id}
+                      onClick={() => setActiveVideoModal(sermon)}
+                      className="group cursor-pointer space-y-2.5 flex flex-col justify-between"
                     >
-                      {tab.label}
-                    </button>
+                      {/* Video Thumbnail (16:9 with duration badge) */}
+                      <div className="aspect-video relative rounded-2xl overflow-hidden shadow-xs border border-[#E6DFD1] bg-black">
+                        <img
+                          src={sermon.thumbnailUrl || '/assets/images/sermon_prayer_candle.jpg'}
+                          alt={sermon.titleEnglish}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-white/90 group-hover:bg-white text-[#1A2C1C] flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-md group-hover:scale-105 transition-all">
+                            <Play className="w-4 h-4 fill-current ml-0.5" />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-mono font-bold px-1.5 py-0.5 rounded backdrop-blur-xs">
+                          {sermon.duration}
+                        </div>
+                      </div>
+
+                      {/* Video Info (Title, 3-dots, Preacher, Dates) */}
+                      <div className="space-y-1">
+                        <div className="flex items-start justify-between gap-1">
+                          <div className="space-y-0.5 min-w-0">
+                            <h4 className="text-xs font-black text-[#2C1D07] group-hover:text-[#855B09] transition-colors line-clamp-1 leading-snug">
+                              {sermon.titleEnglish}
+                            </h4>
+                            <p className="text-[11px] font-black font-geez text-[#4A3B22] truncate">
+                              {sermon.titleAmharic}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSermonModal(sermon);
+                            }}
+                            className="text-[#9CA3AF] hover:text-[#2C1D07] p-0.5 shrink-0"
+                            title="More details"
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <p className="text-[11px] text-[#6B7280] truncate font-medium">
+                          {sermon.preacher}
+                        </p>
+
+                        <div className="text-[10px] text-[#9CA3AF] space-y-0.5">
+                          <p className="truncate">{sermon.ethiopianDate || sermon.date}</p>
+                          <p className="truncate">{sermon.gregorianDate || sermon.date}</p>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
 
-                {/* Sub-Filter Pill Row */}
-                {sermonFilterTab === 'preacher' && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#E6DFD1]/60">
-                    <span className="text-[10px] font-bold text-[#6B7280] mr-1">Preacher:</span>
-                    <button
-                      onClick={() => setSelectedPreacherFilter('ALL')}
-                      className={`px-3 py-1 rounded-lg text-[11px] font-bold ${
-                        selectedPreacherFilter === 'ALL' ? 'bg-[#1A2C1C] text-[#C8A84B]' : 'bg-[#FAF8F3] text-[#6B7280] border border-[#E6DFD1]'
-                      }`}
-                    >
-                      All Preachers
-                    </button>
-                    {uniquePreachers.map((pr) => (
-                      <button
-                        key={pr}
-                        onClick={() => setSelectedPreacherFilter(pr)}
-                        className={`px-3 py-1 rounded-lg text-[11px] font-bold font-geez transition-all ${
-                          selectedPreacherFilter === pr ? 'bg-[#7C3AED] text-white shadow-sm' : 'bg-[#FAF8F3] text-[#6B7280] hover:bg-white border border-[#E6DFD1]'
-                        }`}
-                      >
-                        {pr}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {sermonFilterTab === 'topic' && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#E6DFD1]/60">
-                    <span className="text-[10px] font-bold text-[#6B7280] mr-1">Topic:</span>
-                    <button
-                      onClick={() => setSelectedTopicFilter('ALL')}
-                      className={`px-3 py-1 rounded-lg text-[11px] font-bold ${
-                        selectedTopicFilter === 'ALL' ? 'bg-[#1A2C1C] text-[#C8A84B]' : 'bg-[#FAF8F3] text-[#6B7280] border border-[#E6DFD1]'
-                      }`}
-                    >
-                      All Topics
-                    </button>
-                    {uniqueTopics.map((top) => (
-                      <button
-                        key={top}
-                        onClick={() => setSelectedTopicFilter(top)}
-                        className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                          selectedTopicFilter === top ? 'bg-[#7C3AED] text-white shadow-sm' : 'bg-[#FAF8F3] text-[#6B7280] hover:bg-white border border-[#E6DFD1]'
-                        }`}
-                      >
-                        {top}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {sermonFilterTab === 'feast' && (
-                  <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-[#E6DFD1]/60">
-                    <span className="text-[10px] font-bold text-[#6B7280] mr-1">Feast:</span>
-                    <button
-                      onClick={() => setSelectedFeastFilter('ALL')}
-                      className={`px-3 py-1 rounded-lg text-[11px] font-bold ${
-                        selectedFeastFilter === 'ALL' ? 'bg-[#1A2C1C] text-[#C8A84B]' : 'bg-[#FAF8F3] text-[#6B7280] border border-[#E6DFD1]'
-                      }`}
-                    >
-                      All Feasts
-                    </button>
-                    {uniqueFeasts.map((fst) => (
-                      <button
-                        key={fst}
-                        onClick={() => setSelectedFeastFilter(fst)}
-                        className={`px-3 py-1 rounded-lg text-[11px] font-bold font-geez transition-all ${
-                          selectedFeastFilter === fst ? 'bg-[#7C3AED] text-white shadow-sm' : 'bg-[#FAF8F3] text-[#6B7280] hover:bg-white border border-[#E6DFD1]'
-                        }`}
-                      >
-                        {fst}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
-            </div>
 
-            {/* Featured Sermon Highlight Hero (Top) */}
-            {!sermonSearchQuery && sermonFilterTab === 'all' && (
-              <div className="bg-gradient-to-br from-[#1E1B4B] via-[#2E1065] to-[#0F172A] p-8 md:p-10 rounded-3xl text-white space-y-6 relative overflow-hidden shadow-2xl border border-[#C8A84B]/40">
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-tr from-[#7C3AED]/30 via-[#C8A84B]/20 to-transparent rounded-full blur-3xl pointer-events-none" />
+              {/* ── POPULAR THIS MONTH SECTION ── */}
+              <div className="space-y-4 pt-4 border-t border-[#E6DFD1]">
+                
+                {/* Section Header */}
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black font-serif text-[#2C1D07]">
+                    Popular This Month
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setSermonSortBy('Most Popular');
+                      setSermonCategoryPill('All');
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#855B09] hover:text-[#2C1D07] transition-colors"
+                  >
+                    <span>View all popular</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </button>
+                </div>
 
-                <div className="relative z-10 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#C8A84B] text-[#1A2C1C] shadow-sm">
-                        <Star className="w-3 h-3 fill-current" />
-                        Featured Patriarchal Teaching
+                {/* 5-Column Video Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {popularSermons.map((sermon) => (
+                    <div
+                      key={sermon.id}
+                      onClick={() => setActiveVideoModal(sermon)}
+                      className="group cursor-pointer space-y-2.5 flex flex-col justify-between"
+                    >
+                      {/* Video Thumbnail (16:9 with duration badge) */}
+                      <div className="aspect-video relative rounded-2xl overflow-hidden shadow-xs border border-[#E6DFD1] bg-black">
+                        <img
+                          src={sermon.thumbnailUrl || '/assets/images/why_eotc_banner.jpg'}
+                          alt={sermon.titleEnglish}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/25 transition-colors flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-white/90 group-hover:bg-white text-[#1A2C1C] flex items-center justify-center opacity-0 group-hover:opacity-100 shadow-md group-hover:scale-105 transition-all">
+                            <Play className="w-4 h-4 fill-current ml-0.5" />
+                          </div>
+                        </div>
+                        <div className="absolute bottom-2 right-2 bg-black/80 text-white text-[10px] font-mono font-bold px-1.5 py-0.5 rounded backdrop-blur-xs">
+                          {sermon.duration}
+                        </div>
+                      </div>
+
+                      {/* Video Info */}
+                      <div className="space-y-1">
+                        <div className="flex items-start justify-between gap-1">
+                          <div className="space-y-0.5 min-w-0">
+                            <h4 className="text-xs font-black text-[#2C1D07] group-hover:text-[#855B09] transition-colors line-clamp-1 leading-snug">
+                              {sermon.titleEnglish}
+                            </h4>
+                            <p className="text-[11px] font-black font-geez text-[#4A3B22] truncate">
+                              {sermon.titleAmharic}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveSermonModal(sermon);
+                            }}
+                            className="text-[#9CA3AF] hover:text-[#2C1D07] p-0.5 shrink-0"
+                            title="More details"
+                          >
+                            <MoreVertical className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <p className="text-[11px] text-[#6B7280] truncate font-medium">
+                          {sermon.preacher}
+                        </p>
+
+                        <div className="flex items-center justify-between text-[10px] text-[#9CA3AF] pt-0.5">
+                          <span>{sermon.views || '35.4K views'}</span>
+                          <span>•</span>
+                          <span>{sermon.gregorianDate || sermon.date}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+
+            </main>
+
+            {/* ═══════════════════════════════════════════
+                YOUTUBE VIDEO THEATRE MODAL
+            ═══════════════════════════════════════════ */}
+            {activeVideoModal && (
+              <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md overflow-y-auto p-4 md:p-8 flex items-center justify-center animate-fadeIn">
+                <div className="w-full max-w-5xl bg-[#121814] text-white rounded-3xl border border-[#C8A84B]/40 shadow-2xl overflow-hidden space-y-6 p-6 md:p-8 relative">
+                  
+                  {/* Top Bar with Title & Close */}
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] text-[#C8A84B] font-extrabold uppercase tracking-widest block">
+                        NOW PLAYING • የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ስብከት
                       </span>
-                      {featuredSermon.feastDay && (
-                        <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-white/10 text-[#C8A84B] border border-white/10 font-geez">
-                          ✦ {featuredSermon.feastDay}
-                        </span>
-                      )}
+                      <h3 className="text-xl md:text-2xl font-black font-serif text-white">
+                        {activeVideoModal.titleEnglish} — <span className="font-geez">{activeVideoModal.titleAmharic}</span>
+                      </h3>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-[#94A3B8] font-mono">
-                      <Clock className="w-3.5 h-3.5 text-[#C8A84B]" />
-                      <span>{featuredSermon.duration}</span>
-                      <span>•</span>
-                      <span>{featuredSermon.date}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl md:text-4xl font-black font-geez text-white leading-tight">
-                      {language === 'en' ? featuredSermon.titleEnglish : featuredSermon.titleAmharic}
-                    </h3>
-                    <p className="text-sm font-bold text-[#C8A84B] font-geez mt-2">{featuredSermon.preacher}</p>
-                    <p className="text-xs text-[#94A3B8]">{featuredSermon.role}</p>
-                  </div>
-
-                  <p className="text-xs md:text-sm text-[#E2E8F0] leading-relaxed max-w-3xl">
-                    {featuredSermon.summary}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-3 pt-2">
-                    <button
-                      onClick={() => {
-                        setActiveSermonModal(featuredSermon);
-                        setSelectedSermonId(featuredSermon.id);
-                        if (featuredSermon.audioTrackId) setActiveTrackId(featuredSermon.audioTrackId);
-                      }}
-                      className="bg-[#C8A84B] hover:bg-[#B8973A] text-[#1A2C1C] px-6 py-3 rounded-2xl text-xs font-black flex items-center gap-2 shadow-lg transition-all"
-                    >
-                      <Play className="w-4 h-4 fill-current" />
-                      <span>Listen / Watch Message ({featuredSermon.duration})</span>
-                    </button>
 
                     <button
-                      onClick={() => {
-                        setActiveSermonModal(featuredSermon);
-                      }}
-                      className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 transition-all shadow-sm"
+                      onClick={() => setActiveVideoModal(null)}
+                      className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#800020] text-white flex items-center justify-center font-bold transition-colors cursor-pointer"
                     >
-                      <FileText className="w-4 h-4 text-[#C8A84B]" />
-                      <span>Read Text Transcript</span>
+                      ✕
                     </button>
                   </div>
+
+                  {/* YouTube Player Screen (Embedded 16:9 Player) */}
+                  <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10 relative">
+                    <iframe
+                      src={`https://www.youtube-nocookie.com/embed/${activeVideoModal.youtubeId || 'dQw4w9WgXcQ'}?autoplay=1&rel=0&modestbranding=1`}
+                      title={activeVideoModal.titleEnglish}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-full border-0"
+                    />
+                  </div>
+
+                  {/* Video Metadata & Controls */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4 text-xs">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-[#C8A84B] font-bold">
+                        <User className="w-4 h-4" />
+                        <span className="font-geez">{activeVideoModal.preacher}</span>
+                        <span>•</span>
+                        <span className="text-white/70 font-normal">{activeVideoModal.role}</span>
+                      </div>
+                      <p className="text-white/60 text-[11px]">
+                        📅 {activeVideoModal.ethiopianDate || activeVideoModal.date} • 📖 {activeVideoModal.scriptureTheme}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard?.writeText(window.location.href);
+                          setSermonShareToast(true);
+                          setTimeout(() => setSermonShareToast(false), 3000);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold flex items-center gap-2 transition-all cursor-pointer"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-[#C8A84B]" />
+                        <span>Share</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          setActiveSermonModal(activeVideoModal);
+                          setActiveVideoModal(null);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-[#C8A84B] hover:bg-[#B8973A] text-[#1A2C1C] font-bold flex items-center gap-2 transition-all cursor-pointer shadow-md"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Read Transcript</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Description Box */}
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-xs text-white/80 leading-relaxed">
+                    <p>{activeVideoModal.summary}</p>
+                  </div>
+
                 </div>
               </div>
             )}
 
-            {/* Sermon List Grid */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-base font-black text-[#2C1D07] font-geez">
-                  {language === 'en' ? 'Sermons Library' : 'የስብከቶች ዝርዝር'} ({filteredSermons.length} sermons)
-                </h3>
-              </div>
-
-              {filteredSermons.length === 0 && (
-                <div className="bg-white p-12 rounded-3xl border border-[#E6DFD1] text-center text-[#9CA3AF] font-geez space-y-2">
-                  <Mic2 className="w-10 h-10 mx-auto opacity-30" />
-                  <p className="font-bold text-sm">ምንም ስብከት አልተገኘም። (No sermons matched your search.)</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredSermons.map((sermon) => {
-                  const isPlaying = activeTrackId === sermon.audioTrackId && selectedSermonId === sermon.id;
-                  return (
-                    <div
-                      key={sermon.id}
-                      className={`bg-white rounded-3xl border transition-all shadow-sm hover:shadow-xl p-6 flex flex-col justify-between space-y-4 group ${
-                        selectedSermonId === sermon.id
-                          ? 'border-[#7C3AED] ring-2 ring-[#DDD6FE]'
-                          : 'border-[#E6DFD1] hover:border-[#7C3AED]'
-                      }`}
-                    >
-                      <div className="space-y-3">
-                        {/* Badges line */}
-                        <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE]">
-                            {sermon.category}
-                          </span>
-                          <div className="flex items-center gap-1.5 text-[10px] text-[#9CA3AF] font-mono">
-                            {sermon.mediaType === 'video' ? <Video className="w-3 h-3 text-[#7C3AED]" /> : <Headphones className="w-3 h-3 text-[#855B09]" />}
-                            <span>{sermon.duration}</span>
-                          </div>
-                        </div>
-
-                        {/* Title */}
-                        <h4 className="text-base font-black text-[#2C1D07] font-geez leading-snug group-hover:text-[#7C3AED] transition-colors line-clamp-2">
-                          {language === 'en' ? sermon.titleEnglish : sermon.titleAmharic}
-                        </h4>
-
-                        {/* Preacher Profile box */}
-                        <div className="p-3.5 bg-[#FAF8F3] rounded-2xl border border-[#E6DFD1] space-y-0.5">
-                          <div className="flex items-center gap-1.5 text-xs font-bold text-[#2C1D07] font-geez truncate">
-                            <User className="w-3.5 h-3.5 text-[#855B09] shrink-0" />
-                            <span>{sermon.preacher}</span>
-                          </div>
-                          <p className="text-[10px] text-[#6B7280] truncate">{sermon.role}</p>
-                          <div className="flex items-center justify-between text-[9px] text-[#855B09] font-mono pt-1 border-t border-[#E6DFD1]/50 mt-1">
-                            <span>{sermon.date}</span>
-                            {sermon.feastDay && <span className="font-geez text-[#800020] font-bold">✦ {sermon.feastDay}</span>}
-                          </div>
-                        </div>
-
-                        {/* Scripture Theme */}
-                        <div className="flex items-center gap-1.5 text-xs text-[#855B09] font-bold">
-                          <BookOpen className="w-3.5 h-3.5 shrink-0" />
-                          <span className="truncate">{sermon.scriptureTheme}</span>
-                        </div>
-
-                        {/* Summary */}
-                        <p className="text-xs text-[#4A3B22] leading-relaxed line-clamp-3">
-                          {sermon.summary}
-                        </p>
-                      </div>
-
-                      {/* Action buttons */}
-                      <div className="flex gap-2 pt-2 border-t border-[#E6DFD1]/60">
-                        <button
-                          onClick={() => {
-                            setSelectedSermonId(sermon.id);
-                            setActiveSermonModal(sermon);
-                            if (sermon.audioTrackId) setActiveTrackId(sermon.audioTrackId);
-                          }}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                            isPlaying
-                              ? 'bg-[#7C3AED] text-white'
-                              : 'bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE] hover:bg-[#7C3AED] hover:text-white'
-                          }`}
-                        >
-                          {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                          <span>{isPlaying ? 'Playing...' : sermon.mediaType === 'video' ? 'Watch' : 'Listen'}</span>
-                        </button>
-
-                        <button
-                          onClick={() => {
-                            setActiveSermonModal(sermon);
-                          }}
-                          className="px-3 py-2.5 bg-white border border-[#E6DFD1] hover:bg-[#FAF8F3] rounded-xl text-xs font-bold text-[#6B7280] transition-all shadow-sm"
-                          title="Read Transcript"
-                        >
-                          <FileText className="w-3.5 h-3.5 text-[#7C3AED]" />
-                        </button>
-
-                        <a
-                          href={sermon.audioUrl}
-                          download
-                          className="px-3 py-2.5 bg-white border border-[#E6DFD1] hover:bg-[#FAF8F3] rounded-xl text-xs font-bold text-[#6B7280] transition-all shadow-sm flex items-center justify-center"
-                          title="Download for offline listening"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Full-Screen Interactive Sermon Stage / Player View */}
+            {/* ═══════════════════════════════════════════
+                TRANSCRIPT & EXEGESIS MODAL
+            ═══════════════════════════════════════════ */}
             {activeSermonModal && (
               <div className="fixed inset-0 z-50 bg-[#FAF8F3] overflow-y-auto text-[#2C1D07] animate-fadeIn flex flex-col">
                 
-                {/* Top Full-Width Navigation & Action Bar */}
-                <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-[#E6DFD1] px-6 py-4 flex items-center justify-between shadow-sm">
+                {/* Top Navigation Bar */}
+                <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-[#E6DFD1] px-6 py-4 flex items-center justify-between shadow-xs">
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => setActiveSermonModal(null)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FAF8F3] border border-[#E6DFD1] hover:bg-[#C8A84B] hover:text-[#1A2C1C] hover:border-[#C8A84B] text-xs font-bold transition-all shadow-sm group"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#FAF8F3] border border-[#E6DFD1] hover:bg-[#C8A84B] hover:text-[#1A2C1C] text-xs font-bold transition-all shadow-xs cursor-pointer"
                     >
-                      <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-                      <span>{language === 'en' ? 'Back to All Sermons' : 'ወደ ስብከቶች ዝርዝር ተመለስ'}</span>
+                      <ChevronLeft className="w-4 h-4" />
+                      <span>Back to Sermons</span>
                     </button>
 
-                    <div className="hidden md:flex items-center gap-2">
-                      <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#F5F3FF] text-[#7C3AED] border border-[#DDD6FE]">
-                        {activeSermonModal.category}
-                      </span>
-                      {activeSermonModal.feastDay && (
-                        <span className="text-[10px] text-[#800020] font-geez font-bold bg-[#FFF5DB] border border-[#C8A84B]/40 px-2.5 py-0.5 rounded-full">
-                          ✦ {activeSermonModal.feastDay}
-                        </span>
-                      )}
-                    </div>
+                    <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#FFF5DB] text-[#855B09] border border-[#C8A84B]/40">
+                      {activeSermonModal.category}
+                    </span>
                   </div>
 
-                  {/* Right Header Actions */}
-                  <div className="flex items-center gap-2.5">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
-                        navigator.clipboard?.writeText(window.location.href);
-                        setSermonShareToast(true);
-                        setTimeout(() => setSermonShareToast(false), 3000);
+                        setActiveVideoModal(activeSermonModal);
+                        setActiveSermonModal(null);
                       }}
-                      className="px-3.5 py-2 rounded-xl bg-[#FAF8F3] border border-[#E6DFD1] hover:bg-white text-[#6B7280] hover:text-[#2C1D07] text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
-                      title="Share Sermon"
+                      className="px-4 py-2 rounded-xl bg-[#1A2C1C] text-[#FAF8F3] text-xs font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
-                      <Share2 className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">Share</span>
+                      <Play className="w-3.5 h-3.5 text-[#C8A84B] fill-current" />
+                      <span>Watch Video</span>
                     </button>
-
-                    <a
-                      href={activeSermonModal.audioUrl}
-                      download
-                      className="px-3.5 py-2 rounded-xl bg-[#1A2C1C] text-[#C8A84B] hover:bg-[#0D1A0F] text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Download</span>
-                    </a>
 
                     <button
                       onClick={() => setActiveSermonModal(null)}
-                      className="w-9 h-9 rounded-xl bg-[#FAF8F3] border border-[#E6DFD1] hover:bg-[#800020] hover:text-white flex items-center justify-center text-sm font-bold text-[#6B7280] transition-colors"
-                      title="Close"
+                      className="w-9 h-9 rounded-xl bg-[#FAF8F3] border border-[#E6DFD1] hover:bg-[#800020] hover:text-white flex items-center justify-center text-sm font-bold text-[#6B7280] transition-colors cursor-pointer"
                     >
                       ✕
                     </button>
                   </div>
                 </div>
 
-                {/* Main Full-Screen Content Stage (2 Columns on desktop) */}
-                <div className="flex-1 p-4 md:p-8 w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                  
-                  {/* Left Column (7 cols): Media Player & Preacher Details */}
-                  <div className="lg:col-span-7 space-y-6">
-                    
-                    {/* Media Screen (Video or Audio Box) */}
-                    <div className="rounded-3xl overflow-hidden shadow-2xl border border-[#E6DFD1] bg-black">
-                      {activeSermonModal.videoUrl ? (
-                        <div className="aspect-video w-full">
-                          <video
-                            controls
-                            autoPlay
-                            className="w-full h-full object-cover"
-                            poster="https://images.unsplash.com/photo-1544717305-2782549b5136?w=1200&auto=format&fit=crop&q=80"
-                          >
-                            <source src={activeSermonModal.videoUrl} type="video/mp4" />
-                            Your browser does not support the video tag.
-                          </video>
-                        </div>
-                      ) : (
-                        <div className="p-8 md:p-12 bg-gradient-to-br from-[#1A2C1C] via-[#0F1D11] to-[#0A130B] text-white space-y-8 border-b border-[#C8A84B]/30">
-                          <div className="flex items-center justify-between">
-                            <div className="w-16 h-16 rounded-2xl bg-[#C8A84B]/20 border border-[#C8A84B]/50 flex items-center justify-center shadow-lg">
-                              <Volume2 className="w-8 h-8 text-[#C8A84B] animate-pulse" />
-                            </div>
-                            <span className="text-xs font-mono font-bold text-[#C8A84B] bg-white/10 px-3 py-1 rounded-full">
-                              {activeSermonModal.duration} • High-Fidelity Audio
-                            </span>
-                          </div>
-
-                          <div className="space-y-2">
-                            <span className="text-[10px] text-[#C8A84B] font-extrabold uppercase tracking-widest block">Now Playing Homily</span>
-                            <h3 className="text-2xl md:text-3xl font-black font-geez text-white leading-tight">
-                              {activeSermonModal.titleAmharic}
-                            </h3>
-                            <p className="text-xs text-[#94A3B8]">{activeSermonModal.titleEnglish}</p>
-                          </div>
-
-                          <div className="p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3">
-                            <audio controls autoPlay className="w-full">
-                              <source src={activeSermonModal.audioUrl} type="audio/mpeg" />
-                            </audio>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Preacher & Sermon Overview Card */}
-                    <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-5">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#E6DFD1] pb-4">
-                        <div>
-                          <h2 className="text-xl md:text-2xl font-black font-geez text-[#2C1D07]">
-                            {language === 'en' ? activeSermonModal.titleEnglish : activeSermonModal.titleAmharic}
-                          </h2>
-                          <p className="text-xs text-[#855B09] font-geez font-bold mt-1">
-                            {activeSermonModal.preacher}
-                          </p>
-                          <p className="text-[11px] text-[#6B7280]">{activeSermonModal.role}</p>
-                        </div>
-                        <span className="text-xs font-mono font-bold text-[#855B09] bg-[#FFF5DB] px-3 py-1.5 rounded-xl border border-[#C8A84B]/40 shrink-0">
-                          📅 {activeSermonModal.date}
-                        </span>
-                      </div>
-
-                      {/* Scripture Theme Banner */}
-                      <div className="p-4 bg-[#FFF5DB] rounded-2xl border border-[#C8A84B]/50 flex items-start gap-3">
-                        <BookOpen className="w-5 h-5 text-[#855B09] shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#855B09]">Scripture Text (የስብከቱ መሪ ኃይለ ቃል)</span>
-                          <p className="text-sm font-black font-geez text-[#2C1D07] mt-0.5">{activeSermonModal.scriptureTheme}</p>
-                        </div>
-                      </div>
-
-                      {/* Summary */}
-                      <div className="space-y-2">
-                        <span className="text-xs font-bold text-[#855B09] uppercase tracking-wider">Sermon Summary & Exegesis:</span>
-                        <p className="text-xs md:text-sm text-[#4A3B22] leading-relaxed">
-                          {activeSermonModal.summary}
-                        </p>
-                      </div>
-                    </div>
-
+                {/* Content Stage */}
+                <div className="flex-1 p-6 md:p-12 max-w-4xl mx-auto w-full space-y-6">
+                  <div className="space-y-2 border-b border-[#E6DFD1] pb-6">
+                    <h2 className="text-2xl md:text-4xl font-black font-serif text-[#2C1D07]">
+                      {activeSermonModal.titleEnglish}
+                    </h2>
+                    <h3 className="text-xl md:text-2xl font-black font-geez text-[#855B09]">
+                      {activeSermonModal.titleAmharic}
+                    </h3>
+                    <p className="text-xs text-[#6B7280]">
+                      {activeSermonModal.preacher} • {activeSermonModal.ethiopianDate || activeSermonModal.date} • {activeSermonModal.scriptureTheme}
+                    </p>
                   </div>
 
-                  {/* Right Column (5 cols): Full Interactive Transcript & Next Sermons */}
-                  <div className="lg:col-span-5 space-y-6">
-                    
-                    {/* Transcript Card */}
-                    <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-4">
-                      <div className="flex items-center justify-between border-b border-[#E6DFD1] pb-3">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-[#7C3AED]" />
-                          <span className="text-sm font-black font-geez text-[#2C1D07]">የስብከቱ ጽሑፍ • Transcript</span>
-                        </div>
-
-                        {/* Amharic / English Toggle */}
-                        <div className="flex items-center gap-1 bg-[#FAF8F3] p-1 rounded-xl border border-[#E6DFD1]">
-                          <button
-                            onClick={() => setSermonTranscriptLang('am')}
-                            className={`px-3 py-1 text-[11px] font-bold rounded-lg font-geez transition-all ${
-                              sermonTranscriptLang === 'am' ? 'bg-[#7C3AED] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#2C1D07]'
-                            }`}
-                          >
-                            አማርኛ
-                          </button>
-                          <button
-                            onClick={() => setSermonTranscriptLang('en')}
-                            className={`px-3 py-1 text-[11px] font-bold rounded-lg transition-all ${
-                              sermonTranscriptLang === 'en' ? 'bg-[#7C3AED] text-white shadow-sm' : 'text-[#6B7280] hover:text-[#2C1D07]'
-                            }`}
-                          >
-                            English
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Scrollable Text Box */}
-                      <div className="p-6 bg-[#FAF8F3] rounded-2xl border border-[#E6DFD1] min-h-[340px] max-h-[460px] overflow-y-auto space-y-4 text-xs leading-loose select-text shadow-inner">
-                        {sermonTranscriptLang === 'am' ? (
-                          <p className="font-geez font-medium text-[#2C1D07] text-sm md:text-base leading-loose whitespace-pre-line">
-                            {activeSermonModal.transcriptAm || 'የዚህ ስብከት ሙሉ ጽሑፍ በቅርቡ ይጫናል።'}
-                          </p>
-                        ) : (
-                          <p className="font-serif italic text-[#374151] text-sm md:text-base leading-loose whitespace-pre-line">
-                            "{activeSermonModal.transcriptEn || 'English sermon transcript will be uploaded shortly.'}"
-                          </p>
-                        )}
-                      </div>
+                  {/* Language Selector */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#855B09] uppercase tracking-wider">
+                      Sermon Text Transcript:
+                    </span>
+                    <div className="flex items-center gap-1 bg-[#FAF8F3] p-1 rounded-xl border border-[#E6DFD1]">
+                      <button
+                        onClick={() => setSermonTranscriptLang('am')}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg font-geez transition-all ${
+                          sermonTranscriptLang === 'am' ? 'bg-[#1A2C1C] text-[#FAF8F3]' : 'text-[#6B7280]'
+                        }`}
+                      >
+                        አማርኛ
+                      </button>
+                      <button
+                        onClick={() => setSermonTranscriptLang('en')}
+                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                          sermonTranscriptLang === 'en' ? 'bg-[#1A2C1C] text-[#FAF8F3]' : 'text-[#6B7280]'
+                        }`}
+                      >
+                        English
+                      </button>
                     </div>
-
-                    {/* Up Next / Related Sermons */}
-                    <div className="bg-white p-6 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-3">
-                      <h4 className="text-xs font-extrabold uppercase tracking-wider text-[#855B09] border-b border-[#E6DFD1] pb-2">
-                        {language === 'en' ? 'More Sermons in this Series:' : 'ተዛማጅ ስብከቶች:'}
-                      </h4>
-                      <div className="space-y-2">
-                        {MOCK_SERMONS.filter((s) => s.id !== activeSermonModal.id).slice(0, 3).map((other) => (
-                          <div
-                            key={other.id}
-                            onClick={() => {
-                              setActiveSermonModal(other);
-                              setSelectedSermonId(other.id);
-                              if (other.audioTrackId) setActiveTrackId(other.audioTrackId);
-                            }}
-                            className="p-3 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] hover:border-[#7C3AED] hover:bg-white cursor-pointer transition-all flex items-center justify-between gap-3 shadow-xs"
-                          >
-                            <div className="min-w-0">
-                              <p className="text-xs font-black font-geez text-[#2C1D07] truncate">{other.titleAmharic}</p>
-                              <p className="text-[10px] text-[#6B7280] truncate">{other.preacher} • {other.duration}</p>
-                            </div>
-                            <div className="w-8 h-8 rounded-full bg-[#F5F3FF] text-[#7C3AED] flex items-center justify-center shrink-0">
-                              <Play className="w-3 h-3 ml-0.5 fill-current" />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
                   </div>
 
+                  {/* Transcript Content Box */}
+                  <div className="p-8 bg-white rounded-3xl border border-[#E6DFD1] shadow-xs text-sm leading-loose">
+                    {sermonTranscriptLang === 'am' ? (
+                      <p className="font-geez text-[#2C1D07] text-base md:text-lg leading-loose whitespace-pre-line">
+                        {activeSermonModal.transcriptAm || 'የዚህ ስብከት ሙሉ ጽሑፍ በቅርቡ ይጫናል።'}
+                      </p>
+                    ) : (
+                      <p className="font-serif text-[#374151] text-base md:text-lg leading-loose whitespace-pre-line">
+                        {activeSermonModal.transcriptEn || 'English sermon transcript will be uploaded shortly.'}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
               </div>
@@ -2168,4 +2299,5 @@ export const WorshipView: React.FC = () => {
     </div>
   );
 };
+
 
