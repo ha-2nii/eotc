@@ -431,52 +431,7 @@ export const ScriptureView: React.FC = () => {
         </div>
       )}
 
-      {/* ═══ CLEAN TOP PILL NAV BAR (Visible when exploring Sub-Pages) ═══════ */}
-      {activeSection !== 'hub' && (
-        <div
-          className="flex items-center justify-between flex-wrap gap-3 pb-2 border-b border-[#E6DFD1]/80"
-          style={
-            activeSection === 'liturgy' || activeSection === 'geez'
-              ? { padding: '16px clamp(16px, 4vw, 56px) 8px' }
-              : undefined
-          }
-        >
-          <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
-            {[
-              { id: 'hub' as ScriptureSubSection, labelEn: 'Scripture Hub', labelAm: 'ዋና መግቢያ', icon: Layers },
-              { id: 'bible' as ScriptureSubSection, labelEn: 'Holy Bible (81 Books)', labelAm: 'መጽሐፍ ቅዱስ ፹፩', icon: BookOpen },
-              { id: 'prayers' as ScriptureSubSection, labelEn: 'Prayer Books', labelAm: 'መጻሕፍተ ጸሎት', icon: Heart },
-              { id: 'liturgy' as ScriptureSubSection, labelEn: 'Liturgical Texts', labelAm: 'ሥርዓተ ቅዳሴ', icon: BookMarked },
-              { id: 'geez' as ScriptureSubSection, labelEn: "Ge'ez Learning", labelAm: 'ትምህርተ ግዕዝ', icon: Languages },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeSection === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveSection(tab.id)}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? 'bg-[#1A2C1C] text-[#C8A84B] border border-[#C8A84B] shadow-xs'
-                      : 'bg-white hover:bg-[#FFF8EA] text-[#3D3020] border border-[#E6DFD1]'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#C8A84B]' : 'text-[#855B09]'}`} />
-                  <span>{language === 'en' ? tab.labelEn : tab.labelAm}</span>
-                </button>
-              );
-            })}
-          </div>
 
-          <button
-            onClick={() => setActiveSection('hub')}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#855B09] bg-white hover:bg-[#FFF5DB] border border-[#E6DFD1] transition-all cursor-pointer"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            <span>{language === 'en' ? 'Back to Scripture Hub' : 'ወደ ዋናው መግቢያ ተመለስ'}</span>
-          </button>
-        </div>
-      )}
 
       {/* ═══════════════════════════════════════════════════════════════
           SECTION 1: MAIN SCRIPTURE HUB (Default Landing Page)
@@ -553,38 +508,7 @@ export const ScriptureView: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Navigation Options Tabs (Leading to Other Pages/Sections) */}
-                <div className="pt-3 border-t border-[#E6DFD1]/80">
-                  <div className="text-[11px] font-extrabold uppercase tracking-widest text-[#B8860B] mb-2.5">
-                    {language === 'en' ? 'Quick Navigation Options:' : 'የክፍል አማራጮች:'}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {[
-                      { id: 'hub' as ScriptureSubSection, labelEn: 'Scripture Hub', labelAm: 'ዋና መግቢያ', icon: Layers },
-                      { id: 'bible' as ScriptureSubSection, labelEn: 'Holy Bible (81 Books)', labelAm: 'መጽሐፍ ቅዱስ ፹፩', icon: BookOpen },
-                      { id: 'prayers' as ScriptureSubSection, labelEn: 'Prayer Books', labelAm: 'መጻሕፍተ ጸሎት', icon: Heart },
-                      { id: 'liturgy' as ScriptureSubSection, labelEn: 'Liturgical Texts', labelAm: 'ሥርዓተ ቅዳሴ', icon: BookMarked },
-                      { id: 'geez' as ScriptureSubSection, labelEn: "Ge'ez Learning", labelAm: 'ትምህርተ ግዕዝ', icon: Languages },
-                    ].map((tab) => {
-                      const Icon = tab.icon;
-                      const isActive = activeSection === tab.id;
-                      return (
-                        <button
-                          key={tab.id}
-                          onClick={() => setActiveSection(tab.id)}
-                          className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                            isActive
-                              ? 'bg-[#1A2C1C] text-[#C8A84B] border border-[#C8A84B] shadow-xs'
-                              : 'bg-white hover:bg-[#FFF8EA] text-[#3D3020] border border-[#E6DFD1] shadow-2xs hover:border-[#C8A84B]'
-                          }`}
-                        >
-                          <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#C8A84B]' : 'text-[#855B09]'}`} />
-                          <span>{language === 'en' ? tab.labelEn : tab.labelAm}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+
 
               </div>
 
