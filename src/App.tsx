@@ -6,7 +6,7 @@ import { AudioPlayerBar } from './components/layout/AudioPlayerBar';
 
 import { HomePageView } from './pages/HomePage';
 import { ScriptureView } from './pages/ScripturePage';
-import { WorshipView } from './pages/WorshipPage';
+import { ResourcesView } from './pages/ResourcesPage';
 import { FindChurchView } from './pages/FindChurchPage';
 import { GivingView } from './pages/GivingPage';
 import { AcademyView } from './pages/AcademyPage';
@@ -26,7 +26,7 @@ const AppContent: React.FC = () => {
       <main className="flex-1" style={{ paddingTop: activeView === 'home' ? 0 : '96px' }}>
         {activeView === 'home' && <HomePageView />}
         {activeView.startsWith('scripture') && <ScriptureView />}
-        {activeView.startsWith('worship') && <WorshipView />}
+        {(activeView.startsWith('resources') || activeView.startsWith('orthodox-resources')) && <ResourcesView />}
         {activeView.startsWith('find-a-church') && <FindChurchView />}
         {activeView.startsWith('give') && <GivingView />}
         {activeView.startsWith('academy') && <AcademyView />}

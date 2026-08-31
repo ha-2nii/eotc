@@ -22,7 +22,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose }) => 
 
   const quickLinks = [
     { title: language === 'en' ? 'Find Nearby Parish'      : 'የቅርብ ርቀት ቤተክርስቲያን',        view: 'find-a-church',    icon: MapPin },
-    { title: language === 'en' ? 'Liturgical Calendar'     : 'የቤተክርስቲያን የቀን መቁጠሪያ',     view: 'worship/calendar', icon: Calendar },
+    { title: language === 'en' ? 'Liturgical Calendar'     : 'የቤተክርስቲያን የቀን መቁጠሪያ',     view: 'resources/calendar', icon: Calendar },
     { title: language === 'en' ? '81 Bible Canon'          : '81 ቅዱሳት መጻሕፍት',            view: 'scripture',        icon: BookOpen },
     { title: language === 'en' ? 'Patriarchate News'       : 'የቤተክርስቲያን ዜናዎች',           view: 'news',             icon: Newspaper },
   ];

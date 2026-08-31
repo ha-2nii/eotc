@@ -9,6 +9,15 @@ import {
   Search,
   LogIn,
   ChevronDown,
+  BookOpen,
+  Compass,
+  Heart,
+  GraduationCap,
+  Newspaper,
+  Church,
+  Sparkles,
+  ChevronRight,
+  Shield
 } from 'lucide-react';
 
 /* ── EOTC Official Emblem ──────────────────────────────── */
@@ -21,7 +30,7 @@ const EOTCLogo: React.FC<{ size?: number }> = ({ size = 52 }) => (
         width: '100%',
         height: '100%',
         objectFit: 'contain',
-        transform: 'scale(1.7)',
+        transform: 'scale(1.6)',
         display: 'block'
       }}
     />
@@ -41,11 +50,11 @@ export const Header: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileExpandedSection, setMobileExpandedSection] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      // Find the hero section height dynamically so header stays transparent until reaching the 2nd section
       const heroEl = document.querySelector('section');
       if (heroEl) {
         const threshold = heroEl.offsetHeight - 80;
@@ -59,36 +68,62 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile drawer on desktop resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const navItems = [
-    { id: 'home',          labelEn: 'Home',           labelAm: 'መነሻ' },
+    { id: 'home',          labelEn: 'Home',           labelAm: 'መነሻ', icon: Church },
     { 
       id: 'scripture',     
       labelEn: 'Scripture',      
       labelAm: 'መጽሐፍ ቅዱስ',
+      icon: BookOpen,
       dropdown: [
         { id: 'scripture', labelEn: 'Scripture Hub', labelAm: 'ቅዱሳት መጻሕፍት ማዕከል' },
-        { id: 'scripture/bible', labelEn: 'Holy Bible', labelAm: 'መጽሐፍ ቅዱስ' },
+        { id: 'scripture/bible', labelEn: 'Holy Bible (81 Books)', labelAm: 'መጽሐፍ ቅዱስ (፹፩)' },
         { id: 'scripture/prayer', labelEn: 'Prayer Books', labelAm: 'የጸሎት መጻሕፍት' },
         { id: 'scripture/liturgy', labelEn: 'Liturgical Texts', labelAm: 'የቅዳሴ መጻሕፍት' },
         { id: 'scripture/geez', labelEn: "Ge'ez Learning", labelAm: 'ግዕዝ ትምህርት' },
       ]
     },
     { 
-      id: 'worship',
+      id: 'resources',
       labelEn: 'Orthodox Resources',
       labelAm: 'ኦርቶዶክሳዊ ሀብታት',
+      icon: Sparkles,
       dropdown: [
-        { id: 'worship', labelEn: 'Orthodox Resources Hub', labelAm: 'የሀብታት ማዕከል' },
-        { id: 'worship/calendar', labelEn: 'Liturgical Calendar', labelAm: 'የአብነት የቀን መቁጠሪያ' },
-        { id: 'worship/fasting', labelEn: 'Fasting Guide', labelAm: 'የጾም መመሪያ' },
-        { id: 'worship/sermons', labelEn: 'Sermons', labelAm: 'ስብከቶች' },
-        { id: 'worship/mezmur', labelEn: 'Mezmur & Hymns', labelAm: 'መዝሙራት' },
+        { id: 'resources', labelEn: 'Orthodox Resources Hub', labelAm: 'የሀብታት ማዕከል' },
+        { id: 'resources/calendar', labelEn: 'Liturgical Calendar', labelAm: 'የአብነት የቀን መቁጠሪያ' },
+        { id: 'resources/fasting', labelEn: 'Fasting Guide', labelAm: 'የጾም መመሪያ' },
+        { id: 'resources/sermons', labelEn: 'Sermons', labelAm: 'ስብከቶች' },
+        { id: 'resources/mezmur', labelEn: 'Mezmur & Hymns', labelAm: 'መዝሙራት' },
       ]
     },
     { 
       id: 'our-church',
       labelEn: 'Our Church',
       labelAm: 'ቤተ ክርስቲያን',
+      icon: Shield,
       dropdown: [
         { id: 'our-church', labelEn: 'Our Church Hub', labelAm: 'የቤተ ክርስቲያን ማዕከል' },
         { id: 'our-church/patriarch', labelEn: 'Patriarch', labelAm: 'ፓትርያርክ' },
@@ -102,9 +137,9 @@ export const Header: React.FC = () => {
       id: 'find-a-church', 
       labelEn: 'Find a Church', 
       labelAm: 'ቤተክርስቲያን ፈልግ',
+      icon: Compass,
       dropdown: [
-        { id: 'find-a-church', labelEn: 'Church Hub', labelAm: 'የአብያተ ክርስቲያናት ማዕከል' },
-        { id: 'find-a-church/map', labelEn: 'Church Map', labelAm: 'የቤተክርስቲያን ካርታ' },
+        { id: 'find-a-church', labelEn: 'Church Hub & Map', labelAm: 'የአብያተ ክርስቲያናት ማዕከል' },
         { id: 'find-a-church/services', labelEn: 'Upcoming Services', labelAm: 'መጪ አገልግሎቶች' },
         { id: 'find-a-church/events', labelEn: 'Events Near You', labelAm: 'በአቅራቢያ ያሉ ክስተቶች' }
       ]
@@ -113,6 +148,7 @@ export const Header: React.FC = () => {
       id: 'give', 
       labelEn: 'Give', 
       labelAm: 'ምጽዋት',
+      icon: Heart,
       dropdown: [
         { id: 'give', labelEn: 'Giving Hub', labelAm: 'ዋና ማዕከል' },
         { id: 'give/church', labelEn: 'Give to a Parish', labelAm: 'ለደብር መዋጮ' },
@@ -127,6 +163,7 @@ export const Header: React.FC = () => {
       id: 'academy', 
       labelEn: 'Academy', 
       labelAm: 'አካዳሚ',
+      icon: GraduationCap,
       dropdown: [
         { id: 'academy', labelEn: 'Academy Hub', labelAm: 'ዋና ማዕከል' },
         { id: 'academy/children', labelEn: 'Children (5–12)', labelAm: 'ልጆች (5-12)' },
@@ -142,6 +179,7 @@ export const Header: React.FC = () => {
       id: 'news', 
       labelEn: 'News', 
       labelAm: 'ዜና',
+      icon: Newspaper,
       dropdown: [
         { id: 'news', labelEn: 'News Hub', labelAm: 'ዋና ማዕከል' },
         { id: 'news/announcements', labelEn: 'EOTC Announcements', labelAm: 'የቤተክርስቲያን ማስታወቂያዎች' },
@@ -157,58 +195,46 @@ export const Header: React.FC = () => {
     language === 'ge' ? 'GE' :
     language === 'ti' ? 'TI' : 'EN';
 
-  const isTransparent = activeView === 'home' && !isScrolled;
+  const isTransparent = activeView === 'home' && !isScrolled && !mobileMenuOpen;
 
   return (
     <>
-      <header style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-        background: isTransparent
-          ? 'linear-gradient(to bottom, rgba(13,26,15,0.7) 0%, transparent 100%)'
-          : '#FFFFFF',
-        backdropFilter: isTransparent ? 'none' : 'blur(12px)',
-        borderBottom: isTransparent ? 'none' : '1px solid #E8E0D0',
-        boxShadow: isTransparent ? 'none' : '0 4px 20px rgba(0,0,0,0.08)',
-        transition: 'background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease',
+      <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300" style={{
+        background: mobileMenuOpen 
+          ? '#07241B' 
+          : isTransparent 
+            ? 'linear-gradient(to bottom, rgba(7,28,18,0.85) 0%, rgba(7,28,18,0.4) 60%, transparent 100%)' 
+            : '#FFFFFF',
+        backdropFilter: isTransparent && !mobileMenuOpen ? 'none' : 'blur(16px)',
+        borderBottom: isTransparent && !mobileMenuOpen ? 'none' : '1px solid #E8E0D0',
+        boxShadow: isTransparent && !mobileMenuOpen ? 'none' : '0 4px 20px rgba(0,0,0,0.06)',
       }}>
-        <div className="container" style={{
-          display: 'flex', alignItems: 'center',
-          height: '80px', gap: '0', padding: '0 2rem',
-        }}>
+        <div className="max-w-[1580px] mx-auto px-4 sm:px-6 lg:px-12 flex items-center justify-between h-[72px] sm:h-[80px]">
 
           {/* ── LOGO ─────────────────────────────────────── */}
           <button
-            onClick={() => setActiveView('home')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '10px',
-              background: 'none', border: 'none', cursor: 'pointer',
-              flexShrink: 0, marginRight: '32px',
-            }}
+            onClick={() => { setActiveView('home'); setMobileMenuOpen(false); }}
+            className="flex items-center gap-2.5 sm:gap-3 bg-transparent border-0 cursor-pointer shrink-0 text-left p-0"
           >
-            <div style={{ width: '64px', height: '64px', flexShrink: 0 }}>
-              <EOTCLogo size={64} />
+            <div className="w-11 h-11 sm:w-14 sm:h-14 shrink-0 flex items-center justify-center">
+              <EOTCLogo size={50} />
             </div>
-            <div style={{ textAlign: 'left', lineHeight: 1.25 }}>
-              <div style={{
-                fontSize: '20px', fontWeight: 900,
-                color: isTransparent ? '#FFFFFF' : '#1A2C1C', letterSpacing: '-0.02em',
-                fontFamily: 'var(--font-sans)', transition: 'color 0.3s'
-              }}>EOTC</div>
-              <div style={{
-                fontSize: '10px', color: isTransparent ? 'rgba(255,255,255,0.7)' : '#4B5563',
-                fontWeight: 500, lineHeight: 1.4, transition: 'color 0.3s'
-              }}>Ethiopian Orthodox<br />Tewahedo Church</div>
+            <div className="leading-tight">
+              <div className={`text-base sm:text-lg lg:text-xl font-black tracking-tight transition-colors duration-300 ${
+                isTransparent && !mobileMenuOpen ? 'text-white' : mobileMenuOpen ? 'text-white' : 'text-[#1A2C1C]'
+              }`}>
+                EOTC
+              </div>
+              <div className={`text-[9px] sm:text-[10.5px] font-medium leading-tight transition-colors duration-300 hidden xs:block ${
+                isTransparent && !mobileMenuOpen ? 'text-stone-300' : mobileMenuOpen ? 'text-stone-300' : 'text-stone-500'
+              }`}>
+                Ethiopian Orthodox<br />Tewahedo Church
+              </div>
             </div>
           </button>
 
-          {/* ── NAV LINKS (desktop) ───────────────────────── */}
-          <nav
-            className="desktop-nav"
-            style={{
-              display: 'flex', alignItems: 'stretch',
-              flex: 1, height: '100%',
-            }}
-          >
+          {/* ── NAV LINKS (Desktop: lg screens and up) ───────────────────────── */}
+          <nav className="hidden lg:flex items-stretch h-full mx-4 space-x-0.5 xl:space-x-1">
             {navItems.map(item => {
               const isActive =
                 activeView === item.id ||
@@ -218,51 +244,44 @@ export const Header: React.FC = () => {
                 return (
                   <div 
                     key={item.id} 
-                    style={{ position: 'relative', display: 'flex' }}
+                    className="relative flex items-center h-full"
                     onMouseEnter={() => setActiveDropdown(item.id)}
                     onMouseLeave={() => setActiveDropdown(null)}
                   >
                     <button
                       onClick={() => setActiveView(item.id)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: '6px',
-                        padding: '0 13px', background: 'none', border: 'none',
-                        borderBottom: isActive ? '2px solid #C8A84B' : '2px solid transparent',
-                        color: isActive ? '#C8A84B' : (isTransparent ? '#FFFFFF' : '#374151'),
-                        fontWeight: isActive ? 700 : 500, fontSize: '13px',
-                        cursor: 'pointer', transition: 'color 0.3s, border-color 0.15s',
-                        whiteSpace: 'nowrap',
-                        fontFamily: language === 'en' ? 'var(--font-sans)' : 'var(--font-geez)',
-                      }}
+                      className={`flex items-center gap-1.5 px-3 py-2 h-full border-b-2 text-xs xl:text-[13px] font-medium transition-all cursor-pointer whitespace-nowrap ${
+                        isActive 
+                          ? 'border-[#C8A84B] text-[#C8A84B] font-bold' 
+                          : isTransparent 
+                            ? 'border-transparent text-white/90 hover:text-[#C8A84B]' 
+                            : 'border-transparent text-stone-700 hover:text-[#C8A84B]'
+                      }`}
                     >
-                      {language === 'en' ? item.labelEn : item.labelAm}
-                      <ChevronDown style={{ width: '14px', height: '14px', color: '#C8A84B' }} />
+                      <span>{language === 'en' ? item.labelEn : item.labelAm}</span>
+                      <ChevronDown className={`w-3.5 h-3.5 text-[#C8A84B] transition-transform duration-200 ${activeDropdown === item.id ? 'rotate-180' : ''}`} />
                     </button>
+
+                    {/* Dropdown Menu */}
                     {activeDropdown === item.id && (
-                      <div style={{
-                        position: 'absolute', top: '100%', left: 0,
-                        background: '#1D3043', borderRadius: '0 0 6px 6px',
-                        minWidth: '220px', boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-                        padding: '8px 0', zIndex: 100, border: '1px solid rgba(255,255,255,0.05)',
-                        borderTop: '2px solid #C8A84B'
-                      }}>
-                        {item.dropdown.map(sub => (
-                          <button
-                            key={sub.id}
-                            onClick={() => { setActiveView(sub.id); setActiveDropdown(null); }}
-                            style={{
-                              display: 'block', width: '100%', textAlign: 'left',
-                              padding: '12px 20px', background: 'none', border: 'none',
-                              color: '#FFFFFF', fontSize: '14px', fontWeight: 500,
-                              cursor: 'pointer',
-                              borderBottom: '1px solid rgba(255,255,255,0.05)'
-                            }}
-                            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#2B455D'}
-                            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-                          >
-                            {language === 'en' ? sub.labelEn : sub.labelAm}
-                          </button>
-                        ))}
+                      <div className="absolute top-full left-0 bg-[#0B251B] border border-[#C8A84B]/30 border-t-2 border-t-[#C8A84B] rounded-b-xl min-w-[230px] shadow-2xl py-2 z-50 animate-fadeIn">
+                        {item.dropdown.map(sub => {
+                          const isSubActive = activeView === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              onClick={() => { setActiveView(sub.id); setActiveDropdown(null); }}
+                              className={`w-full text-left px-4 py-2.5 text-xs transition-colors flex items-center justify-between group cursor-pointer ${
+                                isSubActive
+                                  ? 'bg-[#C8A84B]/20 text-[#E5C158] font-bold'
+                                  : 'text-stone-200 hover:bg-white/10 hover:text-white'
+                              }`}
+                            >
+                              <span>{language === 'en' ? sub.labelEn : sub.labelAm}</span>
+                              <ChevronRight className="w-3 h-3 text-[#C8A84B] opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -273,26 +292,13 @@ export const Header: React.FC = () => {
                 <button
                   key={item.id}
                   onClick={() => setActiveView(item.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center',
-                    padding: '0 13px',
-                    background: 'none',
-                    border: 'none',
-                    borderBottom: isActive ? '2px solid #C8A84B' : '2px solid transparent',
-                    color: isActive ? '#C8A84B' : (isTransparent ? '#FFFFFF' : '#374151'),
-                    fontWeight: isActive ? 700 : 500,
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    transition: 'color 0.3s, border-color 0.15s',
-                    whiteSpace: 'nowrap',
-                    fontFamily: language === 'en' ? 'var(--font-sans)' : 'var(--font-geez)',
-                  }}
-                  onMouseEnter={e => {
-                    if (!isActive) (e.currentTarget as HTMLElement).style.color = '#C8A84B';
-                  }}
-                  onMouseLeave={e => {
-                    if (!isActive) (e.currentTarget as HTMLElement).style.color = isTransparent ? '#FFFFFF' : '#374151';
-                  }}
+                  className={`flex items-center px-3 py-2 h-full border-b-2 text-xs xl:text-[13px] font-medium transition-all cursor-pointer whitespace-nowrap ${
+                    isActive 
+                      ? 'border-[#C8A84B] text-[#C8A84B] font-bold' 
+                      : isTransparent 
+                        ? 'border-transparent text-white/90 hover:text-[#C8A84B]' 
+                        : 'border-transparent text-stone-700 hover:text-[#C8A84B]'
+                  }`}
                 >
                   {language === 'en' ? item.labelEn : item.labelAm}
                 </button>
@@ -300,58 +306,42 @@ export const Header: React.FC = () => {
             })}
           </nav>
 
-          {/* ── RIGHT CONTROLS ────────────────────────────── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto', flexShrink: 0 }}>
-            {/* Search */}
+          {/* ── RIGHT CONTROLS (Desktop & Mobile) ────────────────────────────── */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Search Button */}
             <button
               onClick={() => setIsSearchOpen(true)}
-              style={{
-                width: '36px', height: '36px', borderRadius: '8px',
-                background: 'none', border: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: isTransparent ? '#FFFFFF' : '#6B7280',
-                transition: 'color 0.3s, background 0.15s',
-              }}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.color = '#C8A84B';
-                (e.currentTarget as HTMLElement).style.background = isTransparent ? 'rgba(255,255,255,0.1)' : '#FFF8E7';
-              }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.color = isTransparent ? '#FFFFFF' : '#6B7280';
-                (e.currentTarget as HTMLElement).style.background = 'none';
-              }}
+              aria-label="Search"
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                isTransparent && !mobileMenuOpen
+                  ? 'text-white hover:bg-white/15'
+                  : mobileMenuOpen
+                    ? 'text-white hover:bg-white/15'
+                    : 'text-stone-700 hover:text-[#855B09] hover:bg-[#FAF8F3]'
+              }`}
             >
-              <Search style={{ width: '18px', height: '18px' }} />
+              <Search className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
             </button>
 
-            {/* Language */}
-            <div style={{ position: 'relative' }}>
+            {/* Language Selector (Desktop Dropdown) */}
+            <div className="relative hidden sm:block">
               <button
                 onClick={() => setLangDropdownOpen(!langDropdownOpen)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  height: '36px', padding: '0 10px',
-                  background: isTransparent ? 'rgba(255,255,255,0.1)' : 'none',
-                  border: isTransparent ? '1px solid rgba(255,255,255,0.25)' : '1px solid #E5E7EB',
-                  borderRadius: '8px', color: isTransparent ? '#FFFFFF' : '#374151',
-                  cursor: 'pointer', fontSize: '12px', fontWeight: 600,
-                  transition: 'border-color 0.15s, color 0.3s, background 0.3s',
-                }}
-                onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = '#C8A84B'}
-                onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = isTransparent ? 'rgba(255,255,255,0.25)' : '#E5E7EB'}
+                className={`flex items-center gap-1.5 h-9 sm:h-10 px-3 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  isTransparent && !mobileMenuOpen
+                    ? 'border-white/30 text-white bg-white/10 hover:bg-white/20'
+                    : mobileMenuOpen
+                      ? 'border-white/30 text-white bg-white/10'
+                      : 'border-[#E5E7EB] text-stone-700 hover:border-[#C8A84B] bg-white'
+                }`}
               >
-                <Globe style={{ width: '14px', height: '14px', color: isTransparent ? 'rgba(255,255,255,0.8)' : '#6B7280' }} />
+                <Globe className="w-3.5 h-3.5 text-[#C8A84B]" />
                 <span>{langLabel}</span>
-                <ChevronDown style={{ width: '12px', height: '12px', color: isTransparent ? 'rgba(255,255,255,0.7)' : '#9CA3AF' }} />
+                <ChevronDown className="w-3 h-3 opacity-70" />
               </button>
 
               {langDropdownOpen && (
-                <div style={{
-                  position: 'absolute', right: 0, top: 'calc(100% + 4px)',
-                  background: '#fff', border: '1px solid #E5E7EB',
-                  borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                  overflow: 'hidden', minWidth: '160px', zIndex: 99,
-                }} className="animate-fadeIn">
+                <div className="absolute right-0 top-full mt-2 bg-white border border-[#E5E7EB] rounded-xl shadow-xl overflow-hidden min-w-[170px] z-50 animate-fadeIn">
                   {[
                     { code: 'am', label: 'አማርኛ (Amharic)' },
                     { code: 'en', label: 'English' },
@@ -361,170 +351,203 @@ export const Header: React.FC = () => {
                     <button
                       key={item.code}
                       onClick={() => { setLanguage(item.code as LanguageMode); setLangDropdownOpen(false); }}
-                      style={{
-                        display: 'block', width: '100%', textAlign: 'left',
-                        padding: '9px 14px', fontSize: '13px', fontWeight: 500,
-                        background: language === item.code ? '#FFF8E7' : 'transparent',
-                        color: language === item.code ? '#C8A84B' : '#374151',
-                        border: 'none', cursor: 'pointer',
-                        borderBottom: '1px solid #F3F4F6',
-                        transition: 'background 0.1s',
-                      }}
-                      onMouseEnter={e => {
-                        if (language !== item.code)
-                          (e.currentTarget as HTMLElement).style.background = '#F9FAFB';
-                      }}
-                      onMouseLeave={e => {
-                        if (language !== item.code)
-                          (e.currentTarget as HTMLElement).style.background = 'transparent';
-                      }}
-                    >{item.label}</button>
+                      className={`w-full text-left px-4 py-2.5 text-xs font-semibold border-b border-stone-100 last:border-0 transition-colors cursor-pointer ${
+                        language === item.code ? 'bg-[#FFF8E7] text-[#855B09]' : 'text-stone-700 hover:bg-stone-50'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Login button */}
+            {/* Login Button (Hidden on small mobile screens to save space for hamburger) */}
             <button
               onClick={() => setIsAuthOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '6px',
-                height: '36px', padding: '0 18px',
-                background: isTransparent ? 'rgba(255,255,255,0.12)' : '#1A2C1C',
-                color: '#FFFFFF',
-                border: isTransparent ? '1px solid rgba(255,255,255,0.35)' : 'none',
-                borderRadius: isTransparent ? '20px' : '8px',
-                fontWeight: 700, fontSize: '13px', cursor: 'pointer',
-                backdropFilter: isTransparent ? 'blur(8px)' : 'none',
-                transition: 'all 0.3s ease',
-              }}
-              onMouseEnter={e => {
-                if (isTransparent) {
-                  (e.currentTarget as HTMLElement).style.background = '#C8A84B';
-                  (e.currentTarget as HTMLElement).style.color = '#1A2C1C';
-                  (e.currentTarget as HTMLElement).style.borderColor = '#C8A84B';
-                } else {
-                  (e.currentTarget as HTMLElement).style.background = '#2D4A2D';
-                }
-              }}
-              onMouseLeave={e => {
-                if (isTransparent) {
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)';
-                  (e.currentTarget as HTMLElement).style.color = '#FFFFFF';
-                  (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)';
-                } else {
-                  (e.currentTarget as HTMLElement).style.background = '#1A2C1C';
-                }
-              }}
+              className={`hidden md:flex items-center gap-2 h-9 sm:h-10 px-4 sm:px-5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                isTransparent && !mobileMenuOpen
+                  ? 'bg-[#C8A84B] text-[#0A1A0F] hover:bg-[#DEBC68] shadow-sm'
+                  : 'bg-[#0B3B2B] text-white hover:bg-[#07241B] shadow-sm'
+              }`}
             >
-              <LogIn style={{ width: '14px', height: '14px' }} />
-              {language === 'en' ? 'Login' : 'ግባ'}
+              <LogIn className="w-3.5 h-3.5" />
+              <span>{language === 'en' ? 'Login' : 'ግባ'}</span>
             </button>
 
-            {/* Mobile hamburger */}
+            {/* Hamburger Button (Mobile / Tablet only: lg:hidden) */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="mobile-menu-btn"
-              style={{
-                display: 'none',
-                width: '36px', height: '36px', borderRadius: '8px',
-                background: '#F3F4F6', border: 'none',
-                alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: '#374151',
-              }}
+              aria-label="Toggle navigation menu"
+              className={`lg:hidden w-10 h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
+                isTransparent && !mobileMenuOpen
+                  ? 'bg-white/15 text-white hover:bg-white/25 border border-white/20'
+                  : mobileMenuOpen
+                    ? 'bg-white/20 text-[#E5C158]'
+                    : 'bg-[#FAF8F3] text-[#0B3B2B] border border-[#E6DFD1] hover:bg-[#FFF8E7]'
+              }`}
             >
-              {mobileMenuOpen
-                ? <X style={{ width: '20px', height: '20px' }} />
-                : <Menu style={{ width: '20px', height: '20px' }} />}
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
+
         </div>
 
-        {/* ── MOBILE DRAWER ─────────────────────────────────── */}
+        {/* ── FULL-FEATURED MOBILE DRAWER OVERLAY ─────────────────────────────────── */}
         {mobileMenuOpen && (
-          <div style={{
-            background: '#FFFFFF',
-            borderTop: '1px solid #F3F4F6',
-            padding: '12px 16px 16px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-          }} className="animate-fadeIn">
-            {navItems.map(item => {
-              const isActive = activeView === item.id || activeView.startsWith(item.id + '/');
-              return (
-                <React.Fragment key={item.id}>
+          <div className="lg:hidden fixed inset-x-0 top-[72px] sm:top-[80px] bottom-0 bg-[#071C12]/98 backdrop-blur-xl border-t border-white/10 z-50 flex flex-col justify-between overflow-y-auto animate-fadeIn text-white">
+            
+            {/* Top Quick Actions Bar (Search + Language Tabs) */}
+            <div className="p-4 border-b border-white/10 space-y-3 bg-[#05150E]">
+              {/* Mobile Search Button */}
+              <button
+                onClick={() => { setIsSearchOpen(true); setMobileMenuOpen(false); }}
+                className="w-full py-2.5 px-4 bg-white/10 hover:bg-white/15 rounded-xl border border-white/15 text-xs text-stone-300 flex items-center justify-between cursor-pointer transition-all"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Search className="w-4 h-4 text-[#C8A84B]" />
+                  <span>Search scripture, saints, parishes...</span>
+                </div>
+                <span className="text-[10px] font-mono font-bold bg-white/15 px-2 py-0.5 rounded text-[#C8A84B]">⌘K</span>
+              </button>
+
+              {/* 4 Language Pills */}
+              <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/40 rounded-xl border border-white/10">
+                {[
+                  { code: 'am', label: 'አማርኛ' },
+                  { code: 'en', label: 'English' },
+                  { code: 'ge', label: 'ግዕዝ' },
+                  { code: 'ti', label: 'ትግርኛ' },
+                ].map(item => (
                   <button
-                    onClick={() => {
-                      if (item.dropdown) {
-                        setActiveDropdown(activeDropdown === item.id ? null : item.id);
-                      } else {
-                        setActiveView(item.id); setMobileMenuOpen(false);
-                      }
-                    }}
-                    style={{
-                      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '10px 14px', borderRadius: '8px', marginBottom: '2px',
-                      background: isActive && !item.dropdown ? '#FFF8E7' : 'transparent',
-                      color: isActive ? '#C8A84B' : '#374151',
-                      fontWeight: isActive ? 700 : 500,
-                      fontSize: '14px', border: 'none', cursor: 'pointer',
-                      fontFamily: language === 'en' ? 'var(--font-sans)' : 'var(--font-geez)',
-                    }}
+                    key={item.code}
+                    onClick={() => setLanguage(item.code as LanguageMode)}
+                    className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer text-center ${
+                      language === item.code
+                        ? 'bg-[#C8A84B] text-[#0A1A0F] shadow-sm'
+                        : 'text-stone-300 hover:text-white'
+                    }`}
                   >
-                    {language === 'en' ? item.labelEn : item.labelAm}
-                    {item.dropdown && <ChevronDown style={{ width: '16px', height: '16px', transform: activeDropdown === item.id ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />}
+                    {item.label}
                   </button>
-                  {item.dropdown && activeDropdown === item.id && (
-                    <div style={{ paddingLeft: '16px', marginBottom: '8px' }}>
-                      {item.dropdown.map(sub => (
-                        <button
-                          key={sub.id}
-                          onClick={() => { setActiveView(sub.id); setMobileMenuOpen(false); }}
-                          style={{
-                            width: '100%', display: 'block', textAlign: 'left',
-                            padding: '10px 14px', borderRadius: '8px',
-                            background: activeView === sub.id ? '#F9FAFB' : 'transparent',
-                            color: activeView === sub.id ? '#C8A84B' : '#6B7280',
-                            fontSize: '13px', fontWeight: 500, border: 'none', cursor: 'pointer'
-                          }}
-                        >
-                          {language === 'en' ? sub.labelEn : sub.labelAm}
-                        </button>
-                      ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Nav Accordion List */}
+            <div className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+              {navItems.map(item => {
+                const Icon = item.icon;
+                const isActive = activeView === item.id || activeView.startsWith(item.id + '/');
+                const isExpanded = mobileExpandedSection === item.id;
+
+                if (item.dropdown) {
+                  return (
+                    <div key={item.id} className="rounded-2xl overflow-hidden border border-white/5 bg-white/5">
+                      <button
+                        onClick={() => setMobileExpandedSection(isExpanded ? null : item.id)}
+                        className={`w-full flex items-center justify-between p-3.5 text-left text-sm font-bold transition-colors cursor-pointer ${
+                          isActive ? 'text-[#E5C158]' : 'text-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                            isActive ? 'bg-[#C8A84B]/20 text-[#C8A84B]' : 'bg-white/10 text-stone-300'
+                          }`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div>{language === 'en' ? item.labelEn : item.labelAm}</div>
+                            <div className="text-[10px] text-stone-400 font-normal">
+                              {language === 'en' ? item.labelAm : item.labelEn}
+                            </div>
+                          </div>
+                        </div>
+                        <ChevronDown className={`w-4 h-4 text-[#C8A84B] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                      </button>
+
+                      {isExpanded && (
+                        <div className="p-2 space-y-1 bg-black/30 border-t border-white/10">
+                          {item.dropdown.map(sub => {
+                            const isSubActive = activeView === sub.id;
+                            return (
+                              <button
+                                key={sub.id}
+                                onClick={() => {
+                                  setActiveView(sub.id);
+                                  setMobileMenuOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs transition-colors text-left cursor-pointer ${
+                                  isSubActive
+                                    ? 'bg-[#C8A84B] text-[#0A1A0F] font-bold'
+                                    : 'text-stone-200 hover:bg-white/10'
+                                }`}
+                              >
+                                <span>{language === 'en' ? sub.labelEn : sub.labelAm}</span>
+                                <ChevronRight className={`w-3.5 h-3.5 ${isSubActive ? 'text-[#0A1A0F]' : 'text-[#C8A84B]'}`} />
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                  )}
-                </React.Fragment>
-              );
-            })}
-            <button
-              onClick={() => { setIsAuthOpen(true); setMobileMenuOpen(false); }}
-              style={{
-                width: '100%', marginTop: '8px',
-                padding: '10px', borderRadius: '8px',
-                background: '#1A2C1C', color: '#FFF',
-                fontWeight: 700, fontSize: '14px',
-                border: 'none', cursor: 'pointer',
-              }}
-            >
-              Login / Register
-            </button>
+                  );
+                }
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveView(item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-between p-3.5 rounded-2xl text-left text-sm font-bold transition-all border cursor-pointer ${
+                      isActive
+                        ? 'bg-[#C8A84B] text-[#0A1A0F] border-[#C8A84B] font-bold shadow-md'
+                        : 'bg-white/5 text-white border-white/5 hover:bg-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                        isActive ? 'bg-[#0A1A0F]/20 text-[#0A1A0F]' : 'bg-white/10 text-stone-300'
+                      }`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div>{language === 'en' ? item.labelEn : item.labelAm}</div>
+                        <div className={`text-[10px] font-normal ${isActive ? 'text-[#0A1A0F]/80' : 'text-stone-400'}`}>
+                          {language === 'en' ? item.labelAm : item.labelEn}
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 opacity-70" />
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Drawer Footer Actions */}
+            <div className="p-4 border-t border-white/10 bg-[#05150E] space-y-3">
+              <button
+                onClick={() => { setIsAuthOpen(true); setMobileMenuOpen(false); }}
+                className="w-full py-3 rounded-xl bg-[#C8A84B] hover:bg-[#DEBC68] text-[#0A1A0F] font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>{language === 'en' ? 'Login to Parishioner Portal' : 'ወደ ምዕመናን ፖርታል ይግቡ'}</span>
+              </button>
+              
+              <div className="text-center text-[10px] text-stone-400">
+                © 2026 Ethiopian Orthodox Tewahedo Church Patriarchate
+              </div>
+            </div>
+
           </div>
         )}
       </header>
-
-      {/* Responsive rules */}
-      <style>{`
-        @media (max-width: 1023px) {
-          .desktop-nav { display: none !important; }
-          .mobile-menu-btn { display: flex !important; }
-        }
-        @media (max-width: 768px) {
-          .container {
-            padding: 0 1rem !important;
-          }
-        }
-      `}</style>
 
       <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </>
   );
 };
+
+export default Header;
