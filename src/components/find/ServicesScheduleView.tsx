@@ -502,7 +502,7 @@ export const ServicesScheduleView: React.FC<{
                   <span>Remind Me for This Sunday</span>
                 </button>
                 <button
-                  onClick={() => setActiveView('worship')}
+                  onClick={() => setActiveView('resources')}
                   className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/20 transition-all"
                 >
                   <Tv className="w-4 h-4 text-[#C8A84B]" />
