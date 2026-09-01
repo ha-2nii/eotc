@@ -23,7 +23,7 @@ const AppContent: React.FC = () => {
     <div className="min-h-screen flex flex-col" style={{ background: '#F8F6F0', color: '#2C1D07' }}>
       <Header />
 
-      <main className="flex-1" style={{ paddingTop: activeView === 'home' ? 0 : '96px' }}>
+      <main className="flex-1" style={{ paddingTop: (activeView === 'home' || activeView.startsWith('give') || activeView.startsWith('find-a-church')) ? 0 : '96px' }}>
         {activeView === 'home' && <HomePageView />}
         {activeView.startsWith('scripture') && <ScriptureView />}
         {(activeView.startsWith('resources') || activeView.startsWith('orthodox-resources')) && <ResourcesView />}

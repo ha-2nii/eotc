@@ -1,994 +1,681 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../layout/LanguageContext';
 import { MOCK_CHURCHES } from '../../data/mockChurches';
 import type { Church } from '../../data/mockChurches';
 import {
-  Clock, Calendar, MapPin, Tv, Bell,
-  Search, Filter, ChevronRight, Check, X,
-  Compass, Star, BookOpen, AlertCircle,
-  Bookmark, Sparkles
+  Clock, Calendar, MapPin, Radio, Bell,
+  Search, ChevronRight, Check,
+  Compass, BookOpen,
+  Bookmark, Sparkles, Cross,
+  Users, Church as ChurchIcon,
+  ArrowLeft, Flame
 } from 'lucide-react';
 
-/* ─── Types ─────────────────────────────────────────────────── */
-export type ServiceType = 'Qidase' | 'Mahelet' | 'Special Liturgy' | 'Sermon' | 'Sunday School';
-
-export interface ScheduledService {
-  id: string;
-  churchId: string;
-  churchNameAmharic: string;
-  churchNameEnglish: string;
-  city: string;
-  country: string;
-  diocese: string;
-  serviceType: ServiceType;
-  titleEn: string;
-  titleAm: string;
-  gregorianDate: string; // e.g. "Sunday, Aug 23, 2026"
-  ethiopianDate: string; // e.g. "ነሐሴ ፲፯, ፳፻፲፰ ዓ.ም"
-  time: string; // e.g. "6:00 AM – 10:30 AM"
-  languages: string[];
-  celebrantPriest?: string;
-  hasLiveStream: boolean;
-  streamingUrl?: string;
-  isSpecialFeast?: boolean;
-  feastName?: string;
-  address: string;
-  dateCategory: 'today' | 'this_week' | 'this_month';
-  descriptionEn?: string;
-  descriptionAm?: string;
+interface ServicesScheduleViewProps {
+  onSelectChurch: (church: Church) => void;
+  onBackToFinder?: () => void;
 }
 
-/* ─── Mock Services Data ─────────────────────────────────────── */
-export const MOCK_SCHEDULED_SERVICES: ScheduledService[] = [
+export interface UpcomingServiceItem {
+  id: string;
+  category: 'EPISCOPAL LITURGY' | 'MAHLET VIGIL' | 'FASTING LITURGY' | 'PATRIARCHAL LITURGY' | 'SUNDAY SCHOOL' | 'EVENING WAZIM';
+  titleEn: string;
+  titleAm: string;
+  churchId: string;
+  churchName: string;
+  churchNameAmharic: string;
+  churchLocation: string;
+  day: string;
+  month: string;
+  year: string;
+  gregorianDate: string;
+  ethiopianDate: string;
+  time: string;
+  languages: string;
+  photoUrl: string;
+  dateCategory: 'all' | 'today' | 'this_week' | 'this_month';
+  streamingUrl?: string;
+  iconType: 'chalice' | 'cross' | 'book' | 'candle' | 'flame';
+}
+
+const MOCK_UPCOMING_SERVICES: UpcomingServiceItem[] = [
   {
-    id: 's1',
-    churchId: 'c1',
+    id: 'srv-1',
+    category: 'EPISCOPAL LITURGY',
+    titleEn: 'Sunday Divine Liturgy & Eucharistic Celebration',
+    titleAm: 'የሰንበት ማለዳ የበዓል ቅዳሴና ቅዱስ ቍርባን',
+    churchId: 'holy-trinity',
+    churchName: 'Holy Trinity Cathedral',
     churchNameAmharic: 'መንበረ ፓትርያርክ ቅድስት ሥላሴ ካቴድራል',
-    churchNameEnglish: 'Holy Trinity Cathedral (Patriarchate)',
-    city: 'Addis Ababa',
-    country: 'Ethiopia',
-    diocese: 'Addis Ababa Diocese',
-    serviceType: 'Qidase',
-    titleEn: 'Sunday Solemn Divine Liturgy (Kidase)',
-    titleAm: 'የእሑድ ማለዳ የበዓል ቅዳሴ',
-    gregorianDate: 'Sunday, Aug 23, 2026',
-    ethiopianDate: 'ነሐሴ ፲፯, ፳፻፲፰ ዓ.ም',
+    churchLocation: 'Arat Kilo, Addis Ababa',
+    day: '23',
+    month: 'AUG',
+    year: '2026',
+    gregorianDate: 'Aug 23, 2026',
+    ethiopianDate: 'ነሐሴ 17, 2018',
     time: '6:00 AM – 10:30 AM',
-    languages: ["Ge'ez", 'Amharic', 'English'],
-    celebrantPriest: 'Melake Selam Abba Gebre Selassie',
-    hasLiveStream: true,
+    languages: "Gē'ez • Amharic • English",
+    photoUrl: '/assets/images/find_hero_cathedral.jpg',
+    dateCategory: 'this_week',
     streamingUrl: 'https://youtube.com/@EOTCTvOfficial',
-    isSpecialFeast: false,
-    address: 'Arat Kilo, Addis Ababa',
-    dateCategory: 'this_week',
-    descriptionEn: 'Full Eucharistic Liturgy of St. Basil with Patriarchal choir antiphons and homily.',
-    descriptionAm: 'የቅዱስ ባስልዮስ ቅዳሴ ከካቴድራሉ መዘምራን ያሬዳዊ ዜማና ቃለ ምዕዳን ጋር።',
+    iconType: 'cross'
   },
   {
-    id: 's2',
-    churchId: 'c2',
-    churchNameAmharic: 'ደብረ ጽዮን ቅድስት ማርያም ቤተ ክርስቲያን — እንጦጦ',
-    churchNameEnglish: 'Debre Zion St. Mary Church – Entoto',
-    city: 'Addis Ababa',
-    country: 'Ethiopia',
-    diocese: 'Addis Ababa Diocese',
-    serviceType: 'Mahelet',
-    titleEn: 'All-Night Feast Vigil & Mahlet (Filseta)',
-    titleAm: 'የአስተርእዮ ማርያምና የፍልሰታ ዋዜማና ማኅሌት',
-    gregorianDate: 'Saturday, Aug 22, 2026',
-    ethiopianDate: 'ነሐሴ ፲፮, ፳፻፲፰ ዓ.ም',
-    time: '8:00 PM – 4:00 AM',
-    languages: ["Ge'ez", 'Amharic'],
-    celebrantPriest: 'Megabe Hadis Eshete',
-    hasLiveStream: true,
+    id: 'srv-2',
+    category: 'MAHLET VIGIL',
+    titleEn: 'All-Night Mahlet (Prayer Vigil)',
+    titleAm: 'የሌሊት ማኅሌተ ያሬድና ዋዜማ',
+    churchId: 'st-mary-bole',
+    churchName: 'St. Mary Church',
+    churchNameAmharic: 'ደብረ ምሕረት ቅድስት ማርያም ቤተ ክርስቲያን',
+    churchLocation: 'Bole, Addis Ababa',
+    day: '23',
+    month: 'AUG',
+    year: '2026',
+    gregorianDate: 'Aug 23, 2026',
+    ethiopianDate: 'ግንቦት 23, 2017',
+    time: '8:00 PM – 5:00 AM',
+    languages: "Gē'ez • Amharic",
+    photoUrl: '/assets/images/holy_trinity_interior.jpg',
+    dateCategory: 'this_week',
     streamingUrl: 'https://youtube.com/@EOTCTvOfficial',
-    isSpecialFeast: true,
-    feastName: 'Feast of the Assumption (ፍልሰታ)',
-    address: 'Entoto Hill, Addis Ababa',
-    dateCategory: 'this_week',
-    descriptionEn: 'Solemn nocturnal St. Yared Digua canticles, Wudase Maryam chants, and morning dawn Kidase.',
-    descriptionAm: 'ያሬዳዊ የድጓ ማኅሌት፣ የዋዜማ ዝማሬና የማለዳ አስተርእዮ ቅዳሴ።',
+    iconType: 'candle'
   },
   {
-    id: 's3',
-    churchId: 'c3',
-    churchNameAmharic: 'ቅዱስ ሚካኤል ቤተ ክርስቲያን — ቦሌ',
-    churchNameEnglish: 'St. Michael Church – Bole',
-    city: 'Addis Ababa',
-    country: 'Ethiopia',
-    diocese: 'Addis Ababa Diocese',
-    serviceType: 'Special Liturgy',
-    titleEn: 'Monthly Commemoration of Archangel Michael',
-    titleAm: 'የቅዱስ ሚካኤል ወርሃዊ በዓልና ጸሎተ ቅዳሴ',
-    gregorianDate: 'Wednesday, Aug 19, 2026',
-    ethiopianDate: 'ነሐሴ ፲፫, ፳፻፲፰ ዓ.ም',
-    time: '6:30 AM – 11:00 AM',
-    languages: ["Ge'ez", 'Amharic'],
-    celebrantPriest: 'Kesis Daniel Alemayehu',
-    hasLiveStream: true,
-    streamingUrl: 'https://youtube.com/@EOTCTvOfficial',
-    isSpecialFeast: true,
-    feastName: 'Archangel Michael (ቅዱስ ሚካኤል)',
-    address: 'Bole Sub-City, Addis Ababa',
-    dateCategory: 'today',
-    descriptionEn: 'Procession of the Tabot with deacons and Sunday School spiritual hymns.',
-    descriptionAm: 'የታቦተ ሕጉ በዓለ ንግሥ ከሰንበት ት/ቤት ዝማሬና ጸሎተ ምህላ ጋር።',
-  },
-  {
-    id: 's4',
-    churchId: 'c19',
-    churchNameAmharic: 'ደብረ ሰላም መድኃኔ ዓለም — ዋሽንግተን ዲሲ',
-    churchNameEnglish: 'Debre Selam Medhane Alem – Washington DC',
-    city: 'Washington DC',
-    country: 'USA',
-    diocese: 'North America Diocese',
-    serviceType: 'Qidase',
-    titleEn: 'Dual-Language Sunday Liturgy (English & Amharic)',
-    titleAm: 'የእሑድ የሁለት ቋንቋዎች ቅዳሴ (እንግሊዝኛና አማርኛ)',
-    gregorianDate: 'Sunday, Aug 23, 2026',
-    ethiopianDate: 'ነሐሴ ፲፯, ፳፻፲፰ ዓ.ም',
-    time: '8:00 AM – 12:30 PM',
-    languages: ['English', 'Amharic', "Ge'ez"],
-    celebrantPriest: 'Kesis Melake Genet Berhanu',
-    hasLiveStream: true,
-    streamingUrl: 'https://youtube.com/@EOTCDCMedhaneAlem',
-    isSpecialFeast: false,
-    address: '4401 16th St NW, Washington, DC 20011',
-    dateCategory: 'this_week',
-    descriptionEn: 'Includes youth sermon in English, Divine Liturgy with projected translations, and community Agapē lunch.',
-    descriptionAm: 'ለወጣቶች በእንግሊዝኛ የሚሰጥ ትምህርት፣ ቅዳሴ ከተተረጎመ ስክሪን ጋርና የፍቅር ማዕድ።',
-  },
-  {
-    id: 's5',
-    churchId: 'c23',
-    churchNameAmharic: 'ደብረ ጽዮን ቅድስት ማርያም — ለንደን',
-    churchNameEnglish: 'Debre Zion St. Mary – London',
-    city: 'London',
-    country: 'United Kingdom',
-    diocese: 'UK & Europe Diocese',
-    serviceType: 'Sermon',
-    titleEn: 'Patristic Gospel Seminar & Youth Bible Study',
-    titleAm: 'የአበው ትምህርትና የወጣቶች የመጽሐፍ ቅዱስ ጥናት',
-    gregorianDate: 'Friday, Aug 21, 2026',
-    ethiopianDate: 'ነሐሴ ፲፭, ፳፻፲፰ ዓ.ም',
-    time: '6:30 PM – 8:30 PM',
-    languages: ['English', 'Amharic'],
-    celebrantPriest: 'Deacon Samuel Tesfaye',
-    hasLiveStream: false,
-    address: 'Battersea Park Rd, London SW11 4LP',
-    dateCategory: 'this_week',
-    descriptionEn: 'In-depth exposition on Tewahedo Christology and the Life of the Desert Fathers.',
-    descriptionAm: 'ስለ ተዋሕዶ የነገረ መለኮት ትምህርትና ስለ ገዳማውያን አባቶች ሕይወት የሚሰጥ ትምህርት።',
-  },
-  {
-    id: 's6',
-    churchId: 'c6',
-    churchNameAmharic: 'ቅዱስ ጊዮርጊስ ካቴድራል — ፒያሳ',
-    churchNameEnglish: 'St. George Cathedral – Piazza',
-    city: 'Addis Ababa',
-    country: 'Ethiopia',
-    diocese: 'Addis Ababa Diocese',
-    serviceType: 'Sunday School',
-    titleEn: 'Cathedral Sunday School Youth Choir & Chants',
-    titleAm: 'የሰንበት ትምህርት ቤት መዘምራን ዝማሬና መንፈሳዊ ጉባኤ',
-    gregorianDate: 'Sunday, Aug 23, 2026',
-    ethiopianDate: 'ነሐሴ ፲፯, ፳፻፲፰ ዓ.ም',
-    time: '11:00 AM – 1:30 PM',
-    languages: ['Amharic', "Ge'ez"],
-    hasLiveStream: true,
-    streamingUrl: 'https://youtube.com/@EOTCTvOfficial',
-    address: 'Piazza, Addis Ababa',
-    dateCategory: 'this_week',
-    descriptionEn: 'Spiritual drama, sacred poetry (Qene), choral hymns, and catechism for children and teens.',
-    descriptionAm: 'መንፈሳዊ ድራማ፣ ቅኔ፣ ያሬዳዊ ዝማሬና የሕፃናት የሃይማኖት ትምህርት።',
-  },
-  {
-    id: 's7',
-    churchId: 'c30',
-    churchNameAmharic: 'የቅድስት ድንግል ማርያም የተልእኮ ማዕከል — ዳላስ',
-    churchNameEnglish: 'St. Mary Mission Center – Dallas',
-    city: 'Dallas',
-    country: 'USA',
-    diocese: 'North America Diocese',
-    serviceType: 'Qidase',
-    titleEn: 'Mission Divine Liturgy & English Catechism',
-    titleAm: 'የተልእኮ ቅዳሴና የእንግሊዝኛ ኦርቶዶክሳዊ ትምህርት',
-    gregorianDate: 'Sunday, Aug 30, 2026',
-    ethiopianDate: 'ነሐሴ ፳፬, ፳፻፲፰ ዓ.ም',
-    time: '8:30 AM – 12:00 PM',
-    languages: ['English', 'Amharic'],
-    celebrantPriest: 'Kesis Dawit Bekele',
-    hasLiveStream: true,
-    streamingUrl: 'https://youtube.com/@EOTCDallasMission',
-    address: '1420 W Mockingbird Ln, Dallas, TX 75247',
+    id: 'srv-3',
+    category: 'FASTING LITURGY',
+    titleEn: 'Fasting Liturgy',
+    titleAm: 'የጾም ቅዳሴ (፱ኛው ሰዓት)',
+    churchId: 'st-george-lideta',
+    churchName: 'St. George Church',
+    churchNameAmharic: 'ደብረ ጽጌ ቅዱስ ጊዮርጊስ ቤተ ክርስቲያን',
+    churchLocation: 'Lideta, Addis Ababa',
+    day: '04',
+    month: 'JUN',
+    year: '2026',
+    gregorianDate: 'Jun 4, 2026',
+    ethiopianDate: 'ግንቦት 27, 2017',
+    time: '1:00 PM – 3:30 PM',
+    languages: "Gē'ez • Amharic",
+    photoUrl: '/assets/images/gondar_debre_birhan.jpg',
     dateCategory: 'this_month',
-    descriptionEn: 'Bilingual liturgical service structured for converts and 2nd-generation youth.',
-    descriptionAm: 'ለወጣቶችና አዳዲስ አማኞች የተዘጋጀ ባለ ሁለት ቋንቋ ቅዳሴ።',
+    iconType: 'chalice'
   },
   {
-    id: 's8',
-    churchId: 'c25',
-    churchNameAmharic: 'ፍራንክፈርት ደብረ ሲና ቅዱስ ጊዮርጊስ',
-    churchNameEnglish: 'Debre Sina St. George – Frankfurt',
-    city: 'Frankfurt',
-    country: 'Germany',
-    diocese: 'Germany Diocese',
-    serviceType: 'Qidase',
-    titleEn: 'Sunday Liturgy in German & Ge’ez',
-    titleAm: 'የእሑድ ቅዳሴ በጀርመንኛና ግዕዝ ቋንቋ',
-    gregorianDate: 'Sunday, Aug 23, 2026',
-    ethiopianDate: 'ነሐሴ ፲፯, ፳፻፲፰ ዓ.ም',
-    time: '9:00 AM – 1:00 PM',
-    languages: ['German', 'Amharic', "Ge'ez"],
-    celebrantPriest: 'Kesis Yohannes Müller',
-    hasLiveStream: false,
-    address: 'Sachsenhausen, Frankfurt am Main',
-    dateCategory: 'this_week',
-    descriptionEn: 'Serving the Ethiopian and European faithful with translated Eucharistic liturgy.',
-    descriptionAm: 'በጀርመን ለሚኖሩ ምዕመናን የሚቀርብ ቅዳሴና መንፈሳዊ ትምህርት።',
+    id: 'srv-4',
+    category: 'PATRIARCHAL LITURGY',
+    titleEn: 'Patriarchal Divine Liturgy',
+    titleAm: 'የመንበረ ፓትርያርክ የቅዱስ ሲኖዶስ ቅዳሴ',
+    churchId: 'st-george-cathedral',
+    churchName: 'St. George Cathedral',
+    churchNameAmharic: 'ገነተ ጽጌ ቅዱስ ጊዮርጊስ ካቴድራል',
+    churchLocation: 'Addis Ababa',
+    day: '06',
+    month: 'JUN',
+    year: '2026',
+    gregorianDate: 'Jun 6, 2026',
+    ethiopianDate: 'ግንቦት 29, 2017',
+    time: '6:00 AM – 11:00 AM',
+    languages: "Gē'ez • Amharic • English",
+    photoUrl: '/assets/images/holy_synod_assembly.jpg',
+    dateCategory: 'this_month',
+    streamingUrl: 'https://youtube.com/@EOTCTvOfficial',
+    iconType: 'cross'
   }
 ];
 
-export const ServicesScheduleView: React.FC<{
-  onSelectChurch: (church: Church) => void;
-}> = ({ onSelectChurch }) => {
-  const { language, setActiveView } = useLanguage();
+export const ServicesScheduleView: React.FC<ServicesScheduleViewProps> = ({
+  onSelectChurch,
+  onBackToFinder
+}) => {
+  const { setActiveView } = useLanguage();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('All');
+  const [selectedChurchFilter, setSelectedChurchFilter] = useState<string>('All');
+  const [timeRange, setTimeRange] = useState<'all' | 'today' | 'this_week' | 'this_month'>('all');
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set(['srv-1']));
+  const [reminderIds, setReminderIds] = useState<Set<string>>(new Set());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  /* ── Location / Church prompt state ── */
-  const [locationMode, setLocationMode] = useState<'near_me' | 'select_church' | 'favorites'>('near_me');
-  const [selectedChurchFilter, setSelectedChurchFilter] = useState<string>('ALL');
-  const [favoriteChurchIds, setFavoriteChurchIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('eotc_fav_churches');
-      return saved ? JSON.parse(saved) : ['c1', 'c19'];
-    } catch {
-      return ['c1', 'c19'];
-    }
-  });
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
 
-  /* ── Filters ── */
-  const [dateFilter, setDateFilter] = useState<'ALL' | 'today' | 'this_week' | 'this_month'>('ALL');
-  const [serviceTypeFilter, setServiceTypeFilter] = useState<string>('ALL');
-  const [languageFilter, setLanguageFilter] = useState<string>('ALL');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  /* ── Reminder Modal state ── */
-  const [reminderService, setReminderService] = useState<ScheduledService | null>(null);
-  const [reminderChannel, setReminderChannel] = useState<'email' | 'sms' | 'push'>('email');
-  const [reminderContact, setReminderContact] = useState('');
-  const [reminderAdvance, setReminderAdvance] = useState<'15min' | '1hour' | '1day'>('1hour');
-  const [reminderSuccess, setReminderSuccess] = useState(false);
-
-  /* ── Countdown to Next Sunday Liturgy (6:00 AM) ── */
-  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
-    days: 3,
-    hours: 14,
-    minutes: 42,
-    seconds: 18,
-  });
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        if (prev.days > 0) return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        return prev;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const toggleFavorite = (churchId: string) => {
-    setFavoriteChurchIds((prev) => {
-      const next = prev.includes(churchId) ? prev.filter((id) => id !== churchId) : [...prev, churchId];
-      try {
-        localStorage.setItem('eotc_fav_churches', JSON.stringify(next));
-      } catch {
-        // ignore
+  const toggleBookmark = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setBookmarkedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+        showToast('Removed from saved services');
+      } else {
+        next.add(id);
+        showToast('Service saved to bookmarks');
       }
       return next;
     });
   };
 
-  /* ── Filtered Services ── */
-  const filteredServices = useMemo(() => {
-    return MOCK_SCHEDULED_SERVICES.filter((s) => {
-      // Date filter
-      if (dateFilter !== 'ALL' && s.dateCategory !== dateFilter) return false;
-      // Service type
-      if (serviceTypeFilter !== 'ALL' && s.serviceType !== serviceTypeFilter) return false;
-      // Language
-      if (languageFilter !== 'ALL' && !s.languages.includes(languageFilter)) return false;
-      // Location / Church prompt filter
-      if (locationMode === 'favorites' && !favoriteChurchIds.includes(s.churchId)) return false;
-      if (locationMode === 'select_church' && selectedChurchFilter !== 'ALL' && s.churchId !== selectedChurchFilter) return false;
-      // Search term
-      if (searchTerm) {
-        const q = searchTerm.toLowerCase();
-        const matches =
-          s.titleEn.toLowerCase().includes(q) ||
-          s.titleAm.toLowerCase().includes(q) ||
-          s.churchNameEnglish.toLowerCase().includes(q) ||
-          s.churchNameAmharic.toLowerCase().includes(q) ||
-          s.city.toLowerCase().includes(q) ||
-          (s.feastName && s.feastName.toLowerCase().includes(q));
-        if (!matches) return false;
+  const toggleReminder = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setReminderIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+        showToast('Service reminder cancelled');
+      } else {
+        next.add(id);
+        showToast('Reminder set for Divine Service');
       }
-      return true;
+      return next;
     });
-  }, [dateFilter, serviceTypeFilter, languageFilter, locationMode, selectedChurchFilter, favoriteChurchIds, searchTerm]);
-
-  /* ── Service Type Badges Helper ── */
-  const getServiceTypeBadge = (type: ServiceType) => {
-    switch (type) {
-      case 'Qidase':
-        return { bg: 'bg-[#FFF8E7] text-[#855B09] border-[#C8A84B]', label: 'ቅዳሴ (Qidase)' };
-      case 'Mahelet':
-        return { bg: 'bg-indigo-50 text-indigo-800 border-indigo-200', label: 'ማኅሌት (Mahelet)' };
-      case 'Special Liturgy':
-        return { bg: 'bg-amber-50 text-amber-900 border-amber-300', label: 'የበዓል ቅዳሴ (Special Liturgy)' };
-      case 'Sermon':
-        return { bg: 'bg-emerald-50 text-emerald-800 border-emerald-200', label: 'ትምህርተ ወንጌል (Sermon)' };
-      case 'Sunday School':
-        return { bg: 'bg-purple-50 text-purple-800 border-purple-200', label: 'ሰንበት ት/ቤት (Sunday School)' };
-    }
   };
 
-  const handleSetReminder = (e: React.FormEvent) => {
-    e.preventDefault();
-    setReminderSuccess(true);
-    setTimeout(() => {
-      setReminderSuccess(false);
-      setReminderService(null);
-      setReminderContact('');
-    }, 2200);
+  // Filtered services
+  const filteredServices = useMemo(() => {
+    return MOCK_UPCOMING_SERVICES.filter(srv => {
+      const q = searchQuery.toLowerCase().trim();
+      const matchesSearch = !q || (
+        srv.titleEn.toLowerCase().includes(q) ||
+        srv.titleAm.includes(q) ||
+        srv.churchName.toLowerCase().includes(q) ||
+        srv.churchNameAmharic.includes(q) ||
+        srv.churchLocation.toLowerCase().includes(q)
+      );
+
+      const matchesCat = selectedCategory === 'All' || srv.category === selectedCategory;
+      const matchesLang = selectedLanguage === 'All' || srv.languages.includes(selectedLanguage);
+      const matchesChurch = selectedChurchFilter === 'All' || srv.churchName === selectedChurchFilter;
+      const matchesTime = timeRange === 'all' || srv.dateCategory === timeRange || (timeRange === 'this_month' && srv.dateCategory === 'this_week');
+
+      return matchesSearch && matchesCat && matchesLang && matchesChurch && matchesTime;
+    });
+  }, [searchQuery, selectedCategory, selectedLanguage, selectedChurchFilter, timeRange]);
+
+  const handleOpenChurch = (churchName: string) => {
+    const found = MOCK_CHURCHES.find(c => 
+      c.nameEnglish.toLowerCase().includes(churchName.toLowerCase()) || 
+      churchName.toLowerCase().includes(c.nameEnglish.toLowerCase())
+    ) || MOCK_CHURCHES[0];
+    onSelectChurch(found);
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* ══ 1. LOCATION PROMPT & CHURCH SELECTOR BAR ══════════════ */}
-      <section className="bg-white p-6 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <span className="badge-gold text-[10px] uppercase font-bold tracking-wider">
-              {language === 'am' ? 'የአካባቢ መምረጫ' : 'PARISH DISCOVERY MODE'}
-            </span>
-            <h2 className="text-xl sm:text-2xl font-black text-[#2C1D07] font-serif">
-              {language === 'am' ? 'አገልግሎቶችን በአካባቢዎ ወይም በደብርዎ ይመልከቱ' : 'Find Services Near You or By Church'}
-            </h2>
-          </div>
+    <div className="bg-[#FAF7F2] text-[#2C1D07] min-h-screen font-serif antialiased pb-24">
 
-          {/* Mode Selector Buttons */}
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setLocationMode('near_me')}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
-                locationMode === 'near_me'
-                  ? 'bg-[#1A2C1C] text-[#C8A84B] border-[#C8A84B] shadow-sm'
-                  : 'bg-[#FAF8F3] text-[#4A3B22] border-[#E6DFD1] hover:border-[#C8A84B]'
-              }`}
-            >
-              <Compass className="w-4 h-4 text-[#C8A84B]" />
-              <span>{language === 'am' ? 'በአቅራቢያዬ ያሉ አገልግሎቶች' : 'Services Near Me (GPS)'}</span>
-            </button>
+      {/* ── Toast Notification ─────────────────────────────────────── */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 bg-[#0B3B2B] text-white px-5 py-3 rounded-2xl shadow-xl border border-[#C8A84B] flex items-center gap-2 text-xs font-sans animate-fadeIn">
+          <Check className="w-4 h-4 text-[#E5C158]" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
-            <button
-              onClick={() => setLocationMode('select_church')}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
-                locationMode === 'select_church'
-                  ? 'bg-[#1A2C1C] text-[#C8A84B] border-[#C8A84B] shadow-sm'
-                  : 'bg-[#FAF8F3] text-[#4A3B22] border-[#E6DFD1] hover:border-[#C8A84B]'
-              }`}
-            >
-              <MapPin className="w-4 h-4 text-[#C8A84B]" />
-              <span>{language === 'am' ? 'ቤተ ክርስቲያን ይምረጡ' : 'Select Your Church'}</span>
-            </button>
-
-            <button
-              onClick={() => setLocationMode('favorites')}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
-                locationMode === 'favorites'
-                  ? 'bg-[#1A2C1C] text-[#C8A84B] border-[#C8A84B] shadow-sm'
-                  : 'bg-[#FAF8F3] text-[#4A3B22] border-[#E6DFD1] hover:border-[#C8A84B]'
-              }`}
-            >
-              <Star className="w-4 h-4 text-[#C8A84B]" />
-              <span>{language === 'am' ? 'የተመረጡ አብያተ ክርስቲያናት' : `Saved Churches (${favoriteChurchIds.length})`}</span>
-            </button>
-          </div>
+      {/* ═══════════════════════════════════════════════════════════════
+          1. HERO BANNER WITH SACRED ALTAR PHOTO (1:1 with Screenshot)
+          ═══════════════════════════════════════════════════════════════ */}
+      <section className="relative text-white pt-28 pb-16 overflow-hidden bg-[#061D16]">
+        
+        {/* Sacred Altar Background Photo on Right */}
+        <div className="absolute inset-0">
+          <img
+            src="/assets/images/services_hero_altar.jpg"
+            alt="Illuminated Holy Gospel and Altar"
+            className="w-full h-full object-cover object-right"
+          />
+          {/* Dark Forest Green Gradient fading from Left to Right */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#061D16] via-[#061D16]/95 via-45% to-[#061D16]/30" />
+          <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF7F2] to-transparent" />
         </div>
 
-        {/* Church Dropdown when select_church is active */}
-        {locationMode === 'select_church' && (
-          <div className="pt-3 border-t border-[#E6DFD1] flex flex-col sm:flex-row items-center gap-3">
-            <span className="text-xs font-bold text-[#855B09] shrink-0">
-              {language === 'am' ? 'የደብር ስም ይምረጡ:' : 'Choose Specific Parish:'}
-            </span>
-            <select
-              value={selectedChurchFilter}
-              onChange={(e) => setSelectedChurchFilter(e.target.value)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-4 py-2.5 text-xs font-bold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
-            >
-              <option value="ALL">
-                {language === 'am' ? 'ሁሉም አብያተ ክርስቲያናት (All Parishes)' : 'All Registered Parishes'}
-              </option>
-              {MOCK_CHURCHES.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nameEnglish} ({c.nameAmharic}) — {c.city}, {c.country}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </section>
-
-      {/* ══ 2. "WHAT'S HAPPENING THIS SUNDAY" CURATED HIGHLIGHT ══════ */}
-      <section className="bg-gradient-to-br from-[#2C1D07] via-[#3D2200] to-[#1C1205] rounded-3xl border-2 border-[#C8A84B] p-8 md:p-10 text-white relative overflow-hidden shadow-2xl space-y-6">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#C8A84B]/20 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(#C8A84B_1px,transparent_1px)] [background-size:20px_20px] opacity-10" />
-
-        <div className="relative z-10 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="bg-[#C8A84B] text-[#1A2C1C] text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full shadow-sm">
-                ✦ {language === 'am' ? 'የሚመጣው እሑድ ልዩ ማዕከል' : "WHAT'S HAPPENING THIS SUNDAY"}
-              </span>
-              <span className="bg-white/10 text-stone-200 text-[10px] font-bold px-3 py-1 rounded-full border border-white/20">
-                Aug 23, 2026 • ነሐሴ ፲፯, ፳፻፲፰ ዓ.ም
-              </span>
+        <div className="max-w-[1580px] mx-auto px-6 sm:px-10 lg:px-12 relative z-10">
+          <div className="max-w-2xl space-y-4">
+            
+            {/* Small Gold Header Badge */}
+            <div className="flex items-center gap-2 text-[#C8A84B] font-mono text-xs uppercase tracking-[0.22em] font-bold">
+              <span>LITURGICAL SCHEDULE · GLOBAL PARISHES</span>
             </div>
 
-            {/* Countdown Badge */}
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-[#C8A84B]/40">
-              <Clock className="w-4 h-4 text-[#C8A84B]" />
-              <div className="text-xs font-mono font-bold text-[#C8A84B] flex items-center gap-1.5">
-                <span>{timeLeft.days}d</span>:
-                <span>{timeLeft.hours}h</span>:
-                <span>{timeLeft.minutes}m</span>:
-                <span>{timeLeft.seconds}s</span>
-                <span className="text-[10px] text-stone-300 font-sans ml-1">until Dawn Liturgy</span>
-              </div>
-            </div>
-          </div>
+            {/* Huge Serif Title */}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-white tracking-tight leading-[1.08]">
+              Upcoming Services
+            </h1>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 items-center">
-            <div className="space-y-4">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-black text-white font-geez leading-tight">
-                {language === 'am'
-                  ? 'የእሑድ ማለዳ ቅዳሴና የሰንበተ ክርስቲያን ምስጋና'
-                  : 'Sunday Divine Liturgy & Eucharistic Celebration'}
-              </h3>
-              <p className="text-sm text-stone-200 leading-relaxed">
-                {language === 'am'
-                  ? 'በሁሉም አብያተ ክርስቲያናት የማለዳ ቅዳሴ ከጧቱ 6:00 ጀምሮ ይካሄዳል፤ በቅዱስ ባስልዮስና በቅዱስ ዲዮስቆሮስ ቅዳሴ አምላካዊ ምሥጢር ይፈጸማል።'
-                  : 'Parishes worldwide commence Morning Divine Liturgy at 6:00 AM. Join the faithful for the Anaphora of St. Basil, St. Yared Digua choral hymns, and pastoral sermons.'}
-              </p>
+            {/* Subtitle */}
+            <p className="text-sm sm:text-base text-[#D1D5DB] font-sans leading-relaxed">
+              Discover Divine Liturgies, Mahlet Vigils<br className="hidden sm:inline" />
+              and Parish Worship across EOTC Churches worldwide.
+            </p>
 
-              {/* Sunday Scriptural Readings Box */}
-              <div className="bg-black/40 backdrop-blur-md p-4 rounded-2xl border border-[#C8A84B]/30 space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-[#C8A84B] font-bold uppercase tracking-wider text-[10px]">
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Sunday Liturgical Lectionary Readings (የዕለቱ ምንባባት)</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-stone-300 text-[11px]">
-                  <div>• <strong>Epistle:</strong> 1 Corinthians 15:1–28</div>
-                  <div>• <strong>Catholic Epistle:</strong> 1 Peter 2:1–10</div>
-                  <div>• <strong>Acts of Apostles:</strong> Acts 20:7–12</div>
-                  <div>• <strong>Holy Gospel:</strong> St. John 6:35–58</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Sunday Quick Actions */}
-            <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 space-y-4 text-xs">
-              <div className="text-[#C8A84B] font-bold text-sm flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#C8A84B]" />
-                <span>Join Sunday Services</span>
-              </div>
-              <p className="text-stone-300 text-xs leading-relaxed">
-                Locate your nearest parish with GPS or connect with live streaming services from Holy Trinity Patriarchal Cathedral.
-              </p>
-              <div className="space-y-2 pt-2">
-                <button
-                  onClick={() => {
-                    const feat = MOCK_SCHEDULED_SERVICES[0];
-                    setReminderService(feat);
-                  }}
-                  className="w-full btn-gold py-2.5 font-bold text-xs flex items-center justify-center gap-2"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span>Remind Me for This Sunday</span>
-                </button>
-                <button
-                  onClick={() => setActiveView('resources')}
-                  className="w-full py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 border border-white/20 transition-all"
-                >
-                  <Tv className="w-4 h-4 text-[#C8A84B]" />
-                  <span>Watch Live Broadcasts</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══ 3. MULTI-FILTER BAR ═══════════════════════════════════ */}
-      <section className="bg-white p-5 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#855B09] absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder={language === 'am' ? 'በአገልግሎት ስም፣ በደብር ወይም በበዓል ፈልግ...' : 'Search by service name, parish, feast, or city...'}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-[#E6DFD1] text-xs font-medium focus:outline-none focus:border-[#C8A84B] bg-[#FAF8F3] text-[#2C1D07]"
-            />
-          </div>
-
-          {/* Quick Date Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0">
-            {[
-              { id: 'ALL', lEn: 'All Upcoming', lAm: 'ሁሉም' },
-              { id: 'today', lEn: 'Today', lAm: 'ዛሬ' },
-              { id: 'this_week', lEn: 'This Week', lAm: 'በዚህ ሳምንት' },
-              { id: 'this_month', lEn: 'This Month', lAm: 'በዚህ ወር' },
-            ].map((tab) => (
+            {/* Two Action Pill Buttons */}
+            <div className="flex flex-wrap items-center gap-3 pt-3">
+              {/* Button 1: Find Services Near Me (Dark Pill with Subtle Gold Border) */}
               <button
-                key={tab.id}
-                onClick={() => setDateFilter(tab.id as any)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all border ${
-                  dateFilter === tab.id
-                    ? 'bg-[#855B09] text-white border-[#855B09] shadow-sm'
-                    : 'bg-[#FAF8F3] text-[#4A3B22] border-[#E6DFD1] hover:border-[#C8A84B]'
-                }`}
+                onClick={() => {
+                  setTimeRange('today');
+                  const el = document.getElementById('services-list-section');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-5 py-2.5 rounded-full bg-[#051811] hover:bg-[#092b1f] border border-[#C8A84B]/60 text-white font-sans text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
               >
-                {language === 'am' ? tab.lAm : tab.lEn}
+                <Compass className="w-4 h-4 text-[#C8A84B]" />
+                <span>Find Services Near Me</span>
               </button>
-            ))}
-          </div>
-        </div>
 
-        {/* 2 Dropdowns: Service Type & Language */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E6DFD1]">
-          {/* Service Type */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#855B09] shrink-0">
-              <Filter className="w-3.5 h-3.5 inline mr-1" />
-              {language === 'am' ? 'የአገልግሎት ዓይነት:' : 'Service Type:'}
-            </span>
-            <select
-              value={serviceTypeFilter}
-              onChange={(e) => setServiceTypeFilter(e.target.value)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
-            >
-              <option value="ALL">All Service Types (ሁሉም)</option>
-              <option value="Qidase">Qidase — Divine Liturgy (ቅዳሴ)</option>
-              <option value="Mahelet">Mahelet — All-Night Vigil (ማኅሌት)</option>
-              <option value="Special Liturgy">Special Feast Liturgy (የበዓል ቅዳሴ)</option>
-              <option value="Sermon">Sermon & Gospel Teaching (ትምህርተ ወንጌል)</option>
-              <option value="Sunday School">Sunday School & Youth Choir (ሰንበት ት/ቤት)</option>
-            </select>
-          </div>
+              {/* Button 2: Select Your Church (Solid Gold Pill) */}
+              <button
+                onClick={() => onBackToFinder ? onBackToFinder() : setActiveView('find-a-church')}
+                className="px-5 py-2.5 rounded-full bg-[#C8A84B] hover:bg-[#b89539] text-[#1A1208] font-sans text-xs font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+              >
+                <ChurchIcon className="w-4 h-4 text-[#1A1208]" />
+                <span>Select Your Church</span>
+              </button>
+            </div>
 
-          {/* Language */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-[#855B09] shrink-0">
-              {language === 'am' ? 'ቋንቋ:' : 'Language:'}
-            </span>
-            <select
-              value={languageFilter}
-              onChange={(e) => setLanguageFilter(e.target.value)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
-            >
-              <option value="ALL">All Languages (ሁሉም ቋንቋዎች)</option>
-              <option value="Ge'ez">Ge'ez (ግዕዝ)</option>
-              <option value="Amharic">Amharic (አማርኛ)</option>
-              <option value="English">English (እንግሊዝኛ)</option>
-              <option value="Tigrinya">Tigrinya (ትግርኛ)</option>
-              <option value="German">German (ጀርመንኛ)</option>
-            </select>
           </div>
         </div>
       </section>
 
-      {/* ══ 4. SERVICE SCHEDULE LIST ══════════════════════════════ */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <div className="text-xs font-bold text-[#6B7280]">
-            Showing {filteredServices.length} Scheduled Services
-          </div>
-          <div className="text-xs font-bold text-[#855B09]">
-            {language === 'am' ? 'በቀንና በሰዓት የተደረደሩ' : 'Sorted Chronologically'}
-          </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          2. BREADCRUMBS & "THIS SUNDAY" FEATURED CARD
+          ═══════════════════════════════════════════════════════════════ */}
+      <main className="max-w-[1580px] mx-auto px-6 sm:px-10 lg:px-12 pt-6 space-y-8">
+        
+        {/* Back link */}
+        <div>
+          <button
+            onClick={() => onBackToFinder ? onBackToFinder() : setActiveView('find-a-church')}
+            className="inline-flex items-center gap-1.5 text-xs font-sans font-medium text-[#7A6B56] hover:text-[#0B3B2B] transition-colors cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Church Finder</span>
+          </button>
         </div>
 
-        {filteredServices.length === 0 ? (
-          <div className="bg-white p-12 rounded-3xl border border-[#E6DFD1] text-center space-y-3">
-            <AlertCircle className="w-8 h-8 text-[#855B09] mx-auto opacity-70" />
-            <h4 className="text-lg font-bold text-[#2C1D07]">No services match your filters</h4>
-            <p className="text-xs text-[#6B7280]">Try resetting your search query, date filter, or service type selector.</p>
-            <button
-              onClick={() => {
-                setDateFilter('ALL');
-                setServiceTypeFilter('ALL');
-                setLanguageFilter('ALL');
-                setSearchTerm('');
-              }}
-              className="btn-gold px-4 py-2 text-xs font-bold"
-            >
-              Reset Filters
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredServices.map((service) => {
-              const badge = getServiceTypeBadge(service.serviceType);
-              const isFav = favoriteChurchIds.includes(service.churchId);
+        {/* ── Featured "THIS SUNDAY" Banner (1:1 with Screenshot) ── */}
+        <section className="bg-white border border-[#E7DFD1] rounded-3xl p-6 sm:p-8 shadow-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* Left Side: Service Details & CTAs */}
+            <div className="lg:col-span-7 space-y-4">
+              
+              {/* Category Label */}
+              <span className="text-[11px] font-mono font-bold tracking-[0.2em] text-[#855B09] uppercase">
+                THIS SUNDAY
+              </span>
 
-              return (
-                <div
-                  key={service.id}
-                  className="bg-white rounded-3xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-md transition-all p-6 flex flex-col justify-between space-y-4 group"
+              {/* Big Title */}
+              <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#1C1814] leading-tight">
+                Sunday Divine Liturgy & Eucharistic Celebration
+              </h2>
+
+              {/* Meta Tags Row */}
+              <div className="space-y-1.5 text-xs font-sans text-[#5A4B35]">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-[#855B09]" />
+                    <span className="font-semibold text-[#1C1814]">Aug 23, 2026</span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#855B09]" />
+                    <span className="font-geez font-semibold text-[#855B09]">ነሐሴ 17, 2018</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1.5 pt-0.5">
+                  <Clock className="w-3.5 h-3.5 text-[#855B09]" />
+                  <span>6:00 AM – 10:30 AM</span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#855B09]" />
+                  <span>Holy Trinity Cathedral, Arat Kilo, Addis Ababa, Ethiopia</span>
+                </div>
+              </div>
+
+              {/* Paragraph Description */}
+              <p className="text-xs sm:text-sm text-[#5A4B35] font-sans leading-relaxed pt-1">
+                Parishes worldwide commence Morning Divine Liturgy at 6:00 AM. Join the faithful for the Anaphora of St. Basil, St. Yared Digua choral hymns, and pastoral sermons.
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  onClick={() => handleOpenChurch('Holy Trinity Cathedral')}
+                  className="px-5 py-2.5 rounded-xl bg-[#0B3B2B] hover:bg-[#07241B] text-white font-sans text-xs font-bold flex items-center gap-2 shadow-2xs transition-colors cursor-pointer"
                 >
-                  <div className="space-y-3">
-                    {/* Top Badges & Actions */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${badge.bg}`}>
-                        {badge.label}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => toggleFavorite(service.churchId)}
-                          title={isFav ? 'Remove from saved' : 'Save this church'}
-                          className={`p-1.5 rounded-lg border transition-colors ${
-                            isFav
-                              ? 'bg-amber-50 text-amber-600 border-amber-300'
-                              : 'bg-[#FAF8F3] text-stone-400 border-[#E6DFD1] hover:text-[#855B09]'
-                          }`}
-                        >
-                          <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-500' : ''}`} />
-                        </button>
+                  <Users className="w-3.5 h-3.5 text-[#E5C158]" />
+                  <span>Join Service</span>
+                </button>
 
-                        {service.hasLiveStream && (
-                          <span className="text-[9px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                            Live Stream
-                          </span>
+                <a
+                  href="https://youtube.com/@EOTCTvOfficial"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-5 py-2.5 rounded-xl bg-transparent hover:bg-[#FAF7F2] border border-[#C8A84B] text-[#855B09] font-sans text-xs font-bold flex items-center gap-2 transition-colors"
+                >
+                  <Radio className="w-3.5 h-3.5 text-[#855B09] animate-pulse" />
+                  <span>Watch Live</span>
+                </a>
+              </div>
+
+            </div>
+
+            {/* Right Side: Landscape Photo of Priest with Chalice */}
+            <div className="lg:col-span-5">
+              <div className="relative h-64 sm:h-72 rounded-2xl overflow-hidden border border-[#E7DFD1] shadow-2xs bg-stone-100">
+                <img
+                  src="/assets/images/services_priest_liturgy.jpg"
+                  alt="Priest raising Holy Chalice during Liturgy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+
+        {/* ── 3. SUNDAY READINGS STRIP (1:1 with Screenshot) ───────── */}
+        <section className="bg-[#FAF7F2] border border-[#E7DFD1] rounded-2xl p-4 sm:p-5 shadow-2xs">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            
+            {/* Left Label */}
+            <div className="shrink-0 lg:pr-6 lg:border-r lg:border-[#E7DFD1]">
+              <span className="text-xs font-serif font-bold tracking-[0.18em] text-[#855B09] uppercase block">
+                SUNDAY<br className="hidden lg:block" /> READINGS
+              </span>
+            </div>
+
+            {/* 4 Reading Cards in a row */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+              
+              {/* Reading 1: Epistle */}
+              <div className="bg-white border border-[#E2D8C7] rounded-xl p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#0B3B2B] text-[#E5C158] flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-mono uppercase font-bold text-[#855B09] tracking-wider">EPISTLE</div>
+                  <div className="text-xs font-bold text-[#1C1814] truncate font-sans">1 Corinthians 15:1–28</div>
+                </div>
+              </div>
+
+              {/* Reading 2: Acts */}
+              <div className="bg-white border border-[#E2D8C7] rounded-xl p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#0B3B2B] text-[#E5C158] flex items-center justify-center shrink-0">
+                  <Cross className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-mono uppercase font-bold text-[#855B09] tracking-wider">ACTS</div>
+                  <div className="text-xs font-bold text-[#1C1814] truncate font-sans">Acts 20:7–12</div>
+                </div>
+              </div>
+
+              {/* Reading 3: Catholic Epistle */}
+              <div className="bg-white border border-[#E2D8C7] rounded-xl p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#0B3B2B] text-[#E5C158] flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-mono uppercase font-bold text-[#855B09] tracking-wider">CATHOLIC EPISTLE</div>
+                  <div className="text-xs font-bold text-[#1C1814] truncate font-sans">1 Peter 2:1–10</div>
+                </div>
+              </div>
+
+              {/* Reading 4: Holy Gospel */}
+              <div className="bg-white border border-[#E2D8C7] rounded-xl p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#0B3B2B] text-[#E5C158] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-mono uppercase font-bold text-[#855B09] tracking-wider">HOLY GOSPEL</div>
+                  <div className="text-xs font-bold text-[#1C1814] truncate font-sans">John 6:35–58</div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </section>
+
+
+        {/* ═══════════════════════════════════════════════════════════════
+            4. FULL-WIDTH MAIN SECTION: Filters + Services Table
+            ═══════════════════════════════════════════════════════════════ */}
+        {/* ═══════════════════════════════════════════════════════════════
+            4. UPCOMING SERVICES LIST (Matching User Reference Design)
+            ═══════════════════════════════════════════════════════════════ */}
+        <div id="services-list-section" className="pt-4 space-y-8">
+          
+          {/* ── Search & Filter Controls Bar ────────────────────── */}
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            
+            {/* Left Filter Controls */}
+            <div className="flex flex-wrap items-center gap-2.5 flex-1">
+              {/* Search input */}
+              <div className="relative flex-1 min-w-[220px] max-w-sm">
+                <Search className="w-4 h-4 text-[#855B09] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by service, church, or location..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3.5 py-2 bg-white border border-[#E5DFD5] rounded-xl text-xs text-[#2C1D07] font-sans placeholder:text-stone-400 focus:outline-none focus:border-[#0B3B2B] shadow-2xs"
+                />
+              </div>
+
+              {/* Dropdown 1: Service Types */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3.5 py-2 bg-white border border-[#E5DFD5] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer"
+              >
+                <option value="All">All Service Types</option>
+                <option value="EPISCOPAL LITURGY">Episcopal Liturgy</option>
+                <option value="MAHLET VIGIL">Mahlet Vigil</option>
+                <option value="FASTING LITURGY">Fasting Liturgy</option>
+                <option value="PATRIARCHAL LITURGY">Patriarchal Liturgy</option>
+              </select>
+
+              {/* Dropdown 2: Languages */}
+              <select
+                value={selectedLanguage}
+                onChange={(e) => setSelectedLanguage(e.target.value)}
+                className="px-3.5 py-2 bg-white border border-[#E5DFD5] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer"
+              >
+                <option value="All">All Languages</option>
+                <option value="Ge'ez">Gē'ez (ግዕዝ)</option>
+                <option value="Amharic">Amharic (አማርኛ)</option>
+                <option value="English">English</option>
+              </select>
+
+              {/* Dropdown 3: Churches */}
+              <select
+                value={selectedChurchFilter}
+                onChange={(e) => setSelectedChurchFilter(e.target.value)}
+                className="px-3.5 py-2 bg-white border border-[#E5DFD5] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer max-w-[160px] truncate"
+              >
+                <option value="All">All Churches</option>
+                <option value="Holy Trinity Cathedral">Holy Trinity Cathedral</option>
+                <option value="St. Mary Church">St. Mary Church</option>
+                <option value="St. George Church">St. George Church</option>
+                <option value="St. George Cathedral">St. George Cathedral</option>
+              </select>
+            </div>
+
+            {/* Right Date Filter Tabs */}
+            <div className="flex items-center gap-1 bg-white border border-[#E5DFD5] rounded-xl p-1 shadow-2xs text-xs font-sans self-start lg:self-auto">
+              {[
+                { id: 'all', label: 'All' },
+                { id: 'today', label: 'Today' },
+                { id: 'this_week', label: 'This Week' },
+                { id: 'this_month', label: 'This Month' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setTimeRange(tab.id as any)}
+                  className={`px-3.5 py-1.5 rounded-lg font-medium transition-colors cursor-pointer ${
+                    timeRange === tab.id
+                      ? 'bg-[#0E281F] text-white font-bold'
+                      : 'text-[#5A4B35] hover:text-[#0E281F]'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+          </div>
+
+          {/* ── Section Title ────────────────────────────────────── */}
+          <div className="space-y-1">
+            <h2 className="text-2xl sm:text-3xl font-bold font-serif text-[#0E281F] tracking-tight">
+              Upcoming Services
+            </h2>
+            <p className="text-xs sm:text-sm text-[#7A6B56] font-sans">
+              Join us in prayer and worship across our churches.
+            </p>
+          </div>
+
+          {/* ── Timeline + Service Items ─────────────────────────── */}
+          <div className="relative">
+            {/* Continuous Vertical Timeline Line */}
+            <div className="absolute left-[88px] sm:left-[96px] top-6 bottom-6 w-[1.5px] bg-[#E5DFD5] hidden md:block" />
+
+            <div className="space-y-8">
+              {filteredServices.map((srv) => {
+                const isBookmarked = bookmarkedIds.has(srv.id);
+                const hasReminder = reminderIds.has(srv.id);
+
+                return (
+                  <div
+                    key={srv.id}
+                    className="relative flex flex-col md:flex-row items-stretch md:items-center gap-4 sm:gap-6 pt-6 first:pt-0 border-t border-[#EAE4D9] first:border-t-0"
+                  >
+                    {/* Left: Date Block & Timeline Node */}
+                    <div className="flex items-center md:items-start gap-3.5 md:w-[110px] shrink-0">
+                      {/* Date Stack */}
+                      <div className="w-14 text-center md:text-left">
+                        <div className="text-2xl sm:text-3xl font-bold font-serif text-[#1C1814] leading-none">
+                          {srv.day}
+                        </div>
+                        <div className="text-[11px] font-bold tracking-wider text-[#855B09] font-mono mt-0.5">
+                          {srv.month}
+                        </div>
+                        <div className="text-[11px] text-stone-500 font-sans">
+                          {srv.year}
+                        </div>
+                      </div>
+
+                      {/* Timeline Icon Node */}
+                      <div className="relative z-10 w-9 h-9 rounded-full bg-[#0E281F] border-2 border-[#FAF7F2] shadow-sm flex items-center justify-center text-[#E5C158] shrink-0">
+                        {srv.iconType === 'candle' ? (
+                          <Flame className="w-4 h-4 text-[#E5C158]" />
+                        ) : srv.iconType === 'chalice' ? (
+                          <div className="w-3.5 h-3.5 rounded-full border border-[#E5C158] flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 bg-[#E5C158] rounded-full" />
+                          </div>
+                        ) : (
+                          <span className="font-serif font-bold text-sm text-[#E5C158] leading-none">†</span>
                         )}
                       </div>
                     </div>
 
-                    {/* Service Titles */}
-                    <div>
-                      <h3 className="text-lg font-bold text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors leading-snug">
-                        {service.titleAm}
-                      </h3>
-                      <p className="text-xs font-semibold text-[#855B09]">{service.titleEn}</p>
-                    </div>
-
-                    {/* Church Info */}
-                    <div className="text-xs text-[#4A3B22] space-y-1">
-                      <div className="font-bold text-[#2C1D07] font-geez flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-[#855B09] shrink-0" />
-                        <span>{service.churchNameAmharic}</span>
+                    {/* Service Row Main Content */}
+                    <div className="flex-1 min-w-0 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5 bg-transparent">
+                      
+                      {/* Thumbnail Image */}
+                      <div className="relative w-full sm:w-72 md:w-80 h-44 sm:h-48 rounded-2xl overflow-hidden border border-[#E5DFD5] shadow-xs bg-stone-100 shrink-0">
+                        <img
+                          src={srv.photoUrl}
+                          alt={srv.titleEn}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                        />
                       </div>
-                      <div className="text-[11px] text-[#6B7280] pl-5">
-                        {service.churchNameEnglish} • {service.city}, {service.country}
-                      </div>
-                    </div>
 
-                    {/* Date & Time Highlight Box */}
-                    <div className="bg-[#FAF8F3] p-3.5 rounded-2xl border border-[#E6DFD1] space-y-2 text-xs">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2 text-[#2C1D07] font-bold">
-                          <Calendar className="w-3.5 h-3.5 text-[#855B09]" />
-                          <span>{service.gregorianDate}</span>
+                      {/* Middle: Details */}
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div className="text-[10px] font-mono font-bold tracking-widest text-[#855B09] uppercase">
+                          {srv.category}
                         </div>
-                        <span className="font-geez font-bold text-[#855B09] text-[11px]">
-                          {service.ethiopianDate}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between gap-2 text-[11px]">
-                        <div className="flex items-center gap-2 text-[#4A3B22] font-semibold">
-                          <Clock className="w-3.5 h-3.5 text-[#855B09]" />
-                          <span>{service.time}</span>
+                        <h3 className="text-base sm:text-lg lg:text-xl font-bold font-serif text-[#1C1814] leading-tight hover:text-[#0E281F] transition-colors">
+                          {srv.titleEn}
+                        </h3>
+                        <div className="space-y-0.5 text-xs text-[#5A4B35] font-sans">
+                          <div className="flex items-center gap-1.5 font-semibold text-[#2C1D07]">
+                            <MapPin className="w-3.5 h-3.5 text-[#855B09] shrink-0" />
+                            <span>{srv.churchName}</span>
+                          </div>
+                          <div className="pl-5 text-stone-500 text-[11px]">
+                            {srv.churchLocation}
+                          </div>
                         </div>
-                        <div className="text-stone-500 font-medium">
-                          <strong>Languages:</strong> {service.languages.join(' / ')}
+                        <div className="text-xs font-medium text-[#0E281F] pt-1">
+                          {srv.languages}
                         </div>
                       </div>
 
-                      {service.celebrantPriest && (
-                        <div className="text-[10px] text-stone-500 pt-1 border-t border-[#E6DFD1]/60">
-                          <strong>Celebrant:</strong> {service.celebrantPriest}
+                      {/* Right: Time, Date & Action Buttons */}
+                      <div className="w-full lg:w-64 xl:w-72 shrink-0 space-y-4 pt-3 lg:pt-0 border-t lg:border-t-0 border-[#EAE4D9]">
+                        <div className="space-y-1.5 text-xs font-sans">
+                          <div className="flex items-center gap-2 font-bold text-[#1C1814]">
+                            <Clock className="w-4 h-4 text-[#855B09] shrink-0" />
+                            <span>{srv.time}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[#5A4B35] font-geez">
+                            <Calendar className="w-4 h-4 text-[#855B09] shrink-0" />
+                            <span>{srv.ethiopianDate}</span>
+                          </div>
                         </div>
-                      )}
-                    </div>
 
-                    {service.descriptionEn && (
-                      <p className="text-xs text-[#6B7280] leading-relaxed line-clamp-2">
-                        {language === 'am' ? service.descriptionAm : service.descriptionEn}
-                      </p>
-                    )}
-                  </div>
+                        {/* Action Buttons Row */}
+                        <div className="flex items-center gap-2.5 pt-1">
+                          <button
+                            onClick={() => handleOpenChurch(srv.churchName)}
+                            className="flex-1 py-2.5 px-4 rounded-xl bg-[#0E281F] hover:bg-[#081B14] text-white font-sans text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                          >
+                            <span>View Details</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-[#E5C158]" />
+                          </button>
 
-                  {/* Actions Row */}
-                  <div className="pt-3 border-t border-[#E6DFD1] flex flex-wrap items-center justify-between gap-2">
-                    <button
-                      onClick={() => setReminderService(service)}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#FFF8E7] border border-[#E6DFD1] hover:border-[#C8A84B] text-xs font-bold text-[#855B09] flex items-center gap-1.5 transition-colors"
-                    >
-                      <Bell className="w-3.5 h-3.5" />
-                      <span>{language === 'am' ? 'አስታውሰኝ (Remind Me)' : 'Remind Me'}</span>
-                    </button>
+                          {/* Bookmark Button */}
+                          <button
+                            onClick={(e) => toggleBookmark(srv.id, e)}
+                            title="Save service"
+                            className="w-10 h-10 rounded-xl border border-[#D5C9B3] hover:border-[#0E281F] flex items-center justify-center text-[#0E281F] bg-white transition-colors cursor-pointer shrink-0"
+                          >
+                            <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-[#0E281F] text-[#0E281F]' : ''}`} />
+                          </button>
 
-                    <div className="flex items-center gap-2">
-                      {service.streamingUrl && (
-                        <a
-                          href={service.streamingUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-red-700 hover:bg-red-100 text-xs font-bold flex items-center gap-1 transition-colors"
-                        >
-                          <Tv className="w-3.5 h-3.5" />
-                          <span>Stream</span>
-                        </a>
-                      )}
+                          {/* Reminder Bell Button */}
+                          <button
+                            onClick={(e) => toggleReminder(srv.id, e)}
+                            title="Set reminder"
+                            className="w-10 h-10 rounded-xl border border-[#D5C9B3] hover:border-[#0E281F] flex items-center justify-center text-[#0E281F] bg-white transition-colors cursor-pointer shrink-0"
+                          >
+                            <Bell className={`w-4 h-4 ${hasReminder ? 'fill-[#0E281F] text-[#0E281F]' : ''}`} />
+                          </button>
+                        </div>
+                      </div>
 
-                      <button
-                        onClick={() => {
-                          const target = MOCK_CHURCHES.find((c) => c.id === service.churchId) || MOCK_CHURCHES[0];
-                          onSelectChurch(target);
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-[#1A2C1C] text-[#C8A84B] hover:bg-[#2C1D07] text-xs font-bold flex items-center gap-1 transition-all"
-                      >
-                        <span>Parish Info</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* ══ 5. RECURRING SERVICES WEEKLY MATRIX ═══════════════════ */}
-      <section className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-6">
-        <div className="space-y-1">
-          <span className="badge-gold text-[10px] uppercase font-bold tracking-wider">
-            {language === 'am' ? 'ሳምንታዊ ቋሚ አገልግሎቶች' : 'STANDARD WEEKLY LITURGIES'}
-          </span>
-          <h3 className="text-2xl font-black text-[#2C1D07] font-serif">
-            {language === 'am' ? 'የኢትዮጵያ ኦርቶዶክስ ተዋሕዶ ቋሚ ሳምንታዊ የአገልግሎት መርሐ ግብር' : 'Weekly Recurring Liturgical Timetable'}
-          </h3>
-          <p className="text-xs sm:text-sm text-[#6B7280]">
-            The standard liturgical cycle observed across all Ethiopian Orthodox Tewahedo parishes worldwide.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            {
-              dayEn: 'Wednesdays & Fridays',
-              dayAm: 'ረቡዕና ዓርብ (ጾመ ድኅነት)',
-              titleEn: 'Fasting Divine Liturgy',
-              titleAm: 'የጾም ቅዳሴና ጸሎት',
-              time: '1:00 PM – 3:30 PM',
-              descEn: 'Conducted in the 9th hour during official fasting periods.',
-              icon: BookOpen,
-            },
-            {
-              dayEn: 'Saturdays (Eve)',
-              dayAm: 'ቅዳሜ ምሽት (ዋዜማ)',
-              titleEn: 'Nocturnal Mahlet & Wazim',
-              titleAm: 'ዋዜማና የቅዳሜ ማኅሌት',
-              time: '7:30 PM – 11:30 PM',
-              descEn: 'St. Yared chants with prayer sticks (Meqwamia) and sistrum (Tsenatsil).',
-              icon: Clock,
-            },
-            {
-              dayEn: 'Sundays (Morning)',
-              dayAm: 'እሑድ ማለዳ',
-              titleEn: 'Solemn Kidase (Divine Liturgy)',
-              titleAm: 'የሰንበተ ክርስቲያን ቅዳሴ',
-              time: '6:00 AM – 10:30 AM',
-              descEn: 'The central Eucharistic gathering with full clergy and communion.',
-              icon: Sparkles,
-            },
-            {
-              dayEn: 'Sundays (Afternoon)',
-              dayAm: 'እሑድ ከሰዓት',
-              titleEn: 'Sunday School & Gospel Preaching',
-              titleAm: 'የሰንበት ት/ቤትና የወጣቶች ጉባኤ',
-              time: '11:00 AM – 1:30 PM',
-              descEn: 'Youth choir, spiritual songs, patristic teaching, and Agapē meal.',
-              icon: Clock,
-            },
-          ].map((item, i) => {
-            const Icon = item.icon;
-            return (
-              <div key={i} className="p-5 rounded-2xl bg-[#FAF8F3] border border-[#E6DFD1] space-y-3 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-[#855B09] uppercase tracking-wider">{item.dayEn}</span>
-                    <Icon className="w-4 h-4 text-[#855B09]" />
-                  </div>
-                  <div className="font-bold text-sm text-[#2C1D07] font-geez">{item.dayAm}</div>
-                  <h4 className="font-bold text-sm text-[#855B09]">{item.titleEn}</h4>
-                  <div className="text-xs font-mono font-bold text-[#2C1D07] bg-white px-2.5 py-1 rounded-lg border border-[#E6DFD1] inline-block">
-                    {item.time}
-                  </div>
-                </div>
-                <p className="text-[11px] text-[#6B7280] leading-relaxed pt-2 border-t border-[#E6DFD1]">
-                  {item.descEn}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ══ 6. REMINDER MODAL ═════════════════════════════════════ */}
-      {reminderService && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setReminderService(null);
-          }}
-        >
-          <div className="bg-white rounded-3xl max-w-md w-full border-2 border-[#C8A84B] shadow-2xl overflow-hidden animate-scaleUp">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[#1A2C1C] to-[#2C1D07] p-6 text-white relative">
-              <div className="flex items-center gap-2 mb-1">
-                <Bell className="w-4 h-4 text-[#C8A84B]" />
-                <span className="text-[10px] font-bold text-[#C8A84B] uppercase tracking-wider">
-                  {language === 'am' ? 'የአገልግሎት ማስታወሻ' : 'LITURGY REMINDER'}
-                </span>
-              </div>
-              <h3 className="text-xl font-bold text-white font-geez leading-snug">{reminderService.titleAm}</h3>
-              <p className="text-xs text-stone-300">{reminderService.titleEn}</p>
-              <button
-                onClick={() => setReminderService(null)}
-                className="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Form */}
-            <div className="p-6 space-y-5 text-xs sm:text-sm text-[#4A3B22]">
-              {reminderSuccess ? (
-                <div className="py-8 text-center space-y-3 animate-fadeIn">
-                  <div className="w-12 h-12 rounded-full bg-green-100 text-green-700 flex items-center justify-center mx-auto">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <h4 className="text-base font-bold text-[#2C1D07]">Reminder Successfully Set!</h4>
-                  <p className="text-xs text-[#6B7280]">
-                    You will receive an alert {reminderAdvance} before {reminderService.titleEn}.
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSetReminder} className="space-y-4">
-                  {/* Service Details Snippet */}
-                  <div className="bg-[#FAF8F3] p-3.5 rounded-2xl border border-[#E6DFD1] space-y-1.5 text-xs">
-                    <div className="font-bold text-[#2C1D07]">{reminderService.churchNameEnglish}</div>
-                    <div className="text-stone-600">
-                      📅 {reminderService.gregorianDate} ({reminderService.ethiopianDate})
-                    </div>
-                    <div className="text-stone-600 font-mono">⏰ {reminderService.time}</div>
-                  </div>
-
-                  {/* Notification Channel */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#2C1D07]">Notification Method:</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { id: 'email', label: 'Email' },
-                        { id: 'sms', label: 'SMS Text' },
-                        { id: 'push', label: 'Browser Push' },
-                      ].map((ch) => (
-                        <button
-                          key={ch.id}
-                          type="button"
-                          onClick={() => setReminderChannel(ch.id as any)}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-all ${
-                            reminderChannel === ch.id
-                              ? 'bg-[#1A2C1C] text-[#C8A84B] border-[#C8A84B]'
-                              : 'bg-[#FAF8F3] text-[#4A3B22] border-[#E6DFD1]'
-                          }`}
-                        >
-                          {ch.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Contact Input */}
-                  {reminderChannel !== 'push' && (
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold text-[#2C1D07]">
-                        {reminderChannel === 'email' ? 'Email Address:' : 'Phone Number (SMS):'}
-                      </label>
-                      <input
-                        type={reminderChannel === 'email' ? 'email' : 'tel'}
-                        required
-                        placeholder={reminderChannel === 'email' ? 'you@example.com' : '+1 (555) 000-0000'}
-                        value={reminderContact}
-                        onChange={(e) => setReminderContact(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD1] text-xs focus:outline-none focus:border-[#C8A84B] bg-[#FAF8F3]"
-                      />
-                    </div>
-                  )}
-
-                  {/* Advance Timing */}
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#2C1D07]">Remind Me in Advance:</label>
-                    <select
-                      value={reminderAdvance}
-                      onChange={(e) => setReminderAdvance(e.target.value as any)}
-                      className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
-                    >
-                      <option value="15min">15 minutes before</option>
-                      <option value="1hour">1 hour before</option>
-                      <option value="1day">1 day before</option>
-                    </select>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button type="submit" className="w-full btn-gold py-3 text-xs font-bold flex items-center justify-center gap-2">
-                    <Bell className="w-4 h-4" />
-                    <span>Confirm & Schedule Reminder</span>
-                  </button>
-
-                  {/* Calendar Sync row */}
-                  <div className="pt-2 border-t border-[#E6DFD1] flex items-center justify-between text-[11px] text-[#855B09]">
-                    <span className="font-semibold">Add to Calendar:</span>
-                    <div className="flex items-center gap-3">
-                      <a
-                        href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
-                          reminderService.titleEn
-                        )}&dates=20260823T060000Z/20260823T103000Z&details=${encodeURIComponent(
-                          reminderService.churchNameEnglish
-                        )}&location=${encodeURIComponent(reminderService.address)}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:underline font-bold"
-                      >
-                        Google Calendar
-                      </a>
-                      <span>•</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${reminderService.titleEn}\nLOCATION:${reminderService.address}\nDESCRIPTION:${reminderService.churchNameEnglish}\nEND:VEVENT\nEND:VCALENDAR`;
-                          const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-                          const url = URL.createObjectURL(blob);
-                          const link = document.createElement('a');
-                          link.href = url;
-                          link.setAttribute('download', 'service.ics');
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }}
-                        className="hover:underline font-bold text-[#855B09]"
-                      >
-                        Download .iCal
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              )}
+                );
+              })}
             </div>
           </div>
+
         </div>
-      )}
+
+      </main>
+
     </div>
   );
 };
+
+export default ServicesScheduleView;

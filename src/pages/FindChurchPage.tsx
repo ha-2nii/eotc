@@ -257,74 +257,24 @@ export const FindChurchView: React.FC = () => {
       `}</style>
 
       {/* ═══════════════════════════════════════════════════════════════
-          UPCOMING SERVICES — FULL STANDALONE PAGE
+          UPCOMING SERVICES — FULL STANDALONE PAGE (1:1 with Reference)
           ═══════════════════════════════════════════════════════════════ */}
       {activeSection === 'services' && (
-        <>
-          {/* Services Page Hero */}
-          <section className="relative text-white pt-[120px] pb-0 overflow-hidden">
-            <div className="absolute inset-0 bg-[#0B3B2B]" />
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(200,168,75,0.5) 1px, transparent 0)', backgroundSize: '22px 22px' }} />
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF7F2] to-transparent" />
-            <div className="max-w-[1580px] mx-auto px-6 sm:px-10 lg:px-12 relative z-10 pb-10">
-              <button
-                onClick={() => navigateTo('map')}
-                className="flex items-center gap-1.5 text-[#C8A84B] text-xs font-sans font-bold mb-6 hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                <ChevronRight className="w-3.5 h-3.5 rotate-180" />
-                <span>Back to Church Finder</span>
-              </button>
-              <div className="flex items-center gap-2 text-[#C8A84B] font-mono text-xs uppercase tracking-[0.22em] font-bold mb-3">
-                <span className="w-6 h-[1.5px] bg-[#C8A84B]" />
-                <span>LITURGICAL SCHEDULE · GLOBAL PARISHES</span>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-white tracking-tight leading-[1.08]">
-                Upcoming Services
-              </h1>
-              <p className="text-sm text-[#D1D5DB] font-sans mt-3 max-w-xl">
-                Discover scheduled Divine Liturgies, all-night Mahlet vigils, and parish gatherings happening at EOTC churches worldwide.
-              </p>
-            </div>
-          </section>
-          <main className="max-w-[1580px] mx-auto px-6 sm:px-10 lg:px-12 pt-8">
-            <ServicesScheduleView onSelectChurch={openChurch} />
-          </main>
-        </>
+        <ServicesScheduleView
+          onSelectChurch={openChurch}
+          onBackToFinder={() => navigateTo('map')}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════
-          EVENTS NEAR YOU — FULL STANDALONE PAGE
+          EVENTS NEAR YOU — FULL STANDALONE PAGE (1:1 with Reference)
           ═══════════════════════════════════════════════════════════════ */}
       {activeSection === 'events' && (
-        <>
-          <section className="relative text-white pt-[120px] pb-0 overflow-hidden">
-            <div className="absolute inset-0 bg-[#1C1814]" />
-            <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(200,168,75,0.5) 1px, transparent 0)', backgroundSize: '22px 22px' }} />
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#FAF7F2] to-transparent" />
-            <div className="max-w-[1580px] mx-auto px-6 sm:px-10 lg:px-12 relative z-10 pb-10">
-              <button
-                onClick={() => navigateTo('map')}
-                className="flex items-center gap-1.5 text-[#C8A84B] text-xs font-sans font-bold mb-6 hover:opacity-80 transition-opacity cursor-pointer"
-              >
-                <ChevronRight className="w-3.5 h-3.5 rotate-180" />
-                <span>Back to Church Finder</span>
-              </button>
-              <div className="flex items-center gap-2 text-[#C8A84B] font-mono text-xs uppercase tracking-[0.22em] font-bold mb-3">
-                <span className="w-6 h-[1.5px] bg-[#C8A84B]" />
-                <span>PARISH EVENTS & GATHERINGS</span>
-              </div>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-white tracking-tight leading-[1.08]">
-                Events Near You
-              </h1>
-              <p className="text-sm text-[#D1D5DB] font-sans mt-3 max-w-xl">
-                Browse feast days, Tabot processions, youth programs, community meals, and spiritual retreats happening at parishes near you.
-              </p>
-            </div>
-          </section>
-          <main className="max-w-[1580px] mx-auto px-6 sm:px-10 lg:px-12 pt-8">
-            <EventsNearYouView userPos={userPos} onOpenChurchDetail={openChurch} />
-          </main>
-        </>
+        <EventsNearYouView
+          userPos={userPos}
+          onOpenChurchDetail={openChurch}
+          onBackToFinder={() => navigateTo('map')}
+        />
       )}
 
       {/* ═══════════════════════════════════════════════════════════════

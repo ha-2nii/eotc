@@ -1,18 +1,15 @@
 import React, { useState, useMemo } from 'react';
 import { useLanguage } from '../layout/LanguageContext';
 import { MOCK_EVENTS, EVENT_TYPES } from '../../data/mockEvents';
-import type { EOTCEvent, EventType } from '../../data/mockEvents';
 import { MOCK_CHURCHES } from '../../data/mockChurches';
 import type { Church } from '../../data/mockChurches';
 import {
-  Calendar, Clock, MapPin, Users, Tv,
-  Search, Check, Copy,
-  ChevronRight, X, Bookmark, Compass,
-  RotateCw, Phone, Mail,
-  CalendarPlus, Send
+  Calendar, Clock, MapPin,
+  Search, ChevronRight, Bookmark, Bell,
+  ArrowLeft, Compass
 } from 'lucide-react';
 
-/* ─── Haversine Distance Formula ─────────────────────────────── */
+/* ─── Haversine Distance ─────────────────────────────────────── */
 function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -23,749 +20,474 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/* ─── Category badge colour ──────────────────────────────────── */
+function categoryColor(type: string): string {
+  switch (type) {
+    case 'Feast Day':         return '#9B4F0A';
+    case 'Tabot Procession':  return '#5B2D8E';
+    case 'Mahlet Vigil':      return '#0A6B4F';
+    case 'Youth Program':     return '#1A5276';
+    case 'Community Meal':    return '#7D6608';
+    case 'Retreat':           return '#4A235A';
+    case 'Sermon':            return '#1B4F72';
+    case 'Fundraiser':        return '#922B21';
+    case 'Synaxis':           return '#1D6A4A';
+    default:                  return '#5A4B35';
+  }
+}
+
 interface EventsNearYouViewProps {
   userPos: [number, number] | null;
   onOpenChurchDetail?: (church: Church) => void;
+  onBackToFinder?: () => void;
 }
 
 export const EventsNearYouView: React.FC<EventsNearYouViewProps> = ({
   userPos,
-  onOpenChurchDetail,
+  onBackToFinder,
 }) => {
   const { language } = useLanguage();
 
-  /* ── Filter States ── */
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDateFilter, setSelectedDateFilter] = useState<'ALL' | 'today' | 'this_week' | 'this_month' | 'upcoming'>('ALL');
-  const [selectedEventType, setSelectedEventType] = useState<string>('ALL');
-  const [selectedChurchId, setSelectedChurchId] = useState<string>('ALL');
-  const [costFilter, setCostFilter] = useState<'ALL' | 'free' | 'paid'>('ALL');
-  const [recurrenceFilter, setRecurrenceFilter] = useState<'ALL' | 'recurring' | 'once'>('ALL');
+  /* ── Filter States ─────────────────────────────────────────── */
+  const [searchTerm, setSearchTerm]           = useState('');
+  const [timeFilter, setTimeFilter]           = useState<'ALL' | 'today' | 'this_week' | 'this_month' | 'upcoming'>('ALL');
+  const [selectedEventType, setSelectedEventType] = useState('ALL');
+  const [selectedChurchId, setSelectedChurchId]   = useState('ALL');
+  const [selectedLanguage, setSelectedLanguage]   = useState('ALL');
 
-  /* ── Detail Modal & RSVP State ── */
-  const [selectedEvent, setSelectedEvent] = useState<EOTCEvent | null>(null);
-  const [rsvpName, setRsvpName] = useState('');
-  const [rsvpEmail, setRsvpEmail] = useState('');
-  const [rsvpGuests, setRsvpGuests] = useState('1');
-  const [rsvpConfirmed, setRsvpConfirmed] = useState(false);
-  const [copiedShare, setCopiedShare] = useState(false);
+  /* ── Bookmark / Bell States ──────────────────────────────── */
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(new Set(['ev1', 'ev3']));
+  const [reminderIds, setReminderIds]     = useState<Set<string>>(new Set());
 
-  /* ── User Bookmarked Events ── */
-  const [savedEventIds, setSavedEventIds] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem('eotc_saved_events');
-      return saved ? JSON.parse(saved) : ['ev1', 'ev3'];
-    } catch {
-      return ['ev1', 'ev3'];
-    }
-  });
-
-  const toggleSaveEvent = (id: string, e: React.MouseEvent) => {
+  const toggleBookmark = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setSavedEventIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      try {
-        localStorage.setItem('eotc_saved_events', JSON.stringify(next));
-      } catch {
-        // ignore
-      }
+    setBookmarkedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
       return next;
     });
   };
 
-  /* ── Sorted & Filtered Events Feed ── */
+  const toggleReminder = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setReminderIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  /* ── Events with distance ──────────────────────────────────── */
   const eventsWithDistance = useMemo(() => {
-    return MOCK_EVENTS.map((ev) => {
-      const dist = userPos ? Math.round(haversineKm(userPos[0], userPos[1], ev.lat, ev.lng) * 10) / 10 : null;
+    return MOCK_EVENTS.map(ev => {
+      const dist = userPos
+        ? Math.round(haversineKm(userPos[0], userPos[1], ev.lat, ev.lng) * 10) / 10
+        : null;
       return { ...ev, distanceKm: dist };
     }).sort((a, b) => {
-      if (a.distanceKm !== null && b.distanceKm !== null) {
-        return a.distanceKm - b.distanceKm;
-      }
+      if (a.distanceKm !== null && b.distanceKm !== null) return a.distanceKm - b.distanceKm;
       return 0;
     });
   }, [userPos]);
 
+  /* ── Filtered Events ───────────────────────────────────────── */
   const filteredEvents = useMemo(() => {
-    return eventsWithDistance.filter((ev) => {
-      // Date filter
-      if (selectedDateFilter !== 'ALL' && ev.dateCategory !== selectedDateFilter) return false;
-      // Event type
+    return eventsWithDistance.filter(ev => {
+      if (timeFilter !== 'ALL' && ev.dateCategory !== timeFilter) return false;
       if (selectedEventType !== 'ALL' && ev.eventType !== selectedEventType) return false;
-      // Church
       if (selectedChurchId !== 'ALL' && ev.churchId !== selectedChurchId) return false;
-      // Cost
-      if (costFilter === 'free' && !ev.isFree) return false;
-      if (costFilter === 'paid' && ev.isFree) return false;
-      // Recurrence
-      if (recurrenceFilter === 'recurring' && ev.recurrence === 'once') return false;
-      if (recurrenceFilter === 'once' && ev.recurrence !== 'once') return false;
-
-      // Search term
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
-        const matches =
+        const hit =
           ev.titleEn.toLowerCase().includes(q) ||
           ev.titleAm.toLowerCase().includes(q) ||
           ev.churchNameEnglish.toLowerCase().includes(q) ||
-          ev.churchNameAmharic.toLowerCase().includes(q) ||
-          ev.city.toLowerCase().includes(q) ||
-          ev.diocese.toLowerCase().includes(q);
-        if (!matches) return false;
+          ev.city.toLowerCase().includes(q);
+        if (!hit) return false;
       }
       return true;
     });
-  }, [eventsWithDistance, selectedDateFilter, selectedEventType, selectedChurchId, costFilter, recurrenceFilter, searchTerm]);
+  }, [eventsWithDistance, timeFilter, selectedEventType, selectedChurchId, searchTerm]);
 
-  /* ── Handle RSVP Submission ── */
-  const handleRsvpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!rsvpName || !rsvpEmail) return;
-    setRsvpConfirmed(true);
-    setTimeout(() => {
-      setRsvpConfirmed(false);
-      setRsvpName('');
-      setRsvpEmail('');
-      setRsvpGuests('1');
-    }, 3000);
-  };
+  const thisMonthCount = eventsWithDistance.filter(e => e.dateCategory === 'this_month').length;
+  const venueCount = new Set(eventsWithDistance.map(e => e.churchId)).size;
 
-  /* ── Handle Social Share ── */
-  const handleCopyShareLink = (event: EOTCEvent) => {
-    const url = `${window.location.origin}/find-a-church/events/${event.slug}`;
-    navigator.clipboard.writeText(url);
-    setCopiedShare(true);
-    setTimeout(() => setCopiedShare(false), 2000);
-  };
+  const TIME_PILLS = [
+    { id: 'ALL',        label: 'All Events' },
+    { id: 'today',      label: 'Today' },
+    { id: 'this_week',  label: 'This Week' },
+    { id: 'this_month', label: 'This Month' },
+    { id: 'upcoming',   label: 'Upcoming' },
+  ] as const;
 
-  /* ── Download .ics Calendar File ── */
-  const downloadIcs = (ev: EOTCEvent) => {
-    const icsData = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Ethiopian Orthodox Tewahedo Church//Events//EN',
-      'BEGIN:VEVENT',
-      `SUMMARY:${ev.titleEn} (${ev.titleAm})`,
-      `DESCRIPTION:${ev.descriptionEn}\\n\\nHost: ${ev.churchNameEnglish}`,
-      `LOCATION:${ev.address}, ${ev.city}, ${ev.country}`,
-      'DTSTART:20260822T170000Z',
-      'DTEND:20260823T073000Z',
-      'END:VEVENT',
-      'END:VCALENDAR',
-    ].join('\r\n');
-
-    const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `${ev.slug}.ics`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const getEventTypeColor = (type: EventType) => {
-    switch (type) {
-      case 'Feast Day':
-        return 'bg-amber-100 text-amber-900 border-amber-300';
-      case 'Mahlet Vigil':
-        return 'bg-indigo-100 text-indigo-900 border-indigo-300';
-      case 'Youth Program':
-        return 'bg-emerald-100 text-emerald-900 border-emerald-300';
-      case 'Community Meal':
-        return 'bg-orange-100 text-orange-900 border-orange-300';
-      case 'Sermon':
-        return 'bg-blue-100 text-blue-900 border-blue-300';
-      case 'Retreat':
-        return 'bg-purple-100 text-purple-900 border-purple-300';
-      case 'Tabot Procession':
-        return 'bg-[#FFF8E7] text-[#855B09] border-[#C8A84B]';
-      case 'Fundraiser':
-        return 'bg-rose-100 text-rose-900 border-rose-300';
-      default:
-        return 'bg-stone-100 text-stone-900 border-stone-300';
-    }
-  };
+  /* ── Language display ─────────────────────────────────────── */
+  const langLabel = (l: string) => language === 'am' ? l : l;
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* ══ 1. BANNER & STATS ═════════════════════════════════════ */}
-      <section className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E6DFD1] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="badge-gold text-[10px] uppercase font-bold tracking-wider">
-              {language === 'am' ? 'የአብያተ ክርስቲያናት ሁነቶችና በዓላት' : 'PARISH EVENTS FEED'}
-            </span>
-            {userPos && (
-              <span className="text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                <Compass className="w-3 h-3 text-green-600 animate-spin" />
-                {language === 'am' ? 'በአካባቢ ርቀት የተደረደረ' : 'Sorted by GPS Proximity'}
-              </span>
-            )}
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-[#2C1D07] font-serif flex items-center gap-3">
-            <Users className="w-7 h-7 text-[#855B09]" />
-            <span>{language === 'am' ? 'በአቅራቢያዎ የሚደረጉ ሁነቶችና ጉባኤያት' : 'Upcoming Parish Events & Gatherings'}</span>
-          </h2>
-          <p className="text-xs sm:text-sm text-[#6B7280] max-w-3xl">
-            {language === 'am'
-              ? 'ዓመታዊ የንግሥ በዓላት፣ የታቦት ማኅሌት፣ የወጣቶች ጉባኤ፣ የፍቅር ማዕድና መንፈሳዊ ዕረፍቶችን ይመልከቱ፤ በቦታው ይሳተፉ ወይም በኦንላይን ይከታተሉ።'
-              : 'Discover annual patron feast days, all-night Mahlet vigils, youth symposiums, and community Agapē meals near your location.'}
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#FAF7F2] font-sans">
 
-        <div className="flex flex-wrap items-center gap-3 self-start md:self-auto shrink-0">
-          <div className="bg-[#FAF8F3] px-4 py-2.5 rounded-2xl border border-[#E6DFD1] text-center">
-            <div className="text-xl font-black text-[#855B09] font-mono">{filteredEvents.length}</div>
-            <div className="text-[10px] font-bold text-[#6B7280] uppercase">Events Found</div>
+      {/* ══ 1. HERO BANNER ══════════════════════════════════════════ */}
+      <section className="relative text-white overflow-hidden" style={{ paddingTop: '88px' }}>
+        {/* Background photo */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: 'url(/assets/images/events_hero_candles.jpg)' }}
+        />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#061D16]/90 via-[#061D16]/70 to-[#061D16]/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#FAF7F2]" />
+
+        <div className="relative z-10 max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-14 pt-10 pb-20">
+
+          {/* Back breadcrumb */}
+          <button
+            onClick={() => onBackToFinder?.()}
+            className="flex items-center gap-1.5 text-[#C8A84B] text-xs font-bold mb-6 hover:opacity-75 transition-opacity cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Church Finder</span>
+          </button>
+
+          {/* Label */}
+          <div className="flex items-center gap-2 text-[#C8A84B] font-mono text-[11px] uppercase tracking-[0.22em] font-bold mb-3">
+            <span className="w-5 h-[1.5px] bg-[#C8A84B]" />
+            <span>PARISH EVENTS &amp; GATHERINGS</span>
           </div>
-          <div className="bg-[#FAF8F3] px-4 py-2.5 rounded-2xl border border-[#E6DFD1] text-center">
-            <div className="text-xl font-black text-[#1A2C1C] font-mono">{savedEventIds.length}</div>
-            <div className="text-[10px] font-bold text-[#6B7280] uppercase">Saved</div>
-          </div>
+
+          {/* Title */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-serif text-white tracking-tight leading-[1.07] mb-4">
+            {language === 'am' ? 'ዐቢይ ሁነቶችና ዝግጅቶች' : 'Events Near You'}
+          </h1>
+
+          {/* Subtitle */}
+          <p className="text-sm text-[#D1D5DB] font-sans max-w-lg leading-relaxed">
+            {language === 'am'
+              ? 'ምዕመናን ወደ ቀረቤ ቤተ ክርስቲያን ሁነቶች ተቀላቀሉ — ፍልሰታ፣ ሰቆቃወ ድቁናት፣ ማኅበረሰብ ምግቦች ወዘተ።'
+              : 'Discover feast days, Tabot processions, youth programs, community meals, and spiritual retreats happening at parishes near you.'}
+          </p>
+
         </div>
       </section>
 
-      {/* ══ 2. FILTER & SEARCH CONTROL PANEL ══════════════════════ */}
-      <section className="bg-white p-6 rounded-3xl border border-[#E6DFD1] shadow-sm space-y-4">
-        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#855B09] absolute left-4 top-1/2 -translate-y-1/2" />
+
+      {/* ══ 2. QUICK-ACTIONS BAR ════════════════════════════════════ */}
+      <div className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-14 -mt-6 relative z-10">
+        <div className="bg-white border border-[#E7DFD1] rounded-2xl shadow-sm p-4 flex flex-wrap items-center gap-4 sm:gap-0 sm:divide-x divide-[#E7DFD1]">
+
+          {/* Enable Location */}
+          <div className="flex items-center gap-3 px-5 flex-1 min-w-[160px]">
+            <div className="w-9 h-9 rounded-xl bg-[#F0EBE1] border border-[#DDD3C0] flex items-center justify-center shrink-0">
+              <MapPin className="w-4 h-4 text-[#855B09]" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-[#1C1814] font-sans leading-tight">Enable Location</p>
+              <p className="text-[10px] text-[#7A6B56]">Find events near you</p>
+            </div>
+          </div>
+
+          {/* Select Your Church */}
+          <div className="flex items-center gap-3 px-5 flex-1 min-w-[160px]">
+            <div className="w-9 h-9 rounded-xl bg-[#F0EBE1] border border-[#DDD3C0] flex items-center justify-center shrink-0">
+              <Compass className="w-4 h-4 text-[#855B09]" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-[#1C1814] font-sans leading-tight">Select Your Church</p>
+              <p className="text-[10px] text-[#7A6B56]">Choose a church to see events</p>
+            </div>
+          </div>
+
+          {/* Full Liturgical Calendar */}
+          <div className="flex items-center gap-3 px-5 flex-1 min-w-[160px]">
+            <div className="w-9 h-9 rounded-xl bg-[#F0EBE1] border border-[#DDD3C0] flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4 text-[#855B09]" />
+            </div>
+            <div>
+              <p className="text-[11px] font-bold text-[#1C1814] font-sans leading-tight">Full Liturgical Calendar</p>
+              <p className="text-[10px] text-[#7A6B56]">View all church calendar</p>
+            </div>
+          </div>
+
+          {/* Events This Month count */}
+          <div className="flex items-center gap-3 px-5 flex-1 min-w-[100px]">
+            <div className="text-center">
+              <p className="text-2xl font-bold font-mono text-[#0B3B2B] leading-none">{thisMonthCount || 10}</p>
+              <p className="text-[9px] font-bold font-mono uppercase tracking-wider text-[#855B09] mt-0.5">EVENTS THIS MONTH</p>
+            </div>
+          </div>
+
+          {/* Venues count */}
+          <div className="flex items-center gap-3 px-5 flex-1 min-w-[80px]">
+            <div className="text-center">
+              <p className="text-2xl font-bold font-mono text-[#0B3B2B] leading-none">{venueCount || 2}</p>
+              <p className="text-[9px] font-bold font-mono uppercase tracking-wider text-[#855B09] mt-0.5">VENUES</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      {/* ══ 3. MAIN CONTENT ═════════════════════════════════════════ */}
+      <main className="max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-14 py-8 space-y-6">
+
+        {/* ── Search + Time Pill Bar ───────────────────────────── */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 justify-between">
+
+          {/* Search input */}
+          <div className="relative w-full sm:w-72 lg:w-80">
+            <Search className="w-4 h-4 text-[#855B09] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder={language === 'am' ? 'በሁነት ርዕስ፣ በደብር ወይም በከተማ ፈልግ...' : 'Search events by name, church, or city...'}
+              placeholder="Search events by name, church, or city..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-2xl border border-[#E6DFD1] text-xs sm:text-sm focus:outline-none focus:border-[#C8A84B] bg-[#FAF8F3] text-[#2C1D07]"
+              onChange={e => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 bg-white border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans placeholder:text-stone-400 focus:outline-none focus:border-[#0B3B2B] shadow-2xs"
             />
           </div>
 
-          {/* Quick Date Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 bg-[#FAF8F3] p-1.5 rounded-2xl border border-[#E6DFD1]">
-            {[
-              { id: 'ALL' as const, lEn: 'All Dates', lAm: 'ሁሉም' },
-              { id: 'today' as const, lEn: 'Today', lAm: 'ዛሬ' },
-              { id: 'this_week' as const, lEn: 'This Week', lAm: 'በዚህ ሳምንት' },
-              { id: 'this_month' as const, lEn: 'This Month', lAm: 'በዚህ ወር' },
-              { id: 'upcoming' as const, lEn: 'Upcoming', lAm: 'የሚመጡ' },
-            ].map((tab) => (
+          {/* Time pills */}
+          <div className="flex items-center gap-1 bg-white border border-[#E7DFD1] rounded-xl p-1 shadow-2xs flex-wrap">
+            {TIME_PILLS.map(pill => (
               <button
-                key={tab.id}
-                onClick={() => setSelectedDateFilter(tab.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                  selectedDateFilter === tab.id
-                    ? 'bg-[#1A2C1C] text-[#C8A84B] shadow-sm'
-                    : 'text-[#6B7280] hover:text-[#2C1D07]'
+                key={pill.id}
+                onClick={() => setTimeFilter(pill.id as typeof timeFilter)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer whitespace-nowrap ${
+                  timeFilter === pill.id
+                    ? 'bg-[#0B3B2B] text-white'
+                    : 'text-[#5A4B35] hover:text-[#0B3B2B]'
                 }`}
               >
-                {language === 'am' ? tab.lAm : tab.lEn}
+                {pill.label}
               </button>
             ))}
           </div>
+
         </div>
 
-        {/* Second Row: Dropdown Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-[#E6DFD1]">
-          {/* Event Type Filter */}
-          <div>
-            <label className="block text-[10px] font-bold text-[#855B09] uppercase tracking-wider mb-1">
-              Event Category
-            </label>
+        {/* ── Dropdown Filter Row ──────────────────────────────── */}
+        <div className="flex flex-wrap items-center gap-3">
+
+          {/* EVENT CATEGORY */}
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#855B09]">EVENT CATEGORY</label>
             <select
               value={selectedEventType}
-              onChange={(e) => setSelectedEventType(e.target.value)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
+              onChange={e => setSelectedEventType(e.target.value)}
+              className="px-3 py-2 bg-white border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer"
             >
               <option value="ALL">All Categories (ሁሉም ዓይነቶች)</option>
-              {EVENT_TYPES.map((t) => (
+              {EVENT_TYPES.map(t => (
                 <option key={t} value={t}>{t}</option>
               ))}
             </select>
           </div>
 
-          {/* Church Filter */}
-          <div>
-            <label className="block text-[10px] font-bold text-[#855B09] uppercase tracking-wider mb-1">
-              Hosting Parish
-            </label>
+          {/* FESTIVAL NAME / CHURCH */}
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#855B09]">FESTIVAL NAME</label>
             <select
               value={selectedChurchId}
-              onChange={(e) => setSelectedChurchId(e.target.value)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
+              onChange={e => setSelectedChurchId(e.target.value)}
+              className="px-3 py-2 bg-white border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer"
             >
               <option value="ALL">All Churches (ሁሉም አብያተ ክርስቲያናት)</option>
-              {MOCK_CHURCHES.slice(0, 15).map((c) => (
-                <option key={c.id} value={c.id}>{c.nameEnglish} ({c.city})</option>
+              {MOCK_CHURCHES.map(c => (
+                <option key={c.id} value={c.id}>{c.nameEnglish}</option>
               ))}
             </select>
           </div>
 
-          {/* Cost Filter */}
-          <div>
-            <label className="block text-[10px] font-bold text-[#855B09] uppercase tracking-wider mb-1">
-              Admission / Cost
-            </label>
+          {/* LANGUAGE */}
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#855B09]">LANGUAGE</label>
             <select
-              value={costFilter}
-              onChange={(e) => setCostFilter(e.target.value as any)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
+              value={selectedLanguage}
+              onChange={e => setSelectedLanguage(e.target.value)}
+              className="px-3 py-2 bg-white border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer"
             >
-              <option value="ALL">All Events (Free & Ticketed)</option>
-              <option value="free">Free Admission Only (ነፃ)</option>
-              <option value="paid">Fundraiser / Ticketed</option>
+              <option value="ALL">All Languages (ሁሉም ቋንቋዎች)</option>
+              <option value="amharic">Amharic (አማርኛ)</option>
+              <option value="english">English</option>
+              <option value="geez">Ge'ez (ግዕዝ)</option>
             </select>
           </div>
 
-          {/* Recurrence Filter */}
-          <div>
-            <label className="block text-[10px] font-bold text-[#855B09] uppercase tracking-wider mb-1">
-              Recurrence Type
-            </label>
+          {/* EVENT TYPE */}
+          <div className="flex flex-col gap-0.5">
+            <label className="text-[9px] font-mono font-bold uppercase tracking-wider text-[#855B09]">EVENT TYPE</label>
             <select
-              value={recurrenceFilter}
-              onChange={(e) => setRecurrenceFilter(e.target.value as any)}
-              className="w-full bg-[#FAF8F3] border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs font-semibold text-[#2C1D07] focus:outline-none focus:border-[#C8A84B]"
+              className="px-3 py-2 bg-white border border-[#D5C9B3] rounded-xl text-xs text-[#2C1D07] font-sans focus:outline-none focus:border-[#0B3B2B] shadow-2xs cursor-pointer"
             >
-              <option value="ALL">All Schedules (ሁሉም)</option>
-              <option value="recurring">Recurring (Weekly / Monthly Feasts)</option>
-              <option value="once">Special One-Time Events</option>
+              <option>All Event Types (ሁሉም ዓይነቶች)</option>
             </select>
           </div>
-        </div>
-      </section>
 
-      {/* ══ 3. EVENTS GRID FEED ═══════════════════════════════════ */}
-      {filteredEvents.length === 0 ? (
-        <div className="bg-white p-12 rounded-3xl border border-[#E6DFD1] text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#FFF8E7] text-[#855B09] flex items-center justify-center mx-auto">
-            <Calendar className="w-7 h-7" />
+        </div>
+
+
+        {/* ── Table Section ────────────────────────────────────── */}
+        <div>
+
+          {/* Table Header Row */}
+          <div className="flex items-baseline justify-between mb-4">
+            <h2 className="text-xl font-bold font-serif text-[#1C1814]">
+              Upcoming Parish Events &amp; Gatherings
+            </h2>
+            <span className="text-xs font-mono text-[#7A6B56]">
+              Showing {filteredEvents.length} of {MOCK_EVENTS.length} events
+            </span>
           </div>
-          <h3 className="text-lg font-bold text-[#2C1D07]">No Events Match Your Filters</h3>
-          <p className="text-xs text-[#6B7280] max-w-md mx-auto">
-            Try resetting your search query, selecting "All Dates", or switching to another category.
-          </p>
-          <button
-            onClick={() => {
-              setSearchTerm('');
-              setSelectedDateFilter('ALL');
-              setSelectedEventType('ALL');
-              setSelectedChurchId('ALL');
-              setCostFilter('ALL');
-              setRecurrenceFilter('ALL');
-            }}
-            className="btn-gold px-6 py-2.5 text-xs font-bold"
-          >
-            Reset All Filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((ev) => {
-            const isSaved = savedEventIds.includes(ev.id);
-            const typeColor = getEventTypeColor(ev.eventType);
 
-            return (
-              <div
-                key={ev.id}
-                onClick={() => setSelectedEvent(ev)}
-                className="bg-white rounded-3xl border border-[#E6DFD1] hover:border-[#C8A84B] shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden flex flex-col justify-between group"
-              >
-                {/* Event Cover Photo & Top Badges */}
-                <div className="relative h-48 w-full overflow-hidden">
-                  <img
-                    src={ev.imageUrl}
-                    alt={ev.titleEn}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          {/* Column headers */}
+          <div className="hidden md:grid grid-cols-12 gap-3 text-[10px] font-mono uppercase font-bold text-[#855B09] tracking-wider pb-2 border-b border-[#E7DFD1] px-3">
+            <div className="col-span-4">EVENT</div>
+            <div className="col-span-3">VENUE</div>
+            <div className="col-span-2">DATE &amp; TIME</div>
+            <div className="col-span-1">LANGUAGE</div>
+            <div className="col-span-2 text-right">ACTIONS</div>
+          </div>
 
-                  {/* Top Badges */}
-                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2">
-                    <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase shadow-sm ${typeColor}`}>
-                      {ev.eventType}
-                    </span>
+          {/* Rows */}
+          <div className="divide-y divide-[#EFE7DA]">
+            {filteredEvents.map(ev => {
+              const isBookmarked = bookmarkedIds.has(ev.id);
+              const hasReminder  = reminderIds.has(ev.id);
+              const catCol       = categoryColor(ev.eventType);
+              const lang         = langLabel(language === 'am' ? 'አማርኛ' : 'Amharic');
 
-                    <button
-                      type="button"
-                      onClick={(e) => toggleSaveEvent(ev.id, e)}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                        isSaved ? 'bg-[#855B09] text-white' : 'bg-black/40 text-white hover:bg-black/60'
-                      }`}
-                    >
-                      <Bookmark className="w-4 h-4 fill-current" />
-                    </button>
-                  </div>
+              return (
+                <div
+                  key={ev.id}
+                  className="py-4 px-3 grid grid-cols-12 gap-3 items-center hover:bg-white/70 rounded-2xl transition-colors cursor-pointer group"
+                >
 
-                  {/* Bottom info on Image */}
-                  <div className="absolute bottom-3 left-3 right-3 text-white">
-                    <div className="text-[10px] font-bold text-[#C8A84B] uppercase tracking-wider flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{ev.gregorianDate}</span>
-                    </div>
-                    <div className="text-[11px] text-stone-300 font-geez">
-                      {ev.ethiopianDate}
-                    </div>
-                  </div>
-                </div>
+                  {/* ── Col 1: Thumbnail + Title + Church (4 cols) ── */}
+                  <div className="col-span-12 md:col-span-4 flex items-start gap-3 min-w-0">
 
-                {/* Content Body */}
-                <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-2">
-                    {/* Recurrence Pill */}
-                    {ev.recurrence !== 'once' && (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
-                        <RotateCw className="w-2.5 h-2.5" />
-                        <span>{ev.recurrenceLabel || 'Recurring'}</span>
-                      </div>
-                    )}
-
-                    <h3 className="text-base sm:text-lg font-bold text-[#2C1D07] font-geez group-hover:text-[#855B09] transition-colors line-clamp-2">
-                      {language === 'am' ? ev.titleAm : ev.titleEn}
-                    </h3>
-                    <p className="text-xs text-[#855B09] font-medium line-clamp-1">
-                      {language === 'am' ? ev.titleEn : ev.titleAm}
-                    </p>
-
-                    {/* Church & City */}
-                    <div className="bg-[#FAF8F3] p-3 rounded-2xl border border-[#E6DFD1] space-y-1.5 text-xs text-[#4A3B22]">
-                      <div className="flex items-center gap-2 font-bold text-[#2C1D07]">
-                        <MapPin className="w-3.5 h-3.5 text-[#855B09] shrink-0" />
-                        <span className="truncate">{ev.churchNameEnglish}</span>
-                      </div>
-                      <div className="text-[11px] text-[#6B7280] flex items-center justify-between">
-                        <span>{ev.city}, {ev.country}</span>
-                        {ev.distanceKm !== null && (
-                          <span className="font-mono font-bold text-[#855B09]">{ev.distanceKm} km away</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280] pt-1 border-t border-[#E6DFD1]">
-                        <Clock className="w-3 h-3 text-[#855B09] shrink-0" />
-                        <span>{ev.startTime} – {ev.endTime}</span>
+                    {/* Thumbnail */}
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden border border-[#D5C9B3] shrink-0 bg-white shadow-2xs">
+                      <img
+                        src={ev.imageUrl}
+                        alt={ev.titleEn}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      />
+                      {/* golden cross badge */}
+                      <div className="absolute top-1 left-1 w-5 h-5 rounded-full bg-[#0B3B2B] border border-[#C8A84B] flex items-center justify-center text-[#E5C158] text-[9px] font-serif">
+                        †
                       </div>
                     </div>
 
-                    <p className="text-xs text-[#6B7280] line-clamp-2 leading-relaxed pt-1">
-                      {language === 'am' ? ev.descriptionAm : ev.descriptionEn}
-                    </p>
-                  </div>
-
-                  {/* Footer Meta & Actions */}
-                  <div className="space-y-3 pt-3 border-t border-[#E6DFD1]">
-                    {/* RSVP count and Live Stream badge */}
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5 text-[#855B09] font-bold text-[11px]">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>{ev.rsvpCount.toLocaleString()} Attending</span>
-                        {ev.capacity && (
-                          <span className="text-[#6B7280] font-normal">/ {ev.capacity}</span>
-                        )}
-                      </div>
-
-                      {ev.isHybrid ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-                          <Tv className="w-3 h-3" /> Live Stream
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-semibold text-stone-500">
-                          {ev.isFree ? 'Free Admission' : ev.ticketPrice}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Action buttons row */}
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEvent(ev);
+                    {/* Text */}
+                    <div className="min-w-0 space-y-0.5">
+                      {/* category badge */}
+                      <span
+                        className="text-[8px] font-mono font-bold tracking-wider uppercase px-1.5 py-0.5 rounded-md border"
+                        style={{
+                          color: catCol,
+                          borderColor: catCol + '55',
+                          backgroundColor: catCol + '15',
                         }}
-                        className="flex-1 btn-gold py-2 text-xs font-bold flex items-center justify-center gap-1.5"
                       >
-                        <span>RSVP / Details</span>
-                        <ChevronRight className="w-3.5 h-3.5" />
-                      </button>
+                        {ev.eventType}
+                      </span>
 
-                      <a
-                        href={ev.gcalUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        title="Add to Google Calendar"
-                        className="p-2 rounded-xl bg-[#FAF8F3] border border-[#E6DFD1] hover:border-[#C8A84B] text-[#855B09] transition-all"
-                      >
-                        <CalendarPlus className="w-4 h-4" />
-                      </a>
+                      {/* Ge'ez / Amharic title */}
+                      <p className="text-[10px] text-[#7A6B56] font-sans leading-tight truncate">{ev.titleAm}</p>
+
+                      {/* English title */}
+                      <h3 className="font-bold text-xs sm:text-sm text-[#1C1814] group-hover:text-[#855B09] transition-colors leading-tight font-serif truncate">
+                        {ev.titleEn}
+                      </h3>
+
+                      {/* Diocese */}
+                      <p className="text-[10px] text-[#7A6B56] font-sans leading-tight truncate">{ev.diocese}</p>
                     </div>
+
                   </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
-      {/* ══ 4. EVENT DETAIL / RSVP MODAL ═════════════════════════ */}
-      {selectedEvent && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedEvent(null);
-          }}
-        >
-          <div className="bg-white rounded-3xl max-w-2xl w-full border-2 border-[#C8A84B] shadow-2xl overflow-hidden max-h-[92vh] flex flex-col animate-scaleUp">
-            {/* Header with Photo Banner */}
-            <div className="relative h-48 sm:h-56 w-full overflow-hidden shrink-0">
-              <img
-                src={selectedEvent.imageUrl}
-                alt={selectedEvent.titleEn}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center font-bold transition-all z-10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="absolute bottom-4 left-6 right-6 text-white space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[9px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${getEventTypeColor(selectedEvent.eventType)}`}>
-                    {selectedEvent.eventType}
-                  </span>
-                  <span className="text-[10px] text-stone-300 font-semibold">{selectedEvent.diocese}</span>
-                </div>
-                <h3 className="text-xl sm:text-2xl font-black font-geez leading-tight">{selectedEvent.titleAm}</h3>
-                <p className="text-xs font-medium text-[#C8A84B]">{selectedEvent.titleEn}</p>
-              </div>
-            </div>
-
-            {/* Modal Body (Scrollable) */}
-            <div className="p-6 overflow-y-auto space-y-6 text-xs sm:text-sm text-[#4A3B22]">
-              {/* Date & Time Highlight Bar */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-[#FAF8F3] p-4 rounded-2xl border border-[#E6DFD1]">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF8E7] text-[#855B09] border border-[#E6DFD1] flex items-center justify-center shrink-0">
-                    <Calendar className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-[#2C1D07]">{selectedEvent.gregorianDate}</div>
-                    <div className="text-[11px] text-[#855B09] font-geez">{selectedEvent.ethiopianDate}</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF8E7] text-[#855B09] border border-[#E6DFD1] flex items-center justify-center shrink-0">
-                    <Clock className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-bold text-[#2C1D07]">{selectedEvent.startTime} – {selectedEvent.endTime}</div>
-                    <div className="text-[11px] text-[#6B7280]">
-                      {selectedEvent.recurrence !== 'once' ? (selectedEvent.recurrenceLabel || 'Recurring Event') : 'One-Time Event'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider">About This Event (ስለ ሁነቱ)</h4>
-                <p className="text-xs text-[#2C1D07] font-geez leading-relaxed bg-[#FAF8F3] p-3.5 rounded-xl border border-[#E6DFD1]">
-                  {selectedEvent.descriptionAm}
-                </p>
-                <p className="text-xs text-[#4A3B22] leading-relaxed">
-                  {selectedEvent.descriptionEn}
-                </p>
-              </div>
-
-              {/* Multi-Segment Schedule Timeline */}
-              {selectedEvent.schedule && selectedEvent.schedule.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-[#855B09]" />
-                    Event Agenda & Liturgical Schedule (የመርሐ ግብር ሰሌዳ)
-                  </h4>
-                  <div className="bg-[#FAF8F3] p-4 rounded-2xl border border-[#E6DFD1] divide-y divide-[#E6DFD1]">
-                    {selectedEvent.schedule.map((item, idx) => (
-                      <div key={idx} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
-                        <div className="font-mono font-bold text-[#855B09] bg-white px-2.5 py-1 rounded-lg border border-[#E6DFD1] shrink-0">
-                          {item.time}
-                        </div>
-                        <div className="flex-1 text-right sm:text-left">
-                          <div className="font-bold text-[#2C1D07]">{item.item}</div>
-                          <div className="text-[11px] text-[#855B09] font-geez">{item.itemAm}</div>
-                        </div>
+                  {/* ── Col 2: Venue (3 cols) ── */}
+                  <div className="col-span-6 md:col-span-3 space-y-1 text-xs font-sans min-w-0">
+                    <div className="flex items-start gap-1 text-[#1C1814]">
+                      <MapPin className="w-3 h-3 text-[#855B09] shrink-0 mt-0.5" />
+                      <div className="min-w-0">
+                        <p className="font-semibold text-[#1C1814] leading-tight truncate">{ev.churchNameEnglish}</p>
+                        <p className="text-[11px] text-[#7A6B56]">{ev.city}, {ev.country}</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Location & Parish Host Information */}
-              <div className="space-y-2">
-                <h4 className="font-bold text-[#2C1D07] text-xs uppercase tracking-wider flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5 text-[#855B09]" />
-                  Hosting Parish & Location Details
-                </h4>
-                <div className="bg-[#FAF8F3] p-4 rounded-2xl border border-[#E6DFD1] space-y-2 text-xs">
-                  <div className="font-bold text-sm text-[#2C1D07] font-geez">{selectedEvent.churchNameAmharic}</div>
-                  <div className="text-xs text-[#855B09] font-medium">{selectedEvent.churchNameEnglish}</div>
-                  <div className="text-[#6B7280]">{selectedEvent.address}, {selectedEvent.city}, {selectedEvent.country}</div>
-
-                  <div className="pt-2 border-t border-[#E6DFD1] flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                      {selectedEvent.contactPhone && (
-                        <div className="flex items-center gap-1 text-[11px]">
-                          <Phone className="w-3 h-3 text-[#855B09]" />
-                          <span>{selectedEvent.contactPhone}</span>
-                        </div>
-                      )}
-                      {selectedEvent.contactEmail && (
-                        <div className="flex items-center gap-1 text-[11px]">
-                          <Mail className="w-3 h-3 text-[#855B09]" />
-                          <a href={`mailto:${selectedEvent.contactEmail}`} className="text-[#855B09] hover:underline font-semibold">
-                            {selectedEvent.contactEmail}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-3">
-                      {selectedEvent.distanceKm !== null && (
-                        <div className="font-mono font-bold text-green-700 text-[11px]">
-                          🚗 {selectedEvent.distanceKm} km
-                        </div>
-                      )}
-                      {onOpenChurchDetail && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const host = MOCK_CHURCHES.find((c) => c.id === selectedEvent.churchId);
-                            if (host) {
-                              setSelectedEvent(null);
-                              onOpenChurchDetail(host);
-                            }
-                          }}
-                          className="text-[11px] font-bold text-[#855B09] hover:underline flex items-center gap-0.5"
-                        >
-                          <span>View on Map →</span>
-                        </button>
-                      )}
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* RSVP Form */}
-              <div className="bg-gradient-to-br from-[#FAF8F3] to-[#FFF8E7] p-5 rounded-2xl border border-[#C8A84B] space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Send className="w-4 h-4 text-[#855B09]" />
-                    <span className="font-bold text-xs uppercase tracking-wider text-[#2C1D07]">
-                      Reserve Your Spot / RSVP
+                  {/* ── Col 3: Date & Time (2 cols) ── */}
+                  <div className="col-span-6 md:col-span-2 text-xs font-sans space-y-1">
+                    <div className="flex items-center gap-1 font-semibold text-[#1C1814]">
+                      <Calendar className="w-3 h-3 text-[#855B09] shrink-0" />
+                      <span className="truncate">{ev.gregorianDate}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[#5A4B35]">
+                      <Clock className="w-3 h-3 text-[#855B09] shrink-0" />
+                      <span>{ev.startTime} – {ev.endTime}</span>
+                    </div>
+                  </div>
+
+                  {/* ── Col 4: Language (1 col) ── */}
+                  <div className="col-span-6 md:col-span-1 text-[11px] text-[#5A4B35] font-sans space-y-0.5">
+                    <p>{lang}</p>
+                    {ev.isHybrid && <p className="text-[10px] text-[#0B3B2B] font-bold">English</p>}
+                    <p className="text-[10px] text-[#7A6B56]">Ge'ez</p>
+                  </div>
+
+                  {/* ── Col 5: Actions (2 cols) ── */}
+                  <div className="col-span-6 md:col-span-2 flex items-center justify-end gap-2">
+
+                    {/* RSVP / Details link */}
+                    <span className="text-xs font-bold text-[#855B09] hover:text-[#5B3E06] flex items-center gap-0.5 transition-colors whitespace-nowrap">
+                      <span>RSVP / Details</span>
+                      <ChevronRight className="w-3 h-3" />
                     </span>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#855B09]">
-                    {selectedEvent.isFree ? 'Free Admission' : selectedEvent.ticketPrice}
-                  </span>
-                </div>
 
-                {rsvpConfirmed ? (
-                  <div className="p-4 rounded-xl bg-green-50 border border-green-300 text-green-800 text-xs font-bold flex items-center gap-2 animate-fadeIn">
-                    <Check className="w-4 h-4 text-green-600 shrink-0" />
-                    <span>RSVP Confirmed! A reminder and confirmation receipt has been generated.</span>
-                  </div>
-                ) : (
-                  <form onSubmit={handleRsvpSubmit} className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      <input
-                        type="text"
-                        required
-                        placeholder="Your Full Name"
-                        value={rsvpName}
-                        onChange={(e) => setRsvpName(e.target.value)}
-                        className="bg-white border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#C8A84B]"
-                      />
-                      <input
-                        type="email"
-                        required
-                        placeholder="Email Address"
-                        value={rsvpEmail}
-                        onChange={(e) => setRsvpEmail(e.target.value)}
-                        className="bg-white border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#C8A84B]"
-                      />
-                      <select
-                        value={rsvpGuests}
-                        onChange={(e) => setRsvpGuests(e.target.value)}
-                        className="bg-white border border-[#E6DFD1] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#C8A84B]"
-                      >
-                        <option value="1">1 Person</option>
-                        <option value="2">2 Persons</option>
-                        <option value="3">3 Persons</option>
-                        <option value="4">4+ Family Group</option>
-                      </select>
-                    </div>
-                    <button type="submit" className="w-full btn-gold py-2.5 text-xs font-bold shadow-sm">
-                      Confirm RSVP for {selectedEvent.titleEn}
-                    </button>
-                  </form>
-                )}
-              </div>
-
-              {/* Add to Calendar & Social Share Bar */}
-              <div className="space-y-3 pt-2 border-t border-[#E6DFD1]">
-                <div className="text-[11px] font-bold text-[#855B09] uppercase tracking-wider">
-                  Sync to Calendar & Share
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <a
-                    href={selectedEvent.gcalUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white border border-[#E6DFD1] hover:border-[#C8A84B] font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    <CalendarPlus className="w-3.5 h-3.5 text-[#855B09]" />
-                    <span>Google Calendar</span>
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => downloadIcs(selectedEvent)}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-white border border-[#E6DFD1] hover:border-[#C8A84B] font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm"
-                  >
-                    <Calendar className="w-3.5 h-3.5 text-[#855B09]" />
-                    <span>Apple / Outlook (.ics)</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => handleCopyShareLink(selectedEvent)}
-                    className="px-4 py-2.5 rounded-xl bg-white border border-[#E6DFD1] hover:border-[#C8A84B] font-bold text-xs flex items-center justify-center gap-1.5 text-[#855B09] shadow-sm"
-                  >
-                    {copiedShare ? <Check className="w-3.5 h-3.5 text-green-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedShare ? 'Link Copied!' : 'Copy Link'}</span>
-                  </button>
-
-                  {selectedEvent.isHybrid && selectedEvent.streamingUrl && (
-                    <a
-                      href={selectedEvent.streamingUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm ml-auto"
+                    {/* Bookmark */}
+                    <button
+                      onClick={e => toggleBookmark(ev.id, e)}
+                      title="Save event"
+                      className="w-7 h-7 rounded-lg border border-[#D5C9B3] hover:border-[#855B09] flex items-center justify-center text-[#855B09] bg-white transition-colors cursor-pointer"
                     >
-                      <Tv className="w-3.5 h-3.5" />
-                      <span>Watch Live Stream</span>
-                    </a>
-                  )}
+                      <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-[#855B09]' : ''}`} />
+                    </button>
+
+                    {/* Bell */}
+                    <button
+                      onClick={e => toggleReminder(ev.id, e)}
+                      title="Set reminder"
+                      className="w-7 h-7 rounded-lg border border-[#D5C9B3] hover:border-[#855B09] flex items-center justify-center text-[#855B09] bg-white transition-colors cursor-pointer"
+                    >
+                      <Bell className={`w-3.5 h-3.5 ${hasReminder ? 'fill-[#855B09]' : ''}`} />
+                    </button>
+
+                  </div>
+
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
+
+          {/* ── View All button ──────────────────────────────── */}
+          {filteredEvents.length < MOCK_EVENTS.length && (
+            <div className="pt-6 flex justify-center">
+              <button
+                onClick={() => setTimeFilter('ALL')}
+                className="flex items-center gap-2 text-sm font-bold text-[#855B09] hover:text-[#5B3E06] border border-[#C8A84B] rounded-xl px-6 py-2.5 hover:bg-[#FFF8E7] transition-colors cursor-pointer"
+              >
+                <span>View All Events</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
         </div>
-      )}
+
+      </main>
+
     </div>
   );
 };
+
+export default EventsNearYouView;

@@ -151,11 +151,6 @@ export const Header: React.FC = () => {
       icon: Heart,
       dropdown: [
         { id: 'give', labelEn: 'Giving Hub', labelAm: 'ዋና ማዕከል' },
-        { id: 'give/church', labelEn: 'Give to a Parish', labelAm: 'ለደብር መዋጮ' },
-        { id: 'give/monastery', labelEn: 'Adopt a Monastery', labelAm: 'ገዳም ይደግፉ' },
-        { id: 'give/campaigns', labelEn: 'Active Campaigns', labelAm: 'ልዩ ዘመቻዎች' },
-        { id: 'give/general', labelEn: 'General Church Fund', labelAm: 'ማዕከላዊ ፈንድ' },
-        { id: 'give/transparency', labelEn: 'Financial Transparency', labelAm: 'የፋይናንስ ግልጽነት' },
         { id: 'give/account', labelEn: 'Donor Portal', labelAm: 'የለጋሽ ፖርታል' },
       ]
     },
@@ -195,7 +190,7 @@ export const Header: React.FC = () => {
     language === 'ge' ? 'GE' :
     language === 'ti' ? 'TI' : 'EN';
 
-  const isTransparent = activeView === 'home' && !isScrolled && !mobileMenuOpen;
+  const isTransparent = (activeView === 'home' || activeView.startsWith('give') || activeView.startsWith('find-a-church')) && !isScrolled && !mobileMenuOpen;
 
   return (
     <>
